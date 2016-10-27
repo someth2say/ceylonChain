@@ -1,4 +1,5 @@
-"ChainingCallable is like a Callable, but adding method chaining functionality."
+"ChainingCallable is like a Callable, but adding method chaining functionality.
+ If Callable interface was not restricted, we may replace the 'with' method with the invocation operation, and make this class satisfies Callable"
 shared interface ChainingCallable<out ChainReturn,in ChainArguments>
 {
     shared formal ChainReturn with(ChainArguments arguments);
@@ -33,27 +34,4 @@ class ChainExists<out PrevReturn,out Return,in Arguments>(ChainingCallable<PrevR
 class ChainSpread<out PrevReturn,out Return,in Arguments>(ChainingCallable<PrevReturn,Arguments> prevChain, Callable<Return,PrevReturn> func) satisfies ChainingCallable<Return?,Arguments>
 {
     shared actual default Return? with(Arguments arguments) => let (value prev = prevChain.with(arguments)) if (is Anything[] prev) then func(*prev) else null;
-}
-
-shared void run() {
-
-    // Chain start and parameter setting
-    value stringSize = chain(String.size);
-    print(stringSize.with("Hello Ceylon")); //12
-
-    // ChainCompose
-    value printStringSizeEven = stringSize.andThen(Integer.even).andThen(print);
-    printStringSizeEven.with("Hola"); // true
-    printStringSizeEven.with("Hola!"); // false
-
-    // ChainExists
-    function evenOrNull(Integer num) => if (num.even) then num else null;
-    chain(evenOrNull).ifExistsThen(Integer.successor).andThen(print).with(0);// 1
-    chain(evenOrNull).ifExistsThen(Integer.successor).andThen(print).with(1);// <null>
-
-    //ChainSpread
-    value equals = (Object val, Object val2) => val.equals(val2);
-    value tupleSuplier = (Object val) => [val, val];
-    chain(tupleSuplier).ifSpreadThen(equals).andThen(print).with("Hola"); // true
-
 }

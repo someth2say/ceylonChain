@@ -1,4 +1,4 @@
-# ceylonChain
+# Chaining Callables for Ceylon
 
 Just a proof of concept.
 The idea is to emulate `|>` operator (as described in https://github.com/ceylon/ceylon/issues/6615, but using only standard Ceylon classes, and the strenght of the typechecker.
