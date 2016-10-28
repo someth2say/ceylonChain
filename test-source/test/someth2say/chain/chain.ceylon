@@ -2,7 +2,7 @@ import ceylon.test {
     test,
     assertEquals
 }
-import org.someth2say.chain {
+import someth2say.chain {
     ...
 }
 
