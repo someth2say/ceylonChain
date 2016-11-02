@@ -18,7 +18,6 @@ This will create a `ChainingCallable` object, that allows to chain other methods
 - Response handling
 ```
 Request request = ...;
-
 value params = parseParameters(request);
 value paramsAgain = validateParameters(params);
 value output = doStuff(paramsAgain);
@@ -27,16 +26,15 @@ writeResponse(output);
 Can be rewritten as
 ```
 Request request = ...;
-
 chain(parseParameters).andThen(validateParameters).andThen(doStuff).andThen(writeResponse).with(request);
 ```
 
-- More examples to be added.
+- More samples to come
 
 # Caveats
 There are several points of improvement on this code:
 - `ifSpreadThen`method is not completelly typesafe, so it can return `null` if the result of the first method is not spreadable.
-- There is a (minimal) memory footprint for using this construct, contrary to the `|>`operator that is just syntax sugar.
-- Chaining callables starts with 'chain' method (or creating a ChainingCallable). This currently does not allow spreading initial parameters, nor multiple parameters chains.
+- There is a (minimal) memory footprint for using this construct, oposed to the `|>` operator that is just syntax sugar.
+- Chaining callables starts with `chain` method (or manually creating a `ChainStart`). This currently does not allow spreading initial parameters, multiple parameters chains nor null-checking initial parameters.
 
 #Enjoy!
