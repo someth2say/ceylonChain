@@ -1,6 +1,6 @@
 "Module for defining and approach por chaining callables.
  As per proposed in https://github.com/ceylon/ceylon/issues/6615, headfish operator `|>` is
- pretty usefull for expressing a set of operations that follow the chain pattern:
+ pretty useful for expressing a set of operations that follow the chain pattern:
     value init = ...;
     value step1 = func1(init);
     value step2 = func2(step1);
