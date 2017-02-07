@@ -1,10 +1,12 @@
+"Basic interface to substitute `Callable`"
 shared interface IInvocable<out Return,in Arguments>
 {
     "Actually invoke the callable with specified arguments."
     shared formal Return with(Arguments arguments);
 }
 
-shared class Invocable<out Return,in Arguments>(Return(Arguments) func) satisfies IInvocable<Return,Arguments>
+"Basic implementation for an IInvocable"
+class Invocable<out Return,in Arguments>(Return(Arguments) func) satisfies IInvocable<Return,Arguments>
 {
     shared actual Return with(Arguments arguments) => func(arguments);
 }
@@ -19,7 +21,7 @@ shared interface IChainable<Return,in Arguments> satisfies IInvocable<Return,Arg
 }
 
 "The simplest chaining callable, just calling the previous chaing before calling the function parameter"
-shared class Chainable<Return,in Arguments,PrevReturn>(IInvocable<PrevReturn,Arguments> prevCallable, Return(PrevReturn) func) satisfies IChainable<Return,Arguments> {
+class Chainable<Return,in Arguments,PrevReturn>(IInvocable<PrevReturn,Arguments> prevCallable, Return(PrevReturn) func) satisfies IChainable<Return,Arguments> {
     shared actual Return with(Arguments arguments) => func(prevCallable.with(arguments));
 }
 
@@ -27,7 +29,7 @@ shared class Chainable<Return,in Arguments,PrevReturn>(IInvocable<PrevReturn,Arg
 shared interface IOptionable<Return,in Arguments> satisfies IChainable<Return?,Arguments> {}
 
 "Basic class implementing IOptionable. Optionable actually implements the existence checking capability."
-shared class Optionable<NewReturn,in Arguments,Return>(IInvocable<Return?,Arguments> prevCallable, NewReturn(Return&Object) func) satisfies IOptionable<NewReturn,Arguments> {
+class Optionable<NewReturn,in Arguments,Return>(IInvocable<Return?,Arguments> prevCallable, NewReturn(Return&Object) func) satisfies IOptionable<NewReturn,Arguments> {
     shared actual NewReturn? with(Arguments arguments) => let (prevResult = prevCallable.with(arguments)) if (exists prevResult) then func(prevResult) else null;
 }
 
@@ -40,7 +42,7 @@ shared interface ISpreadable<Return,in Arguments> satisfies IChainable<Return,Ar
 
 "Basic class implementing ISpreadable.
  This class actually does nothing but being an ISpreadable, because spreading should be done in the results (handled in next chain step). So `spreadTo` methods actually provide the capability."
-shared class Spreadable<NewReturn,in Arguments,Return>(IInvocable<Return,Arguments> prevCallable, NewReturn(Return) func)
+class Spreadable<NewReturn,in Arguments,Return>(IInvocable<Return,Arguments> prevCallable, NewReturn(Return) func)
         extends Chainable<NewReturn,Arguments,Return>(prevCallable, func)
         satisfies ISpreadable<NewReturn,Arguments>
 given NewReturn satisfies Anything[] {}

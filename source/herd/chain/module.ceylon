@@ -11,10 +11,6 @@
  But this is clearly unclear as A) it reverses the order of operations, and B) it add a lot of seamless parens.
  So, while headfish operators family is not available, it can be simulated with this library.
 
-    chain(step1).andThen(step2)...andThen(stepN).with(init).
-
- Note that this design have some caveats, mainly compared to the headfish operator:
-    - It have a minumum memory footprint.
-    - It can't trypesafelly represent the Dead-Headfish operator `|*>`
+    chain(step1).then(step2)...then(stepN).with(init).
  "
-module someth2say.chain "1.1.0" {}
+module herd.chain "1.1.0" {}

@@ -2,7 +2,7 @@ import ceylon.test {
     test,
     assertEquals
 }
-import someth2say.chain {
+import herd.chain {
     chain,
     chainSpreadable,
     chainOptional
