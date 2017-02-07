@@ -1,4 +1,4 @@
-# Chaining Callables for Ceylon
+# Chaining Callables for Ceylon [![Build Status](https://travis-ci.org/someth2say/ceylonChain.svg?branch=master)](https://travis-ci.org/someth2say/ceylonChain)
 
 Many times I find myself writing code like the following:
 ```
