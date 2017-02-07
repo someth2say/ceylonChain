@@ -17,4 +17,4 @@
     - It have a minumum memory footprint.
     - It can't trypesafelly represent the Dead-Headfish operator `|*>`
  "
-module someth2say.chain "1.0.0" {}
+module someth2say.chain "1.1.0" {}
