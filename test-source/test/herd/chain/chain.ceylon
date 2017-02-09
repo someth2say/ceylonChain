@@ -2,6 +2,7 @@ import ceylon.test {
     test,
     assertEquals
 }
+
 import herd.chain {
     chain,
     chainSpreadable,
@@ -52,37 +53,37 @@ shared test void testChainOptional() {
 shared test void testSimpleComposition() {
     assertEquals(2, chain(cTtoT).\ithen(cTtoT).with(0), "Chained callables should be equivalent to invonking those callables in the opposing order.");
     assertEquals(1, chain(cNtoT).\ithen(cTtoT).with(null), "Chained callables should be equivalent to invonking those callables in the opposing order.");
-    assertEquals(0, chain(cNtoN).\ithen(cNtoT).with(null), "Chained callables should be equivalent to invonking those callables in the opposing order.");
+    assertEquals(0, chain(cNtoN).to(cNtoT).with(null), "Chained callables should be equivalent to invonking those callables in the opposing order.");
 
     assertEquals(null, chain(cTtoT).\ithen(cTtoN).with(0), "Chained callables should be equivalent to invonking those callables in the opposing order.");
-    assertEquals(3, chain(cTtoT).\ithen(cTtoN).with(1), "Chained callables should be equivalent to invonking those callables in the opposing order.");
+    assertEquals(3, chain(cTtoT).to(cTtoN).with(1), "Chained callables should be equivalent to invonking those callables in the opposing order.");
 
     assertEquals([2, false], chain(cTtoT).\ithen(cTtoS).with(0), "Chained callables should be equivalent to invonking those callables in the opposing order.");
-    assertEquals([3, true], chain(cTtoT).\ithen(cTtoS).with(1), "Chained callables should be equivalent to invonking those callables in the opposing order.");
+    assertEquals([3, true], chain(cTtoT).to(cTtoS).with(1), "Chained callables should be equivalent to invonking those callables in the opposing order.");
 }
 
 shared test void testConditionalComposition() {
 
     // For callables accepting null types
     assertEquals(2, chain(cTtoN).thenOptionally(cNtoT).with(0), "Conditional composition should be able to compose on callables accepting null");
-    assertEquals(null, chain(cTtoN).thenOptionally(cNtoT).with(1), "Conditional composition should be able to compose on callables accepting null");
+    assertEquals(null, chain(cTtoN).optionallyTo(cNtoT).with(1), "Conditional composition should be able to compose on callables accepting null");
     assertEquals(null, chain(cNtoN).thenOptionally(cNtoT).with(null), "Conditional composition should be able to compose on callables accepting null");
 
     // For callables NOT accepting null types
     assertEquals(2, chain(cTtoN).thenOptionally(cTtoT).with(0), "Conditional composition should be able to compose on callables not accepting null.");
-    assertEquals(null, chain(cTtoN).thenOptionally(cTtoT).with(1), "Conditional composition should be able to compose on callables not accepting null.");
+    assertEquals(null, chain(cTtoN).optionallyTo(cTtoT).with(1), "Conditional composition should be able to compose on callables not accepting null.");
     assertEquals(null, chain(cNtoN).thenOptionally(cTtoT).with(null), "Conditional composition should be able to compose on callables not accepting null.");
 }
 
 shared test void testSpreadingComposition() {
     //Starting from an spreadable
     assertEquals(2, chainSpreadable(cTtoS).thenSpreadTo(cStoT).with(0), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals(1, chainSpreadable(cTtoS).thenSpreadTo(cStoT).with(1), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(1, chainSpreadable(cTtoS).spreadTo(cStoT).with(1), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals(1, chainSpreadable(cNtoS).thenSpreadTo(cStoT).with(null), "Spreadable composition should be able to compose on callables accepting null");
 
     //Continuing from a non-spreadable...
     assertEquals(1, chain(cTtoT).thenSpreadable(cTtoS).thenSpreadTo(cStoT).with(0), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals(4, chain(cTtoT).thenSpreadable(cTtoS).thenSpreadTo(cStoT).with(1), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(4, chain(cTtoT).thenSpreadable(cTtoS).spreadTo(cStoT).with(1), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals(2, chain(cNtoT).thenSpreadable(cTtoS).thenSpreadTo(cStoT).with(null), "Spreadable composition should be able to compose on callables accepting null");
 
     // Optionally spreading
@@ -91,7 +92,7 @@ shared test void testSpreadingComposition() {
 
     // Spreading to an spreadable
     assertEquals([2, true], chainSpreadable(cTtoS).thenSpreadToSpreadable(cStoS).with(0), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals([3, false], chainSpreadable(cTtoS).thenSpreadToSpreadable(cStoS).with(1), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals([3, false], chainSpreadable(cTtoS).spreadToSpreadable(cStoS).with(1), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([1, true], chainSpreadable(cNtoS).thenSpreadToSpreadable(cStoS).with(null), "Spreadable composition should be able to compose on callables accepting null");
 }
 

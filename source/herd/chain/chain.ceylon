@@ -18,6 +18,10 @@ shared interface IChainable<Return,in Arguments> satisfies IInvocable<Return,Arg
     shared default IChainable<NewReturn,Arguments> \ithen<NewReturn>(NewReturn(Return) newFunc) => Chainable(this, newFunc);
     shared default IOptionable<NewReturn,Arguments> thenOptionally<NewReturn>(NewReturn(Return&Object) newFunc) => Optionable(this, newFunc);
     shared default ISpreadable<NewReturn,Arguments> thenSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies Anything[] => Spreadable(this, newFunc);
+
+    shared default IChainable<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => \ithen(newFunc);
+    shared default IOptionable<NewReturn,Arguments> optionallyTo<NewReturn>(NewReturn(Return&Object) newFunc) => thenOptionally(newFunc);
+    shared default IChainable<NewReturn,Arguments> toSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies Anything[] => thenSpreadable(newFunc);
 }
 
 "The simplest chaining callable, just calling the previous chaing before calling the function parameter"
@@ -38,6 +42,10 @@ shared interface ISpreadable<Return,in Arguments> satisfies IChainable<Return,Ar
     shared default IChainable<NewReturn,Arguments> thenSpreadTo<NewReturn>(NewReturn(* Return) newFunc) => SpreadingChainable(this, newFunc);
     //shared default IOptionable<NewReturn,Arguments> thenOptionalySpreadTo<NewReturn>(NewReturn(* Return) newFunc) => SpreadingOptionable(this, newFunc);
     shared default ISpreadable<NewReturn,Arguments> thenSpreadToSpreadable<NewReturn>(NewReturn(* Return) newFunc) given NewReturn satisfies Anything[] => SpreadingSpreadable(this, newFunc);
+
+    shared default IChainable<NewReturn,Arguments> spreadTo<NewReturn>(NewReturn(* Return) newFunc) => SpreadingChainable(this, newFunc);
+    //shared default IOptionable<NewReturn,Arguments> optionallyToSpreadable<NewReturn>(NewReturn(* Return) newFunc) => SpreadingOptionable(this, newFunc);
+    shared default ISpreadable<NewReturn,Arguments> spreadToSpreadable<NewReturn>(NewReturn(* Return) newFunc) given NewReturn satisfies Anything[] => SpreadingSpreadable(this, newFunc);
 }
 
 "Basic class implementing ISpreadable.

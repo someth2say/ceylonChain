@@ -13,4 +13,4 @@
 
     chain(step1).then(step2)...then(stepN).with(init).
  "
-module herd.chain "1.1.0" {}
+module herd.chain "1.1.1" {}
