@@ -1,13 +1,4 @@
-import ceylon.test {
-    test,
-    assertEquals
-}
 
-import herd.chain {
-    chain,
-    chainSpreadable,
-    chainOptional
-}
 
 /*
  Test callables should hancle three types:
@@ -18,6 +9,7 @@ import herd.chain {
 Integer(Integer) cTtoT = Integer.successor;
 Integer?(Integer) cTtoN = (Integer int) => if (int.even) then int.successor else null;
 [Integer, Boolean](Integer) cTtoS = (Integer int) => [int.successor, int.even];
+[Integer, Integer](Integer) cTtoS2 = (Integer int) => [int.successor, int.predecessor];
 
 Integer(Integer?) cNtoT = (Integer? int) => if (exists int) then int.successor else 0;
 Integer?(Integer?) cNtoN = (Integer? int) => if (exists int) then int.successor else null;
@@ -32,6 +24,8 @@ shared test void testChain() {
     // Chain start and parameter setting
     assertEquals(1, chain(cTtoT).with(0), "Invoking a ChainStart should directly invoke the method on the params");
     assertEquals(0, chain(cNtoT).with(null), "Invoking a ChainStart should directly invoke the method on the params");
+    assertEquals(2, chain2(cTtoT, cTtoT).with(0), "Invoking a ChainStart with two functions");
+    assertEquals(3, chain3(cTtoT, cTtoT, cTtoT).with(0), "Invoking a ChainStart with three functions");
 }
 
 shared test void testChainSpread() {
@@ -94,6 +88,11 @@ shared test void testSpreadingComposition() {
     assertEquals([2, true], chainSpreadable(cTtoS).thenSpreadToSpreadable(cStoS).with(0), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([3, false], chainSpreadable(cTtoS).spreadToSpreadable(cStoS).with(1), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([1, true], chainSpreadable(cNtoS).thenSpreadToSpreadable(cStoS).with(null), "Spreadable composition should be able to compose on callables accepting null");
+
+    // Apply stream operations
+    assertEquals(2, chainSpreadable(cTtoS2).map(Integer.even).with(0), "Spreadable composition should be able to compose on callables accepting null");
+
+
 }
 
 
