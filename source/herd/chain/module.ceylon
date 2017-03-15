@@ -13,4 +13,5 @@
 
     chain(step1).then(step2)...then(stepN).with(init).
  "
+by ("Jordi Sola")
 module herd.chain "1.1.1" {}
