@@ -66,17 +66,31 @@ class SpreadingChainable<NewReturn, in Arguments, Return>(IInvocable<Return,Argu
     shared actual NewReturn with(Arguments arguments) => let (prevResult = prevCallable.with(arguments)) func(*prevResult);
 }
 
-shared interface IIterable<Return, in Arguments, FuncParam> satisfies IChainable<Return,Arguments>
-        given Return satisfies {FuncParam*}
+shared R(T)(F)(S) lastParamToFirst<R, F, S, T>(R(F)(S)(T) func) => (S s)(F f)(T t) => func(t)(s)(f);
+
+shared Return appliedIdentity<Return>(Anything(Return) step)(Return item) {
+    step(item);
+    return item;
+}
+
+shared Result identityEach<Result, Item>(Anything(Item) step)(Result iterable) given Result satisfies {Item*} {
+    iterable.each(step);
+    return iterable;
+}
+
+shared interface IIterable<IterableReturn, in Arguments, IterableItem> satisfies IChainable<IterableReturn,Arguments>
+        given IterableReturn satisfies {IterableItem*}
 {
-    shared default IIterable<{FuncReturn*},Arguments,FuncReturn> map<FuncReturn>(FuncReturn(FuncParam) operation) => IterableChainable<{FuncReturn*},Arguments,Return,FuncReturn>(this, shuffle(Return.map<FuncReturn>)(operation));
+    shared default IIterable<{NewReturn*},Arguments,NewReturn> map<NewReturn>(NewReturn(IterableItem) operation) => IterableChainable(this, shuffle(IterableReturn.map<NewReturn>)(operation));
+    shared default IIterable<IterableReturn,Arguments,IterableItem> each(Anything(IterableItem) operation) => IterableChainable(this, identityEach<IterableReturn,IterableItem>(operation));
+    shared default IChainable<FoldResult,Arguments> fold<FoldResult>(FoldResult initial, FoldResult(FoldResult, IterableItem) operation) => Chainable(this, lastParamToFirst(IterableReturn.fold<FoldResult>)(initial)(operation));
 }
 
 "MappingSpreadable actually implemente the mappingfunctionality"
-class IterableChainable<NewReturn, in Arguments, Return, FuncParam>(IInvocable<Return,Arguments> prevCallable, NewReturn(Return) func)
-        extends Chainable<NewReturn,Arguments,Return>(prevCallable, func)
-        satisfies IIterable<NewReturn,Arguments,FuncParam>
-        given NewReturn satisfies {FuncParam*} {}
+class IterableChainable<NewReturn, in Arguments, PrevReturn, NewReturnItem>(IInvocable<PrevReturn,Arguments> prevCallable, NewReturn(PrevReturn) func)
+        extends Chainable<NewReturn,Arguments,PrevReturn>(prevCallable, func)
+        satisfies IIterable<NewReturn,Arguments,NewReturnItem>
+        given NewReturn satisfies {NewReturnItem*} {}
 
 class ChainStartIterable<Return, in Arguments, FuncParam>(Return(Arguments) func)
         extends ChainStart<Return,Arguments>(func)

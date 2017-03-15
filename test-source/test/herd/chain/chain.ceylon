@@ -1,5 +1,4 @@
 
-
 /*
  Test callables should hancle three types:
  T -> Unbounded type (i.e. Integer)
@@ -96,11 +95,20 @@ shared test void testSpreadingComposition() {
 Boolean optionalEquals(Anything first, Anything second) => if (exists first, exists second) then first.equals(second) else (!first exists&& !second exists);
 Boolean iterableEquals({Anything*} it1, {Anything*} it2) => it1.empty && it2.empty || it1.size == it2.size &&optionalEquals(it1.first, it2.first) &&iterableEquals(it1.rest, it2.rest);
 
+Integer sum2(Integer a, Integer b) => a + b;
+
+
 shared test void testIterableComposition() {
-    // Apply stream operations
+    // Apply map operation
     assertTrue(iterableEquals({ 2, 0 }, chainIterable(cTtoI).map(Integer.successor).with(0)), "Iterable composition should be able to map iterable elements");
     //Following is equivalent, but maybe not that clear
     assertTrue(iterableEquals({ 2, 0 }, chain(cTtoI).to(shuffle(Iterable<Integer>.map<Integer>)(Integer.successor)).with(0)), "Iterable composition should be able to map iterable elements");
+
+    // Apply fold operation
+    assertEquals(6, (chainIterable(cTtoI).fold(2, sum2).with(2)), "Iterable composition should be able to fold iterable elements");
+
+    // TODO: Apply each operation
+
 }
 
 
