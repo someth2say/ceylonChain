@@ -4,12 +4,12 @@
  Test callables should hancle three types:
  T -> Unbounded type (i.e. Integer)
  N -> Nullable type (i.e. Integer?)
- S -> Spreadable type (i.e. *Integer)"
+ S -> Spreadable type (i.e. *Integer)
+ I -> Iterable type (i.e. {Integer*}"
 */
 Integer(Integer) cTtoT = Integer.successor;
 Integer?(Integer) cTtoN = (Integer int) => if (int.even) then int.successor else null;
 [Integer, Boolean](Integer) cTtoS = (Integer int) => [int.successor, int.even];
-[Integer, Integer](Integer) cTtoS2 = (Integer int) => [int.successor, int.predecessor];
 
 Integer(Integer?) cNtoT = (Integer? int) => if (exists int) then int.successor else 0;
 Integer?(Integer?) cNtoN = (Integer? int) => if (exists int) then int.successor else null;
@@ -19,6 +19,8 @@ Integer(Integer, Boolean) cStoT = (Integer int, Boolean b) => if (b) then int.su
 Integer?(Integer, Boolean) cStoN = (Integer int, Boolean b) => if (b) then int.successor else null;
 
 [Integer, Boolean](Integer, Boolean) cStoS = (Integer int, Boolean b) => if (b) then [int.successor, b] else [int.successor, b];
+
+{Integer*}(Integer) cTtoI = (Integer int) => { int.successor, int.predecessor };
 
 shared test void testChain() {
     // Chain start and parameter setting
@@ -88,11 +90,17 @@ shared test void testSpreadingComposition() {
     assertEquals([2, true], chainSpreadable(cTtoS).thenSpreadToSpreadable(cStoS).with(0), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([3, false], chainSpreadable(cTtoS).spreadToSpreadable(cStoS).with(1), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([1, true], chainSpreadable(cNtoS).thenSpreadToSpreadable(cStoS).with(null), "Spreadable composition should be able to compose on callables accepting null");
+}
 
+
+Boolean optionalEquals(Anything first, Anything second) => if (exists first, exists second) then first.equals(second) else (!first exists&& !second exists);
+Boolean iterableEquals({Anything*} it1, {Anything*} it2) => it1.empty && it2.empty || it1.size == it2.size &&optionalEquals(it1.first, it2.first) &&iterableEquals(it1.rest, it2.rest);
+
+shared test void testIterableComposition() {
     // Apply stream operations
-    assertEquals(2, chainSpreadable(cTtoS2).map(Integer.even).with(0), "Spreadable composition should be able to compose on callables accepting null");
-
-
+    assertTrue(iterableEquals({ 2, 0 }, chainIterable(cTtoI).map(Integer.successor).with(0)), "Iterable composition should be able to map iterable elements");
+    //Following is equivalent, but maybe not that clear
+    assertTrue(iterableEquals({ 2, 0 }, chain(cTtoI).to(shuffle(Iterable<Integer>.map<Integer>)(Integer.successor)).with(0)), "Iterable composition should be able to map iterable elements");
 }
 
 

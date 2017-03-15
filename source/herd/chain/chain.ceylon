@@ -19,15 +19,17 @@ shared interface IChainable<Return, in Arguments> satisfies IInvocable<Return,Ar
     shared default IChainable<NewReturn,Arguments> \ithen<NewReturn>(NewReturn(Return) newFunc) => Chainable(this, newFunc);
     shared default IOptionable<NewReturn,Arguments> thenOptionally<NewReturn>(NewReturn(Return&Object) newFunc) => Optionable(this, newFunc);
     shared default ISpreadable<NewReturn,Arguments> thenSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => Spreadable(this, newFunc);
+    shared default IIterable<NewReturn,Arguments,FuncReturn> thenIterable<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => IterableChainable(this, newFunc);
 
     shared default IChainable<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => \ithen(newFunc);
     shared default IOptionable<NewReturn,Arguments> optionallyTo<NewReturn>(NewReturn(Return&Object) newFunc) => thenOptionally(newFunc);
     shared default ISpreadable<NewReturn,Arguments> toSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => thenSpreadable(newFunc);
+
 }
 
 "The simplest chaining callable, just calling the previous chaing before calling the function parameter"
 class Chainable<Return, in Arguments, PrevReturn>(IInvocable<PrevReturn,Arguments> prevCallable, Return(PrevReturn) func) satisfies IChainable<Return,Arguments> {
-    shared actual Return with(Arguments arguments) => func(prevCallable.with(arguments));
+    shared actual Return with(Arguments arguments) => let (prevResult = prevCallable.with(arguments)) func(prevResult);
 }
 
 "IOptionable is just a tag interface, separating chaining callables that can return nullable types. "
@@ -50,10 +52,6 @@ shared interface ISpreadable<Return, in Arguments> satisfies IChainable<Return,A
 
 }
 
-shared interface IIterable<Return, in Arguments> satisfies IChainable<{Return*},Arguments> {
-    shared default IIterable<NewReturn,Arguments> map<NewReturn>(NewReturn(Return) operation) => MappingChainable(this, operation);
-}
-
 "Basic class implementing ISpreadable.
  This class actually does nothing but being an ISpreadable, because spreading should be done in the results (handled in next chain step). So `spreadTo` methods actually provide the capability."
 class Spreadable<NewReturn, in Arguments, Return>(IInvocable<Return,Arguments> prevCallable, NewReturn(Return) func)
@@ -68,11 +66,24 @@ class SpreadingChainable<NewReturn, in Arguments, Return>(IInvocable<Return,Argu
     shared actual NewReturn with(Arguments arguments) => let (prevResult = prevCallable.with(arguments)) func(*prevResult);
 }
 
-"MappingSpreadable actually implemente the mappingfunctionality"
-class MappingChainable<NewReturn, in Arguments, Return>(IInvocable<{Return*},Arguments> prevSpreadable, NewReturn(Return) func) satisfies IIterable<NewReturn,Arguments>
+shared interface IIterable<Return, in Arguments, FuncParam> satisfies IChainable<Return,Arguments>
+        given Return satisfies {FuncParam*}
 {
-    shared actual {NewReturn*} with(Arguments arguments) => let (prevResult = prevSpreadable.with(arguments)) prevResult.map(func);
+    shared default IIterable<{FuncReturn*},Arguments,FuncReturn> map<FuncReturn>(FuncReturn(FuncParam) operation) => IterableChainable<{FuncReturn*},Arguments,Return,FuncReturn>(this, shuffle(Return.map<FuncReturn>)(operation));
 }
+
+"MappingSpreadable actually implemente the mappingfunctionality"
+class IterableChainable<NewReturn, in Arguments, Return, FuncParam>(IInvocable<Return,Arguments> prevCallable, NewReturn(Return) func)
+        extends Chainable<NewReturn,Arguments,Return>(prevCallable, func)
+        satisfies IIterable<NewReturn,Arguments,FuncParam>
+        given NewReturn satisfies {FuncParam*} {}
+
+class ChainStartIterable<Return, in Arguments, FuncParam>(Return(Arguments) func)
+        extends ChainStart<Return,Arguments>(func)
+        satisfies IIterable<Return,Arguments,FuncParam>
+        given Return satisfies {FuncParam*} {}
+
+shared IIterable<Return,Arguments,FuncParam> chainIterable<Return, in Arguments, FuncParam>(Return(Arguments) func) given Return satisfies {FuncParam*} => ChainStartIterable(func);
 
 "Like SpreadingChainable, but also provides the spreading capability to the next chain step."
 class SpreadingSpreadable<NewReturn, in Arguments, Return>(IInvocable<Return,Arguments> prevSpreadable, NewReturn(*Return) func) satisfies ISpreadable<NewReturn,Arguments>
@@ -103,6 +114,7 @@ class ChainStartSpread<Return, in Arguments>(Return(Arguments) func) extends Inv
         given Return satisfies Anything[] {
     shared actual Return with(Arguments arguments) => (super of Invocable<Return,Arguments>).with(arguments);
 }
+
 
 "Initial step for a Chaining Callable, but adding spreading capabilities, so result can be spread to next step."
 shared IOptionable<Return,Arguments?> chainOptional<Return, in Arguments>(Return(Arguments&Object) func) => ChainStartOptional<Return,Arguments?>(func);
