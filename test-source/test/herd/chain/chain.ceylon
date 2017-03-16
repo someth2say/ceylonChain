@@ -6,40 +6,15 @@ import ceylon.test {
 
 import herd.chain {
     chain,
-    chain2,
-    chain3,
     chainSpreadable,
     chainOptional,
     chainIterable
 }
-/*
- Test callables should hancle three types:
- T -> Unbounded type (i.e. Integer)
- N -> Nullable type (i.e. Integer?)
- S -> Spreadable type (i.e. *Integer)
- I -> Iterable type (i.e. {Integer*}"
-*/
-Integer(Integer) cTtoT = Integer.successor;
-Integer?(Integer) cTtoN = (Integer int) => if (int.even) then int.successor else null;
-[Integer, Boolean](Integer) cTtoS = (Integer int) => [int.successor, int.even];
-
-Integer(Integer?) cNtoT = (Integer? int) => if (exists int) then int.successor else 0;
-Integer?(Integer?) cNtoN = (Integer? int) => if (exists int) then int.successor else null;
-[Integer, Boolean](Integer?) cNtoS = (Integer? int) => if (exists int) then [int.successor, int.even] else [0, true];
-
-Integer(Integer, Boolean) cStoT = (Integer int, Boolean b) => if (b) then int.successor else int.predecessor;
-Integer?(Integer, Boolean) cStoN = (Integer int, Boolean b) => if (b) then int.successor else null;
-
-[Integer, Boolean](Integer, Boolean) cStoS = (Integer int, Boolean b) => if (b) then [int.successor, b] else [int.successor, b];
-
-{Integer*}(Integer) cTtoI = (Integer int) => { int.successor, int.predecessor };
 
 shared test void testChain() {
     // Chain start and parameter setting
     assertEquals(1, chain(cTtoT).with(0), "Invoking a ChainStart should directly invoke the method on the params");
     assertEquals(0, chain(cNtoT).with(null), "Invoking a ChainStart should directly invoke the method on the params");
-    assertEquals(2, chain2(cTtoT, cTtoT).with(0), "Invoking a ChainStart with two functions");
-    assertEquals(3, chain3(cTtoT, cTtoT, cTtoT).with(0), "Invoking a ChainStart with three functions");
 }
 
 shared test void testChainSpread() {
@@ -53,7 +28,7 @@ shared test void testChainOptional() {
 
     assertEquals(1, chainOptional(cNtoT).with(0), "Optional Chaining callable should be able to start on callables accepting null");
     // This is tricky! As we are using a chainingOptional, cNtoT is not even called despite it accepts null! Hence, null is returned.
-    assertEquals(null, chainOptional(cNtoT).with(null), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(0, chainOptional(cNtoT).with(null), "Optional Chaining callable should be able to start on callables accepting null");
     assertEquals(1, chainOptional(cTtoT).with(0), "Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals(null, chainOptional(cTtoT).with(null), "Optional Chaining callable should be able to start on callables NOT accepting null");
 }
@@ -108,9 +83,6 @@ shared test void testSpreadingComposition() {
 //Boolean optionalEquals(Anything first, Anything second) => if (exists first, exists second) then first.equals(second) else (!first exists&& !second exists);
 //Boolean iterableEquals({Anything*} it1, {Anything*} it2) => it1.empty && it2.empty || it1.size == it2.size &&optionalEquals(it1.first, it2.first) &&iterableEquals(it1.rest, it2.rest);
 
-Integer sum2(Integer a, Integer b) => a + b;
-
-
 shared test void testIterableComposition() {
     // Apply map operation
     //assertTrue(iterableEquals({ 2, 0 }, chainIterable(cTtoI).map(Integer.successor).with(0)), "Iterable composition should be able to map iterable elements");
@@ -118,7 +90,8 @@ shared test void testIterableComposition() {
     //assertTrue(iterableEquals({ 2, 0 }, chain(cTtoI).to(shuffle(Iterable<Integer>.map<Integer>)(Integer.successor)).with(0)), "Iterable composition should be able to map iterable elements");
 
     // Apply fold operation
-    assertEquals(6, (chainIterable(cTtoI).fold(2, sum2).with(2)), "Iterable composition should be able to fold iterable elements");
+
+    assertEquals(6, (chainIterable(cTtoI).fold(2, (Integer a, Integer b) => a + b).with(2)), "Iterable composition should be able to fold iterable elements");
 
     variable Integer accum = 0;
     void addToLocal(Integer p) => accum += p;
@@ -130,6 +103,5 @@ shared test void testIterableComposition() {
     assertEquals([2, 0], chainIterable(cTtoI).collect(identity<Integer>).with(1), "Iterable composition should be able to collect iterable elements");
 
 }
-
 
 
