@@ -6,7 +6,7 @@ shared interface IFwInvocable<out Return>
 }
 
 "Basic implementation for an IInvocable"
-class FwInvocable<out Return, in Arguments>(Return(*Arguments) func, Arguments arguments)
+class FwInvocable<out Return, Arguments>(Return(*Arguments) func, Arguments arguments)
         satisfies IFwInvocable<Return> given Arguments satisfies Anything[]
 {
     shared actual default Return do() => func(*arguments);
@@ -15,7 +15,7 @@ class FwInvocable<out Return, in Arguments>(Return(*Arguments) func, Arguments a
 "Chaining Callable is like a Callable, but adding method chaining functionality.
  If Callable interface were not restricted, we may replace the 'with' method with the invocation operation, and make this class satisfies Callable.
  IChainable offers basic method for chaining callables"
-shared interface IFwChainable<Return, in Arguments> satisfies IFwInvocable<Return> {
+shared interface IFwChainable<Return, Arguments> satisfies IFwInvocable<Return> {
 
     shared default IFwChainable<NewReturn,Arguments> \ithen<NewReturn>(NewReturn(Return) newFunc) => FwChainable(this, newFunc);
     shared default IFwOptionable<NewReturn,Arguments> thenOptionally<NewReturn>(NewReturn(Return&Object) newFunc) => FwOptionable(this, newFunc);
@@ -29,14 +29,14 @@ shared interface IFwChainable<Return, in Arguments> satisfies IFwInvocable<Retur
 }
 
 "The simplest chaining callable, just calling the previous chaing before calling the function parameter"
-class FwChainable<Return, in Arguments, PrevReturn>(IFwInvocable<PrevReturn> prevCallable, Return(PrevReturn) func)
+class FwChainable<Return, Arguments, PrevReturn>(IFwInvocable<PrevReturn> prevCallable, Return(PrevReturn) func)
         satisfies IFwChainable<Return,Arguments> {
     shared actual Return do() => let (prevResult = prevCallable.do()) func(prevResult);
 }
 
 "Initial step for a Chaining Callable. Allow to chain with next step, but adding no extra capabilities"
-shared IFwChainable<Return,Arguments> fwchain<Return, in Arguments>(Return(*Arguments) func, Arguments arguments) given Arguments satisfies Anything[] => FwChainStart(func, arguments);
-class FwChainStart<Return, in Arguments>(Return(*Arguments) func, Arguments arguments)
+shared IFwChainable<Return,Arguments> fwchain<Return, Arguments>(Return(*Arguments) func, Arguments arguments) given Arguments satisfies Anything[] => FwChainStart(func, arguments);
+class FwChainStart<Return, Arguments>(Return(*Arguments) func, Arguments arguments)
         extends FwInvocable<Return, Arguments>( func, arguments)
         satisfies IFwChainable<Return,Arguments>
         given Arguments satisfies Anything[] {}
