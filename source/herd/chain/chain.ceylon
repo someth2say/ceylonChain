@@ -81,9 +81,51 @@ shared Result identityEach<Result, Item>(Anything(Item) step)(Result iterable) g
 shared interface IIterable<IterableReturn, in Arguments, IterableItem> satisfies IChainable<IterableReturn,Arguments>
         given IterableReturn satisfies {IterableItem*}
 {
-    shared default IIterable<{NewReturn*},Arguments,NewReturn> map<NewReturn>(NewReturn(IterableItem) operation) => IterableChainable(this, shuffle(IterableReturn.map<NewReturn>)(operation));
+    //  any
+    //  by
+    //  chain
+    shared default ISpreadable<CollectResult[],Arguments> collect<CollectResult>(CollectResult(IterableItem) collecting) => Spreadable<CollectResult[],Arguments,IterableReturn>(this, shuffle(IterableReturn.collect<CollectResult>)(collecting));
+    //  contains
+    //  count
+    //  defaultNullElements
     shared default IIterable<IterableReturn,Arguments,IterableItem> each(Anything(IterableItem) operation) => IterableChainable(this, identityEach<IterableReturn,IterableItem>(operation));
+    //    every
+    //    filter
+    //    find
+    //    findLast
+    //    flatMap
     shared default IChainable<FoldResult,Arguments> fold<FoldResult>(FoldResult initial, FoldResult(FoldResult, IterableItem) operation) => Chainable(this, lastParamToFirst(IterableReturn.fold<FoldResult>)(initial)(operation));
+    //    follow
+    //    frequencies
+    //    getFromFirst
+    //    group
+    //    indexes
+    //    interpose
+    //    iterator
+    //    locate
+    //    locateLast
+    //    locations
+    //    longerThan
+    shared default IIterable<{NewReturn*},Arguments,NewReturn> map<NewReturn>(NewReturn(IterableItem) operation) => IterableChainable(this, shuffle(IterableReturn.map<NewReturn>)(operation));
+    //    max
+    //    narrow
+    //    partition
+    //    product
+    //    reduce
+    //    repeat
+    //    scan
+    //    select
+    //    sequence
+    //    shorterThan
+    //    skip
+    //    skipWhile
+    //    sort
+    //    spread
+    //    summarize
+    //    tabulate
+    //    take
+    //    takeWhile
+
 }
 
 "MappingSpreadable actually implemente the mappingfunctionality"
