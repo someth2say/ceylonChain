@@ -26,11 +26,11 @@ shared test void testChainSpread() {
 
 shared test void testChainOptional() {
 
-    assertEquals(1, chainOptional(cNtoT).with(0), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(1, chainOptional<Integer?, Integer?, Integer?>(cNtoT).with(0), "1 Optional Chaining callable should be able to start on callables accepting null");
     // This is tricky! As we are using a chainingOptional, cNtoT is not even called despite it accepts null! Hence, null is returned.
-    assertEquals(0, chainOptional(cNtoT).with(null), "Optional Chaining callable should be able to start on callables accepting null");
-    assertEquals(1, chainOptional(cTtoT).with(0), "Optional Chaining callable should be able to start on callables NOT accepting null");
-    assertEquals(null, chainOptional(cTtoT).with(null), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals(0, chainOptional<Integer?, Integer?, Integer?>(cNtoT).with(null), "2 Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(1, chainOptional<Integer?, Integer?, Integer>(cTtoT).with(0), "3 Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals(null, chainOptional<Integer?, Integer?, Integer>(cTtoT).with(null), "4 Optional Chaining callable should be able to start on callables NOT accepting null");
 }
 
 shared test void testSimpleComposition() {
@@ -48,14 +48,14 @@ shared test void testSimpleComposition() {
 shared test void testConditionalComposition() {
 
     // For callables accepting null types
-    assertEquals(2, chain(cTtoN).thenOptionally(cNtoT).with(0), "Conditional composition should be able to compose on callables accepting null");
-    assertEquals(null, chain(cTtoN).optionallyTo(cNtoT).with(1), "Conditional composition should be able to compose on callables accepting null");
-    assertEquals(null, chain(cNtoN).thenOptionally(cNtoT).with(null), "Conditional composition should be able to compose on callables accepting null");
+    assertEquals(2, chain(cTtoN).thenOptionally<Integer?,Integer?>(cNtoT).with(0), "1 Conditional composition should be able to compose on callables accepting null");
+    assertEquals(0, chain(cTtoN).optionallyTo<Integer?,Integer?>(cNtoT).with(1), "2 Conditional composition should be able to compose on callables accepting null");
+    assertEquals(0, chain(cNtoN).thenOptionally<Integer?,Integer?>(cNtoT).with(null), "3 Conditional composition should be able to compose on callables accepting null");
 
     // For callables NOT accepting null types
-    assertEquals(2, chain(cTtoN).thenOptionally(cTtoT).with(0), "Conditional composition should be able to compose on callables not accepting null.");
-    assertEquals(null, chain(cTtoN).optionallyTo(cTtoT).with(1), "Conditional composition should be able to compose on callables not accepting null.");
-    assertEquals(null, chain(cNtoN).thenOptionally(cTtoT).with(null), "Conditional composition should be able to compose on callables not accepting null.");
+    assertEquals(2, chain(cTtoN).thenOptionally<Integer?,Integer>(cTtoT).with(0), "1 Conditional composition should be able to compose on callables not accepting null.");
+    assertEquals(null, chain(cTtoN).optionallyTo<Integer?,Integer>(cTtoT).with(1), "2 Conditional composition should be able to compose on callables not accepting null.");
+    assertEquals(null, chain(cNtoN).thenOptionally<Integer?,Integer>(cTtoT).with(null), "3 Conditional composition should be able to compose on callables not accepting null.");
 }
 
 shared test void testSpreadingComposition() {
@@ -80,23 +80,22 @@ shared test void testSpreadingComposition() {
 }
 
 
-//Boolean optionalEquals(Anything first, Anything second) => if (exists first, exists second) then first.equals(second) else (!first exists&& !second exists);
-//Boolean iterableEquals({Anything*} it1, {Anything*} it2) => it1.empty && it2.empty || it1.size == it2.size &&optionalEquals(it1.first, it2.first) &&iterableEquals(it1.rest, it2.rest);
+Boolean optionalEquals(Anything first, Anything second) => if (exists first, exists second) then first.equals(second) else (!first exists&& !second exists);
+Boolean iterableEquals({Anything*} it1, {Anything*} it2) => it1.empty && it2.empty || it1.size == it2.size &&optionalEquals(it1.first, it2.first) &&iterableEquals(it1.rest, it2.rest);
 
 shared test void testIterableComposition() {
     // Apply map operation
-    //assertTrue(iterableEquals({ 2, 0 }, chainIterable(cTtoI).map(Integer.successor).with(0)), "Iterable composition should be able to map iterable elements");
+    assertTrue(iterableEquals({ 2, 0 }, chainIterable(cTtoI).map(Integer.successor).with(0)), "Iterable composition should be able to map iterable elements");
     //Following is equivalent, but maybe not that clear
-    //assertTrue(iterableEquals({ 2, 0 }, chain(cTtoI).to(shuffle(Iterable<Integer>.map<Integer>)(Integer.successor)).with(0)), "Iterable composition should be able to map iterable elements");
+    assertTrue(iterableEquals({ 2, 0 }, chain(cTtoI).to(shuffle(Iterable<Integer>.map<Integer>)(Integer.successor)).with(0)), "Iterable composition should be able to map iterable elements");
 
     // Apply fold operation
-
     assertEquals(6, (chainIterable(cTtoI).fold(2, (Integer a, Integer b) => a + b).with(2)), "Iterable composition should be able to fold iterable elements");
 
     variable Integer accum = 0;
     void addToLocal(Integer p) => accum += p;
     {Integer*} result = chainIterable(cTtoI).each(addToLocal).with(2);
-//    assertTrue({1,3},result,"Iterable composition should be able to step each element of an iterable");
+    assertTrue(iterableEquals({3,1},result),"Iterable composition should be able to step each element of an iterable: ``result`` `");
     assertEquals(4,accum,"Iterable composition should be able to step each element of an iterable");
 
     // Collect

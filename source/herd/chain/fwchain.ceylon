@@ -17,13 +17,14 @@ class FwInvocable<out Return, Arguments>(Return(*Arguments) func, Arguments argu
  IChainable offers basic method for chaining callables"
 shared interface IFwChainable<Return, Arguments> satisfies IFwInvocable<Return> {
 
-    shared default IFwChainable<NewReturn,Arguments> \ithen<NewReturn>(NewReturn(Return) newFunc) => FwChainable(this, newFunc);
-    shared default IFwOptionable<NewReturn,Arguments> thenOptionally<NewReturn>(NewReturn(Return&Object) newFunc) => FwOptionable(this, newFunc);
-    shared default IFwSpreadable<NewReturn,Arguments> thenSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => FwSpreadable(this, newFunc);
-    shared default IFwIterable<NewReturn,Arguments,FuncReturn> thenIterable<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => FwIterableChainable(this, newFunc);
+    shared default IFwChainable<NewReturn,Arguments> \ithen<NewReturn>(NewReturn(Return) newFunc) => FwChainable<NewReturn,Arguments,Return>(this, newFunc);
+    shared default IFwOptionable<NewReturn|Return,Arguments> thenOptionally<NewReturn,FuncArgs>(NewReturn(FuncArgs) newFunc) => FwOptionable<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
+    shared default IFwSpreadable<NewReturn,Arguments> thenSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => FwSpreadable<NewReturn,Arguments,Return>(this, newFunc);
+    //TODO: Symplify NewReturn
+    shared default IFwIterable<NewReturn,Arguments,FuncReturn> thenIterable<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => FwIterableChainable<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
 
     shared default IFwChainable<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => \ithen(newFunc);
-    shared default IFwOptionable<NewReturn,Arguments> optionallyTo<NewReturn>(NewReturn(Return&Object) newFunc) => thenOptionally(newFunc);
+    shared default IFwOptionable<NewReturn|Return,Arguments> optionallyTo<NewReturn,FuncArgs>(NewReturn(FuncArgs) newFunc) => thenOptionally(newFunc);
     shared default IFwSpreadable<NewReturn,Arguments> toSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => thenSpreadable(newFunc);
 
 }
@@ -36,7 +37,8 @@ class FwChainable<Return, Arguments, PrevReturn>(IFwInvocable<PrevReturn> prevCa
 
 "Initial step for a Chaining Callable. Allow to chain with next step, but adding no extra capabilities"
 shared IFwChainable<Return,Arguments> fwchain<Return, Arguments>(Return(*Arguments) func, Arguments arguments) given Arguments satisfies Anything[] => FwChainStart(func, arguments);
+
 class FwChainStart<Return, Arguments>(Return(*Arguments) func, Arguments arguments)
-        extends FwInvocable<Return, Arguments>( func, arguments)
+        extends FwInvocable<Return,Arguments>(func, arguments)
         satisfies IFwChainable<Return,Arguments>
         given Arguments satisfies Anything[] {}

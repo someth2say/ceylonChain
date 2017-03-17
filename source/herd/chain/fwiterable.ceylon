@@ -1,4 +1,4 @@
-shared interface IFwIterable<IterableReturn, in Arguments, IterableItem> satisfies IFwChainable<IterableReturn,Arguments>
+shared interface IFwIterable<IterableReturn, Arguments, IterableItem> satisfies IFwChainable<IterableReturn,Arguments>
         given IterableReturn satisfies {IterableItem*}
 {
     //  any
@@ -8,13 +8,13 @@ shared interface IFwIterable<IterableReturn, in Arguments, IterableItem> satisfi
     //  contains
     //  count
     //  defaultNullElements
-    shared default IFwIterable<IterableReturn,Arguments,IterableItem> each(Anything(IterableItem) operation) => FwIterableChainable(this, identityEach<IterableReturn,IterableItem>(operation));
+    shared default IFwIterable<IterableReturn,Arguments,IterableItem> each(Anything(IterableItem) operation) => FwIterableChainable<IterableReturn,Arguments,IterableReturn,IterableItem>(this, identityEach<IterableReturn,IterableItem>(operation));
     //    every
     //    filter
     //    find
     //    findLast
     //    flatMap
-    shared default IFwChainable<FoldResult,Arguments> fold<FoldResult>(FoldResult initial, FoldResult(FoldResult, IterableItem) operation) => FwChainable(this, lastParamToFirst(IterableReturn.fold<FoldResult>)(initial)(operation));
+    shared default IFwChainable<FoldResult,Arguments> fold<FoldResult>(FoldResult initial, FoldResult(FoldResult, IterableItem) operation) => FwChainable<FoldResult,Arguments,IterableReturn>(this, lastParamToFirst(IterableReturn.fold<FoldResult>)(initial)(operation));
     //    follow
     //    frequencies
     //    getFromFirst
@@ -26,7 +26,7 @@ shared interface IFwIterable<IterableReturn, in Arguments, IterableItem> satisfi
     //    locateLast
     //    locations
     //    longerThan
-    shared default IFwIterable<{NewReturn*},Arguments,NewReturn> map<NewReturn>(NewReturn(IterableItem) operation) => FwIterableChainable(this, shuffle(IterableReturn.map<NewReturn>)(operation));
+    shared default IFwIterable<{NewReturn*},Arguments,NewReturn> map<NewReturn>(NewReturn(IterableItem) operation) => FwIterableChainable<{NewReturn*},Arguments,IterableReturn,NewReturn>(this, shuffle(IterableReturn.map<NewReturn>)(operation));
     //    max
     //    narrow
     //    partition
@@ -58,16 +58,16 @@ shared interface IFwIterable<IterableReturn, in Arguments, IterableItem> satisfi
 
 
 "MappingSpreadable actually implemente the mappingfunctionality"
-class FwIterableChainable<NewReturn, in Arguments, PrevReturn, NewReturnItem>(IFwInvocable<PrevReturn> prevCallable, NewReturn(PrevReturn) func)
+class FwIterableChainable<NewReturn, Arguments, PrevReturn, NewReturnItem>(IFwInvocable<PrevReturn> prevCallable, NewReturn(PrevReturn) func)
         extends FwChainable<NewReturn,Arguments,PrevReturn>(prevCallable, func)
         satisfies IFwIterable<NewReturn,Arguments,NewReturnItem>
         given NewReturn satisfies {NewReturnItem*} {}
 
-class FwChainStartIterable<Return, in Arguments, FuncParam>(Return(*Arguments) func, Arguments arguments)
+class FwChainStartIterable<Return, Arguments, FuncParam>(Return(*Arguments) func, Arguments arguments)
         extends FwChainStart<Return,Arguments>(func, arguments)
         satisfies IFwIterable<Return,Arguments,FuncParam>
         given Return satisfies {FuncParam*}
         given Arguments satisfies Anything[] {}
 
-shared IFwIterable<Return,Arguments,FuncParam> fwchainIterable<Return, in Arguments, FuncParam>(Return(*Arguments) func, Arguments arguments) given Return satisfies {FuncParam*}
+shared IFwIterable<Return,Arguments,FuncParam> fwchainIterable<Return, Arguments, FuncParam>(Return(*Arguments) func, Arguments arguments) given Return satisfies {FuncParam*}
         given Arguments satisfies Anything[] => FwChainStartIterable(func, arguments);

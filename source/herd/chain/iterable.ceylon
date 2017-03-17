@@ -1,5 +1,5 @@
 
-shared interface IIterable<IterableReturn, in Arguments, IterableItem> satisfies IChainable<IterableReturn,Arguments>
+shared interface IIterable<IterableReturn, Arguments, IterableItem> satisfies IChainable<IterableReturn,Arguments>
         given IterableReturn satisfies {IterableItem*}
 {
     //  any
@@ -59,14 +59,14 @@ Result identityEach<Result, Item>(Anything(Item) step)(Result iterable) given Re
 
 
 "MappingSpreadable actually implemente the mappingfunctionality"
-class IterableChainable<NewReturn, in Arguments, PrevReturn, NewReturnItem>(IInvocable<PrevReturn,Arguments> prevCallable, NewReturn(PrevReturn) func)
+class IterableChainable<NewReturn, Arguments, PrevReturn, NewReturnItem>(IInvocable<PrevReturn,Arguments> prevCallable, NewReturn(PrevReturn) func)
         extends Chainable<NewReturn,Arguments,PrevReturn>(prevCallable, func)
         satisfies IIterable<NewReturn,Arguments,NewReturnItem>
         given NewReturn satisfies {NewReturnItem*} {}
 
-class ChainStartIterable<Return, in Arguments, FuncParam>(Return(Arguments) func)
+class ChainStartIterable<Return, Arguments, FuncParam>(Return(Arguments) func)
         extends ChainStart<Return,Arguments>(func)
         satisfies IIterable<Return,Arguments,FuncParam>
         given Return satisfies {FuncParam*} {}
 
-shared IIterable<Return,Arguments,FuncParam> chainIterable<Return, in Arguments, FuncParam>(Return(Arguments) func) given Return satisfies {FuncParam*} => ChainStartIterable(func);
+shared IIterable<Return,Arguments,FuncParam> chainIterable<Return, Arguments, FuncParam>(Return(Arguments) func) given Return satisfies {FuncParam*} => ChainStartIterable(func);

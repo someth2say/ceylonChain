@@ -1,7 +1,7 @@
 import ceylon.test {
     test,
-    assertEquals,
-    assertTrue
+    assertEquals
+//    , assertTrue
 }
 
 import herd.chain {
@@ -29,7 +29,7 @@ shared test void testFwChainOptional() {
     // This is tricky! As we are using a chainingOptional, cNtoT is not even called despite it accepts null! Hence, null is returned.
     assertEquals(0, fwChainOptional(cNtoT,[null]).do(), "Optional Chaining callable should be able to start on callables accepting null ----");
     assertEquals(1, fwChainOptional(cTtoT,[0]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
-    assertEquals(null, fwChainOptional(cTtoT,[null]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals([null], fwChainOptional(cTtoT,[null]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
 }
 
 shared test void testFwSimpleComposition() {
@@ -48,8 +48,8 @@ shared test void testFwConditionalComposition() {
 
     // For callables accepting null types
     assertEquals(2, fwchain(cTtoN,[0]).thenOptionally(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
-    assertEquals(null, fwchain(cTtoN,[1]).optionallyTo(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
-    assertEquals(null, fwchain(cNtoN,[null]).thenOptionally(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
+    assertEquals(0, fwchain(cTtoN,[1]).optionallyTo(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
+    assertEquals(0, fwchain(cNtoN,[null]).thenOptionally(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
 
     // For callables NOT accepting null types
     assertEquals(2, fwchain(cTtoN,[0]).thenOptionally(cTtoT).do(), "Conditional composition should be able to compose on callables not accepting null.");
