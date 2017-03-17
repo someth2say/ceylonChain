@@ -27,9 +27,11 @@ shared test void testChainSpread() {
 
 shared test void testChainOptional() {
     assertEquals(1, chainOptional(cNtoT, [0]).do(), "Optional Chaining callable should be able to start on callables accepting null");
-    assertEquals(0, chainOptional(cNtoT, [null]).do(), "Optional Chaining callable should be able to start on callables accepting null ----");
+    assertEquals(0, chainOptional(cNtoT, [null]).do(), "Optional Chaining callable should be able to start on callables accepting null");
     assertEquals(1, chainOptional(cTtoT, [0]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals([null], chainOptional(cTtoT, [null]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals(["invalid"], chainOptional(cTtoT, ["invalid"]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals([0,"invalid"], chainOptional(cTtoT, [0,"invalid"]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
 }
 
 shared test void testSimpleComposition() {

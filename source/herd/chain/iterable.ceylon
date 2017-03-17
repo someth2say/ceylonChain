@@ -3,23 +3,23 @@ import herd.chain {
     lastParamToFirst
 }
 
-shared interface IIterable<IterableReturn, Arguments, IterableItem> satisfies IChainable<IterableReturn,Arguments>
-        given IterableReturn satisfies {IterableItem*}
+shared interface IIterable<Return, Arguments, Element> satisfies IChainable<Return,Arguments>
+        given Return satisfies {Element*}
 {
-    //  any
-    //  by
+    shared default IChainable<Boolean,Arguments> any(Boolean(Element) operation) => Chainable<Boolean,Arguments,Return>(this, shuffle(Return.any)(operation));
+    shared default IIterable<{Element*},Arguments,Element> by(Integer step) => IterableChainable<{Element*},Arguments,Return,Element>(this, shuffle(Return.by)(step));
     //  chain
-    shared default ISpreadable<CollectResult[],Arguments> collect<CollectResult>(CollectResult(IterableItem) collecting) => Spreadable<CollectResult[],Arguments,IterableReturn>(this, shuffle(IterableReturn.collect<CollectResult>)(collecting));
+    shared default ISpreadable<CollectResult[],Arguments> collect<CollectResult>(CollectResult(Element) collecting) => Spreadable<CollectResult[],Arguments,Return>(this, shuffle(Return.collect<CollectResult>)(collecting));
     //  contains
     //  count
     //  defaultNullElements
-    shared default IIterable<IterableReturn,Arguments,IterableItem> each(Anything(IterableItem) operation) => IterableChainable<IterableReturn,Arguments,IterableReturn,IterableItem>(this, identityEach<IterableReturn,IterableItem>(operation));
-    //    every
-    //    filter
+    shared default IIterable<Return,Arguments,Element> each(Anything(Element) operation) => IterableChainable<Return,Arguments,Return,Element>(this, identityEach<Return,Element>(operation));
+    shared default IChainable<Boolean,Arguments> every(Boolean(Element) operation) => Chainable<Boolean,Arguments,Return>(this, shuffle(Return.every)(operation));
+    shared default IIterable<{Element*},Arguments,Element> filter(Boolean(Element) operation) => IterableChainable<{Element*},Arguments,Return,Element>(this, shuffle(Return.filter)(operation));
     //    find
     //    findLast
     //    flatMap
-    shared default IChainable<FoldResult,Arguments> fold<FoldResult>(FoldResult initial, FoldResult(FoldResult, IterableItem) operation) => Chainable<FoldResult,Arguments,IterableReturn>(this, lastParamToFirst(IterableReturn.fold<FoldResult>)(initial)(operation));
+    shared default IChainable<NewResult,Arguments> fold<NewResult>(NewResult initial, NewResult(NewResult, Element) operation) => Chainable<NewResult,Arguments,Return>(this, lastParamToFirst(Return.fold<NewResult>)(initial)(operation));
     //    follow
     //    frequencies
     //    getFromFirst
@@ -31,7 +31,7 @@ shared interface IIterable<IterableReturn, Arguments, IterableItem> satisfies IC
     //    locateLast
     //    locations
     //    longerThan
-    shared default IIterable<{NewReturn*},Arguments,NewReturn> map<NewReturn>(NewReturn(IterableItem) operation) => IterableChainable<{NewReturn*},Arguments,IterableReturn,NewReturn>(this, shuffle(IterableReturn.map<NewReturn>)(operation));
+    shared default IIterable<{NewReturn*},Arguments,NewReturn> map<NewReturn>(NewReturn(Element) operation) => IterableChainable<{NewReturn*},Arguments,Return,NewReturn>(this, shuffle(Return.map<NewReturn>)(operation));
     //    max
     //    narrow
     //    partition
@@ -52,15 +52,6 @@ shared interface IIterable<IterableReturn, Arguments, IterableItem> satisfies IC
     //    takeWhile
 
 }
-
-//
-//Result(Third)(First)(Second) lastParamToFirst<Result, First, Second, Third>(Result(First)(Second)(Third) func) => (Second s)(First f)(Third t) => func(t)(s)(f);
-//
-//Result identityEach<Result, Item>(Anything(Item) step)(Result iterable) given Result satisfies {Item*} {
-//    iterable.each(step);
-//    return iterable;
-//}
-
 
 "MappingSpreadable actually implemente the mappingfunctionality"
 class IterableChainable<NewReturn, Arguments, PrevReturn, NewReturnItem>(IInvocable<PrevReturn> prevCallable, NewReturn(PrevReturn) func)
