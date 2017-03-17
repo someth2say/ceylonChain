@@ -3,7 +3,6 @@ shared interface IInvocable<out Return, Arguments>
 {
     "Actually invoke the callable with specified arguments."
     shared formal Return with(Arguments arguments) ;
-
 }
 
 "Basic implementation for an IInvocable"

@@ -4,7 +4,7 @@ import ceylon.test {
     assertTrue
 }
 
-import herd.chain {
+import herd.chain.fw {
     fwchain,
     fwChainSpreadable,
     fwChainOptional,

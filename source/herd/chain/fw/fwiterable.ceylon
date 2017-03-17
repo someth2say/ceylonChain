@@ -1,3 +1,8 @@
+import herd.chain {
+    identityEach,
+    lastParamToFirst
+}
+
 shared interface IFwIterable<IterableReturn, Arguments, IterableItem> satisfies IFwChainable<IterableReturn,Arguments>
         given IterableReturn satisfies {IterableItem*}
 {
