@@ -20,7 +20,6 @@ shared interface IChainable<Return, Arguments> satisfies IInvocable<Return> {
     shared default IChainable<NewReturn,Arguments> \ithen<NewReturn>(NewReturn(Return) newFunc) => Chainable<NewReturn,Arguments,Return>(this, newFunc);
     shared default IOptionable<NewReturn|Return,Arguments> thenOptionally<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => Optionable<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
     shared default ISpreadable<NewReturn,Arguments> thenSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => Spreadable<NewReturn,Arguments,Return>(this, newFunc);
-    //TODO: Symplify NewReturn
     shared default IIterable<NewReturn,Arguments,FuncReturn> thenIterable<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => IterableChainable<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
 
     shared default IChainable<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => \ithen(newFunc);
