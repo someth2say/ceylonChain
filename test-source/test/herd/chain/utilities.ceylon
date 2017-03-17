@@ -19,3 +19,8 @@ Integer?(Integer, Boolean) cStoN = (Integer int, Boolean b) => if (b) then int.s
 [Integer, Boolean](Integer, Boolean) cStoS = (Integer int, Boolean b) => if (b) then [int.successor, b] else [int.successor, b];
 
 {Integer*}(Integer) cTtoI = (Integer int) => { int.successor, int.predecessor };
+
+
+/* Utility methods */
+Boolean optionalEquals(Anything first, Anything second) => if (exists first, exists second) then first.equals(second) else (!first exists&& !second exists);
+Boolean iterableEquals({Anything*} it1, {Anything*} it2) => it1.empty && it2.empty || it1.size == it2.size &&optionalEquals(it1.first, it2.first) &&iterableEquals(it1.rest, it2.rest);

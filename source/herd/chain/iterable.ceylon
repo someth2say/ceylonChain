@@ -50,13 +50,6 @@ shared interface IIterable<IterableReturn, Arguments, IterableItem> satisfies IC
 }
 
 
-Result(Third)(First)(Second) lastParamToFirst<Result, First, Second, Third>(Result(First)(Second)(Third) func) => (Second s)(First f)(Third t) => func(t)(s)(f);
-
-Result identityEach<Result, Item>(Anything(Item) step)(Result iterable) given Result satisfies {Item*} {
-    iterable.each(step);
-    return iterable;
-}
-
 
 "MappingSpreadable actually implemente the mappingfunctionality"
 class IterableChainable<NewReturn, Arguments, PrevReturn, NewReturnItem>(IInvocable<PrevReturn,Arguments> prevCallable, NewReturn(PrevReturn) func)

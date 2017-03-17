@@ -4,7 +4,7 @@ shared interface IFwIterable<IterableReturn, Arguments, IterableItem> satisfies 
     //  any
     //  by
     //  chain
-//    shared default IFwSpreadable<CollectResult[],Arguments> collect<CollectResult>(CollectResult(IterableItem) collecting) => Spreadable<CollectResult[],Arguments,IterableReturn>(this, shuffle(IterableReturn.collect<CollectResult>)(collecting));
+    shared default IFwSpreadable<CollectResult[],Arguments> collect<CollectResult>(CollectResult(IterableItem) collecting) => FwSpreadable<CollectResult[],Arguments,IterableReturn>(this, shuffle(IterableReturn.collect<CollectResult>)(collecting));
     //  contains
     //  count
     //  defaultNullElements

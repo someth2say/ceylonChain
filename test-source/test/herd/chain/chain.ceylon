@@ -15,6 +15,8 @@ shared test void testChain() {
     // Chain start and parameter setting
     assertEquals(1, chain(cTtoT).with(0), "Invoking a ChainStart should directly invoke the method on the params");
     assertEquals(0, chain(cNtoT).with(null), "Invoking a ChainStart should directly invoke the method on the params");
+    assertEquals([2, true], chain(cStoS).with([1, true]), "Invoking a ChainStart with multiple parameters");
+
 }
 
 shared test void testChainSpread() {
@@ -25,9 +27,7 @@ shared test void testChainSpread() {
 }
 
 shared test void testChainOptional() {
-
     assertEquals(1, chainOptional<Integer?, Integer?, Integer?>(cNtoT).with(0), "1 Optional Chaining callable should be able to start on callables accepting null");
-    // This is tricky! As we are using a chainingOptional, cNtoT is not even called despite it accepts null! Hence, null is returned.
     assertEquals(0, chainOptional<Integer?, Integer?, Integer?>(cNtoT).with(null), "2 Optional Chaining callable should be able to start on callables accepting null");
     assertEquals(1, chainOptional<Integer?, Integer?, Integer>(cTtoT).with(0), "3 Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals(null, chainOptional<Integer?, Integer?, Integer>(cTtoT).with(null), "4 Optional Chaining callable should be able to start on callables NOT accepting null");
@@ -78,10 +78,6 @@ shared test void testSpreadingComposition() {
     assertEquals([3, false], chainSpreadable(cTtoS).spreadToSpreadable(cStoS).with(1), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([1, true], chainSpreadable(cNtoS).thenSpreadToSpreadable(cStoS).with(null), "Spreadable composition should be able to compose on callables accepting null");
 }
-
-
-Boolean optionalEquals(Anything first, Anything second) => if (exists first, exists second) then first.equals(second) else (!first exists&& !second exists);
-Boolean iterableEquals({Anything*} it1, {Anything*} it2) => it1.empty && it2.empty || it1.size == it2.size &&optionalEquals(it1.first, it2.first) &&iterableEquals(it1.rest, it2.rest);
 
 shared test void testIterableComposition() {
     // Apply map operation
