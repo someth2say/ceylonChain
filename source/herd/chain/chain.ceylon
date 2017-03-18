@@ -12,15 +12,16 @@ class Invocable<out Return, Arguments>(Return(*Arguments) func, Arguments argume
     shared actual default Return do() => func(*arguments);
 }
 
-"Chaining Callable is like a Callable, but adding method chaining functionality.
- IChainable offers basic method for chaining callables"
-shared interface IChainable<Return, Arguments> satisfies IInvocable<Return> {
-
-    shared default IChainable<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => Chain<NewReturn,Arguments,Return>(this, newFunc);
+shared interface IChainTypes<Return,Arguments> satisfies IInvocable<Return> {
     shared default ITrying<NewReturn|Return,Arguments> \itry<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => Trying<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
     shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => Spreading<NewReturn,Arguments,Return>(this, newFunc);
     shared default IIterable<NewReturn,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => Iterating<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
+}
 
+"Chaining Callable is like a Callable, but adding method chaining functionality.
+ IChainable offers basic method for chaining callables"
+shared interface IChainable<Return, Arguments> satisfies IChainTypes<Return,Arguments> {
+    shared default IChainable<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => Chain<NewReturn,Arguments,Return>(this, newFunc);
 }
 
 "The simplest chaining callable, just calling the previous chaing before calling the function parameter"
