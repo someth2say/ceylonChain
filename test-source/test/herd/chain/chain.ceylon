@@ -25,16 +25,16 @@ shared test void testChainSpread() {
     assertEquals([0, true], spread(cNtoS, [null]).do(), "Invoking a ChainStart Spread should directly invoke the method on the params");
 }
 
-shared test void testtrying() {
-    assertEquals(1, trying(cNtoT, [0]).do(), "Optional Chaining callable should be able to start on callables accepting null");
-    assertEquals(0, trying(cNtoT, [null]).do(), "Optional Chaining callable should be able to start on callables accepting null");
-    assertEquals(1, trying(cTtoT, [0]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
-    assertEquals([null], trying(cTtoT, [null]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
-    assertEquals(["invalid"], trying(cTtoT, ["invalid"]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
-    assertEquals([0,"invalid"], trying(cTtoT, [0,"invalid"]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
+shared test void testTrying() {
+    assertEquals(1, \itry(cNtoT, [0]).do(), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(0, \itry(cNtoT, [null]).do(), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(1, \itry(cTtoT, [0]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals([null], \itry(cTtoT, [null]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals(["invalid"], \itry(cTtoT, ["invalid"]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals([0,"invalid"], \itry(cTtoT, [0,"invalid"]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
 }
 
-shared test void testSimpleComposition() {
+shared test void testChainTo() {
     assertEquals(2, chain(cTtoT, [0]).to(cTtoT).do(), "Chained callables should be equivalent to invonking those callables in the opposing order.");
     assertEquals(1, chain(cNtoT, [null]).to(cTtoT).do(), "Chained callables should be equivalent to invonking those callables in the opposing order.");
     assertEquals(0, chain(cNtoN, [null]).to(cNtoT).do(), "Chained callables should be equivalent to invonking those callables in the opposing order.");
@@ -46,7 +46,7 @@ shared test void testSimpleComposition() {
     assertEquals([3, true], chain(cTtoT, [1]).to(cTtoS).do(), "Chained callables should be equivalent to invonking those callables in the opposing order.");
 }
 
-shared test void testConditionalComposition() {
+shared test void testChainTry() {
     // For callables accepting null types
     assertEquals(2, chain(cTtoN, [0]).\itry(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
     assertEquals(0, chain(cTtoN, [1]).\itry(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
@@ -58,7 +58,7 @@ shared test void testConditionalComposition() {
     assertEquals(null, chain(cNtoN, [null]).\itry(cTtoT).do(), "Conditional composition should be able to compose on callables not accepting null.");
 }
 
-shared test void testSpreadingComposition() {
+shared test void testSpread() {
     //Starting from an spreadable
     assertEquals(2, spread(cTtoS, [0]).to(cStoT).do(), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals(1, spread(cTtoS, [1]).to(cStoT).do(), "Spreadable composition should be able to compose on callables accepting null");
@@ -79,19 +79,19 @@ shared test void testSpreadingComposition() {
     assertEquals([1, true], spread(cNtoS, [null]).keepSpreading(cStoS).do(), "Spreadable composition should be able to compose on callables accepting null");
 }
 
-shared test void testIterableComposition() {
+shared test void testIterate() {
+    assertTrue(iterableEquals({ 3, 1 },chain(cTtoT,[1]).iterate(cTtoI).do()),"Iterable composition after a chain");
     // Apply map operation
     assertTrue(iterableEquals({ 2, 0 }, iterate(cTtoI, [0]).map(Integer.successor).do()), "Iterable composition should be able to map iterable elements");
     //Following is equivalent, but maybe not that clear
-    assertTrue(iterableEquals({ 2, 0 }, chain(cTtoI, [0]).to(shuffle(Iterable<Integer>.map<Integer>)(Integer.successor)).do()), "Iterable composition should be able to map iterable elements");
+    //assertTrue(iterableEquals({ 2, 0 }, chain(cTtoI, [0]).to(shuffle(Iterable<Integer>.map<Integer>)(Integer.successor)).do()), "Iterable composition should be able to map iterable elements");
 
     // Apply fold operation
-    Integer sum2(Integer a, Integer b) => a + b;
-    assertEquals(6, (iterate(cTtoI, [2]).fold(2, sum2).do()), "Iterable composition should be able to fold iterable elements");
+
+    assertEquals(6, (iterate(cTtoI, [2]).fold(2, (Integer a, Integer b) => a + b).do()), "Iterable composition should be able to fold iterable elements");
 
     variable Integer accum = 0;
-    void addToLocal(Integer p) => accum += p;
-    {Integer*} result = iterate(cTtoI, [2]).each(addToLocal).do();
+    {Integer*} result = iterate(cTtoI, [2]).each((Integer p) => accum += p).do();
     assertTrue(iterableEquals({3,1},result),"Iterable composition should be able to step each element of an iterable");
     assertEquals(4, accum, "Iterable composition should be able to step each element of an iterable");
 

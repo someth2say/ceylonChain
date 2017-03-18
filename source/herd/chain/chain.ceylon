@@ -13,14 +13,14 @@ shared interface IChaining<Return, Arguments> satisfies IInvocable<Return>{
 
 "The simplest chaining callable, just calling the previous chaing before calling the function parameter"
 class Chaining<Return, Arguments, PrevReturn>(IInvocable<PrevReturn> prevCallable, Return(PrevReturn) func)
-        satisfies IChaining<Return,Arguments>&IChainToOthers<Return, Arguments> {
-    shared actual Return do() => let (prevResult = prevCallable.do()) func(prevResult);
-}
+        extends InvocableChain<Return,PrevReturn>(prevCallable, func)
+        satisfies IChaining<Return,Arguments>&IChainToOthers<Return, Arguments>{}
 
 "Initial step for a Chaining Callable. Allow to chain with next step, but adding no extra capabilities"
-shared IChaining<Return,Arguments>&IChainToOthers<Return, Arguments> chain<Return, Arguments>(Return(*Arguments) func, Arguments arguments) given Arguments satisfies Anything[] => ChainingStart(func, arguments);
+shared IChaining<Return,Arguments>&IChainToOthers<Return, Arguments> chain<Return, Arguments>(Return(*Arguments) func, Arguments arguments)
+        given Arguments satisfies Anything[] => ChainingStart(func, arguments);
 
 class ChainingStart<Return, Arguments>(Return(*Arguments) func, Arguments arguments)
-        extends Invocable<Return,Arguments>(func, arguments)
+        extends InvocableStart<Return,Arguments>(func, arguments)
         satisfies  IChaining<Return,Arguments>&IChainToOthers<Return, Arguments>
         given Arguments satisfies Anything[] {}

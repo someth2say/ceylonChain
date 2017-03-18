@@ -8,7 +8,7 @@ class Trying<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, Ne
 }
 
 "Initial step for a Chaining Callable, but adding spreading capabilities, so result can be spread to next step."
-shared ITrying<Return|OtherArgs,Arguments> trying<Return, Arguments, OtherArgs>(Return(*Arguments) func, OtherArgs arguments)
+shared ITrying<Return|OtherArgs,Arguments> \itry<Return, Arguments, OtherArgs>(Return(*Arguments) func, OtherArgs arguments)
         given Arguments satisfies Anything[]
         => TryingStart<Return|OtherArgs,Arguments,OtherArgs>(func, arguments);
 
