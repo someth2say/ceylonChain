@@ -13,23 +13,18 @@ class Invocable<out Return, Arguments>(Return(*Arguments) func, Arguments argume
 }
 
 "Chaining Callable is like a Callable, but adding method chaining functionality.
- If Callable interface were not restricted, we may replace the 'with' method with the invocation operation, and make this class satisfies Callable.
  IChainable offers basic method for chaining callables"
 shared interface IChainable<Return, Arguments> satisfies IInvocable<Return> {
 
-    shared default IChainable<NewReturn,Arguments> \ithen<NewReturn>(NewReturn(Return) newFunc) => Chainable<NewReturn,Arguments,Return>(this, newFunc);
-    shared default IOptionable<NewReturn|Return,Arguments> thenOptionally<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => Optionable<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
-    shared default ISpreadable<NewReturn,Arguments> thenSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => Spreadable<NewReturn,Arguments,Return>(this, newFunc);
-    shared default IIterable<NewReturn,Arguments,FuncReturn> thenIterable<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => IterableChainable<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
-
-    shared default IChainable<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => \ithen(newFunc);
-    shared default IOptionable<NewReturn|Return,Arguments> optionallyTo<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => thenOptionally(newFunc);
-    shared default ISpreadable<NewReturn,Arguments> toSpreadable<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => thenSpreadable(newFunc);
+    shared default IChainable<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => Chain<NewReturn,Arguments,Return>(this, newFunc);
+    shared default ITrying<NewReturn|Return,Arguments> \itry<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => Trying<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
+    shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => Spreading<NewReturn,Arguments,Return>(this, newFunc);
+    shared default IIterable<NewReturn,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => Iterating<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
 
 }
 
 "The simplest chaining callable, just calling the previous chaing before calling the function parameter"
-class Chainable<Return, Arguments, PrevReturn>(IInvocable<PrevReturn> prevCallable, Return(PrevReturn) func)
+class Chain<Return, Arguments, PrevReturn>(IInvocable<PrevReturn> prevCallable, Return(PrevReturn) func)
         satisfies IChainable<Return,Arguments> {
     shared actual Return do() => let (prevResult = prevCallable.do()) func(prevResult);
 }
