@@ -1,9 +1,19 @@
 "IOptionable is just a tag interface, separating chaining callables that can return nullable types. "
 shared interface IProbing<Return, Arguments> satisfies IInvocable<Return|Arguments> {
-    shared default IChaining<Return|Arguments,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => Chaining<Return|Arguments,Arguments,Return>(this, newFunc);
-    shared default IProbing<Return|Arguments,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => Probing<Return|Arguments,Arguments,Return,FuncArgs>(this, newFunc);
-    shared default ISpreading<Return|Arguments,Arguments> spread<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => Spreading<Return|Arguments,Arguments,Return>(this, newFunc);
-    shared default IIterating<Return|Arguments,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => Iterating<Return|Arguments,Arguments,Return,FuncReturn>(this, newFunc);
+
+    shared default IChaining<NewReturn,Arguments> to<NewReturn>(NewReturn(Return|Arguments) newFunc)
+            => Chaining<NewReturn,Arguments,Return|Arguments>(this, newFunc);
+
+    shared default IProbing<NewReturn|FuncArgs|Return|Arguments,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
+            => Probing<NewReturn|FuncArgs,Arguments,Return|Arguments,FuncArgs>(this, newFunc);
+
+    shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return|Arguments) newFunc)
+            given NewReturn satisfies [Anything*]
+            => Spreading<NewReturn,Arguments,Return|Arguments>(this, newFunc);
+
+    shared default IIterating<NewReturn,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return|Arguments) newFunc)
+            given NewReturn satisfies {FuncReturn*}
+            => Iterating<NewReturn,Arguments,Return|Arguments,FuncReturn>(this, newFunc);
 }
 
 "Basic class implementing IOptionable. Optionable actually implements the existence checking capability."
@@ -13,13 +23,13 @@ class Probing<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, N
 }
 
 "Initial step for a Chaining Callable, but adding spreading capabilities, so result can be spread to next step."
-shared IProbing<Return|OtherArgs,Arguments> probe<Return, Arguments, OtherArgs>(Return(*Arguments) func, OtherArgs arguments)
+shared IProbing<Return|GivenArgs,Arguments> probe<Return, Arguments, GivenArgs>(Return(Arguments) func, GivenArgs arguments)
+//        given Arguments satisfies Anything[]
+        => ProbingStart<Return|GivenArgs,Arguments,GivenArgs>(func, arguments);
 
-        given Arguments satisfies Anything[]
-        => ProbingStart<Return|OtherArgs,Arguments,OtherArgs>(func, arguments);
-
-class ProbingStart<Return, Arguments, FuncArgs>(Return(*Arguments) func, FuncArgs arguments)
+class ProbingStart<Return, Arguments, FuncArgs>(Return(Arguments) func, FuncArgs arguments)
         satisfies IProbing<Return|FuncArgs,Arguments>
-        given Arguments satisfies Anything[] {
-    shared actual Return|FuncArgs do() => if (exists arguments, is Arguments arguments) then func(*arguments) else arguments;
+//        given Arguments satisfies Anything[]
+{
+    shared actual Return|FuncArgs do() => if (is Arguments arguments) then func(arguments) else arguments;
 }

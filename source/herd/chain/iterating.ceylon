@@ -72,12 +72,15 @@ class Iterating<NewReturn, Arguments, PrevReturn, NewReturnItem>(IInvocable<Prev
 satisfies IIterating<NewReturn,Arguments,NewReturnItem>
         given NewReturn satisfies {NewReturnItem*} {}
 
-class IteratingStart<Return, Arguments, FuncParam>(Return(*Arguments) func, Arguments arguments)
+class IteratingStart<Return, Arguments, FuncParam>(Return(Arguments) func, Arguments arguments)
         extends InvocableStart<Return,Arguments>(func, arguments)
         satisfies IIterating<Return,Arguments,FuncParam>
         given Return satisfies {FuncParam*}
-        given Arguments satisfies Anything[] {}
+//        given Arguments satisfies Anything[]
+{}
 
 "Iterable start"
-shared IIterating<Return,Arguments,FuncParam> iterate<Return, Arguments, FuncParam>(Return(*Arguments) func, Arguments arguments) given Return satisfies {FuncParam*}
-        given Arguments satisfies Anything[] => IteratingStart(func, arguments);
+shared IIterating<Return,Arguments,FuncParam> iterate<Return, Arguments, FuncParam>(Return(Arguments) func, Arguments arguments)
+        given Return satisfies {FuncParam*}
+//        given Arguments satisfies Anything[]
+        => IteratingStart(func, arguments);

@@ -11,7 +11,7 @@
  But this is clearly unclear as A) it reverses the order of operations, and B) it add a lot of seamless parens.
  So, while headfish operators family is not available, it can be simulated with this library.
 
-    chain(step1).then(step2)...then(stepN).with(init).
+    chain(step1,[init]).to(step2)...to(stepN).do().
  "
 by ("Jordi Sola")
 module herd.chain "1.1.1" {}

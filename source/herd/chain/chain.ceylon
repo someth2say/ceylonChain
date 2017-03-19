@@ -14,10 +14,12 @@ class Chaining<Return, Arguments, PrevReturn>(IInvocable<PrevReturn> prev, Retur
         satisfies IChaining<Return,Arguments>{}
 
 "Initial step for a Chaining Callable. Allow to chain with next step, but adding no extra capabilities"
-shared IChaining<Return,Arguments> chain<Return, Arguments>(Return(*Arguments) func, Arguments arguments)
-        given Arguments satisfies Anything[] => ChainingStart(func, arguments);
+shared IChaining<Return,Arguments> chain<Return, Arguments>(Return(Arguments) func, Arguments arguments)
+//        given Arguments satisfies Anything[]
+        => ChainingStart(func, arguments);
 
-class ChainingStart<Return, Arguments>(Return(*Arguments) func, Arguments arguments)
+class ChainingStart<Return, Arguments>(Return(Arguments) func, Arguments arguments)
         extends InvocableStart<Return,Arguments>(func, arguments)
         satisfies  IChaining<Return,Arguments>
-        given Arguments satisfies Anything[] {}
+//        given Arguments satisfies Anything[]
+{}

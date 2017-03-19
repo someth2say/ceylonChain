@@ -7,10 +7,11 @@ shared interface IInvocable<out Return>
 
 "Basic implementation for an IInvocable start of chain.
  Note that will ALWAYS spread input arguments"
-abstract class InvocableStart<out Return, Arguments>(Return(*Arguments) func, Arguments arguments)
-        satisfies IInvocable<Return> given Arguments satisfies Anything[]
+abstract class InvocableStart<out Return, Arguments>(Return(Arguments) func, Arguments arguments)
+        satisfies IInvocable<Return>
+//        given Arguments satisfies Anything[]
 {
-    shared actual default Return do() => func(*arguments);
+    shared actual default Return do() => func(arguments);
 }
 
 "Basic implementation for an IInvocable chain step."
