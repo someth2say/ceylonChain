@@ -4,9 +4,14 @@ import herd.chain {
 }
 
 "Interface for a chain step wich return type can be iterated"
-shared interface IIterating<Return, Arguments, Element> satisfies IChaining<Return,Arguments>
+shared interface IIterating<Return, Arguments, Element> satisfies IInvocable<Return>
         given Return satisfies {Element*}
 {
+    shared default IChaining<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => Chaining<NewReturn,Arguments,Return>(this, newFunc);
+    shared default IProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => Probing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
+    shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => Spreading<NewReturn,Arguments,Return>(this, newFunc);
+    shared default IIterating<NewReturn,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => Iterating<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
+
     shared default IChaining<Boolean,Arguments> any(Boolean(Element) selecting) => Chaining<Boolean,Arguments,Return>(this, shuffle(Return.any)(selecting));
     shared default IIterating<{Element*},Arguments,Element> by(Integer step) => Iterating<{Element*},Arguments,Return,Element>(this, shuffle(Return.by)(step));
     shared default IIterating<{Element|Other*},Arguments,Element|Other> chain<Other, OtherAbsent>(Iterable<Other,OtherAbsent> other)
@@ -29,7 +34,7 @@ shared interface IIterating<Return, Arguments, Element> satisfies IChaining<Retu
     shared default IChaining<Map<Element&Object,Integer>,Arguments> frequencies() => Chaining<Map<Element&Object,Integer>,Arguments,Return>(this, shuffle(Return.frequencies)());
     shared default IChaining<Element?,Arguments> getFromFirst(Integer index) => Chaining<Element?,Arguments,Return>(this, shuffle(Return.getFromFirst)(index));
     //TODO Consider translating IChaining<Map...> to IIterating
-    shared default IChaining<Map<Group,[Element+]>,Arguments> group<Group>(Group?(Element)grouping)
+    shared default IChaining<Map<Group,[Element+]>,Arguments> group<Group>(Group?(Element) grouping)
             given Group satisfies Object => Chaining<Map<Group,[Element+]>,Arguments,Return>(this, shuffle(Return.group<Group>)(grouping));
     //TODO Consider translating IChaining<Range...> to IIterating
     shared default IChaining<Range<Integer>|[],Arguments> indexes() => Chaining<Range<Integer>|[],Arguments,Return>(this, shuffle(Return.indexes)());
@@ -63,12 +68,12 @@ shared interface IIterating<Return, Arguments, Element> satisfies IChaining<Retu
 
 "An Iterating start is just a tipical start, but given its return should be an iterable"
 class Iterating<NewReturn, Arguments, PrevReturn, NewReturnItem>(IInvocable<PrevReturn> prev, NewReturn(PrevReturn) func)
-        extends Chaining<NewReturn,Arguments,PrevReturn>(prev, func)
-        satisfies IIterating<NewReturn,Arguments,NewReturnItem>
+        extends InvocableChain<NewReturn,PrevReturn>(prev, func)
+satisfies IIterating<NewReturn,Arguments,NewReturnItem>
         given NewReturn satisfies {NewReturnItem*} {}
 
 class IteratingStart<Return, Arguments, FuncParam>(Return(*Arguments) func, Arguments arguments)
-        extends ChainingStart<Return,Arguments>(func, arguments)
+        extends InvocableStart<Return,Arguments>(func, arguments)
         satisfies IIterating<Return,Arguments,FuncParam>
         given Return satisfies {FuncParam*}
         given Arguments satisfies Anything[] {}

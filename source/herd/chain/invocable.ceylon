@@ -14,13 +14,13 @@ abstract class InvocableStart<out Return, Arguments>(Return(*Arguments) func, Ar
 }
 
 "Basic implementation for an IInvocable chain step."
-abstract class InvocableChain<out Return, PrevReturn>(IInvocable<PrevReturn> prevCallable, Return(PrevReturn) func)
+abstract class InvocableChain<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(PrevReturn) func)
         satisfies IInvocable<Return> {
-    shared actual default Return do() => let (prevResult = prevCallable.do()) func(prevResult);
+    shared actual default Return do() => let (prevResult = prev.do()) func(prevResult);
 }
 
 "Spreading implementation for an IInvocable chain step."
-abstract class InvocableSpreading<out Return, PrevReturn>(IInvocable<PrevReturn> prevCallable, Return(*PrevReturn) func)
+abstract class InvocableSpreading<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(*PrevReturn) func)
         satisfies IInvocable<Return> given PrevReturn satisfies Anything[] {
-    shared actual default Return do() => let (prevResult = prevCallable.do()) func(*prevResult);
+    shared actual default Return do() => let (prevResult = prev.do()) func(*prevResult);
 }

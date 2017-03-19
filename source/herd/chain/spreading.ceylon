@@ -1,24 +1,27 @@
 "ISpreadable provide spreading capabilities to chaining callables"
-shared interface ISpreading<Return, Arguments> satisfies IChainToOthers<Return,Arguments> given Return satisfies [Anything*] {
+shared interface ISpreading<Return, Arguments> //satisfies IChainToOthers<Return,Arguments>
+        given Return satisfies [Anything*] {
     shared default IChaining<NewReturn,Arguments> to<NewReturn>(NewReturn(*Return) newFunc) => SpreadingChainable<NewReturn,Arguments,Return>(this, newFunc);
     //shared default IOptionable<NewReturn,Arguments> optionallyToSpreadable<NewReturn>(NewReturn(* Return) newFunc) => SpreadingOptionable(this, newFunc);
-    shared default ISpreading<NewReturn,Arguments> keepSpreading<NewReturn>(NewReturn(*Return) newFunc) given NewReturn satisfies [Anything*] => SpreadingSpreadable<NewReturn,Arguments,Return>(this, newFunc);
+    shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(*Return) newFunc) given NewReturn satisfies [Anything*] => SpreadingSpreadable<NewReturn,Arguments,Return>(this, newFunc);
+    shared default IProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => Probing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
+    shared default IIterating<NewReturn,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => Iterating<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
+
 }
 
 "Basic class implementing ISpreadable.
- This class actually does nothing but being an ISpreadable, because spreading should be done in the results (handled in next chain step). So `spreadTo` methods actually provide the capability."
-class Spreading<NewReturn, Arguments, Return>(IInvocable<Return> prevCallable, NewReturn(Return) func)
-        extends InvocableChain<NewReturn,Return>(prevCallable, func)
+ This class actually does nothing but being an ISpreadable, because spreading should be done in the results (handled in next chain step).
+ So `to` methods actually provide the capability."
+class Spreading<NewReturn, Arguments, Return>(IInvocable<Return> prev, NewReturn(Return) func)
+        extends InvocableChain<NewReturn,Return>(prev, func)
         satisfies ISpreading<NewReturn,Arguments>
         given NewReturn satisfies Anything[] {}
 
 "SpreadingChainable actually implemente the spreading functionality"
-class SpreadingChainable<NewReturn, Arguments, Return>(IInvocable<Return> prevCallable, NewReturn(*Return) func)
+class SpreadingChainable<NewReturn, Arguments, Return>(IInvocable<Return> prev, NewReturn(*Return) func)
+        extends InvocableSpreading<NewReturn,Return>(prev, func)
         satisfies IChaining<NewReturn,Arguments>
-        given Return satisfies [Anything*]
-{
-    shared actual NewReturn do() => let (prevResult = prevCallable.do()) func(*prevResult);
-}
+        given Return satisfies [Anything*] {}
 
 "Like SpreadingChainable, but also provides the spreading capability to the next chain step."
 class SpreadingSpreadable<NewReturn, Arguments, Return>(IInvocable<Return> prevSpreadable, NewReturn(*Return) func)
