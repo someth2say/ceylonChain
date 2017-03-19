@@ -38,8 +38,8 @@ shared test void testProbingMethods() {
     assertEquals(false, probe(cTtoT, false).to(cTTtoT).do(), "Probe non-matching chained to a simple chain");
 
     //spread
-    assertEquals([1, false], probe(cTtoI, 1).spread(cTItoS).do(), "Probe matchin chained to a spread");
-    assertEquals([2, true], probe(cTtoI, { 1,2 }).spread(cTItoS).do(), "Probe non-matching  chained to a spread");
+    assertEquals([2, true], probe(cTtoI, 1).spread(cTItoS).do(), "Probe matchin chained to a spread");
+    assertEquals([1, false], probe(cTtoI, { 1,0 }).spread(cTItoS).do(), "Probe non-matching chained to a spread");
 
     //probe
     assertEquals(2, probe(cTtoI, 2).probe(cItoT).do(), "Probe matchin chained to another probe");
@@ -51,5 +51,5 @@ shared test void testProbingMethods() {
 
     //iterating
     value do2 = probe(cTtoI, 3).iterate(cTItoI).do();
-    assertTrue(iterableEquals({ 3 }, do2), "Probe chained to an matching iterating ``do2``");
+    assertTrue(iterableEquals({ 6 }, do2), "Probe chained to an matching iterating ``do2``");
 }
