@@ -4,14 +4,14 @@ import herd.chain {
 }
 
 "Interface for a chain step wich return type can be iterated"
-shared interface IIterating<Return, Arguments, Element> satisfies IInvocable<Return>
+shared interface IIterating<Return, Arguments, Element>
+        satisfies IInvocable<Return>
+        & IIterable<Return, Arguments>
+        & IChainable<Return,Arguments>
+        & IProbable<Return,Arguments>
+        & ISpreadable<Return,Arguments>
         given Return satisfies {Element*}
 {
-    shared default IChaining<NewReturn,Arguments> to<NewReturn>(NewReturn(Return) newFunc) => Chaining<NewReturn,Arguments,Return>(this, newFunc);
-    shared default IProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc) => Probing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
-    shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return) newFunc) given NewReturn satisfies [Anything*] => Spreading<NewReturn,Arguments,Return>(this, newFunc);
-    shared default IIterating<NewReturn,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return) newFunc) given NewReturn satisfies {FuncReturn*} => Iterating<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
-
     shared default IChaining<Boolean,Arguments> any(Boolean(Element) selecting) => Chaining<Boolean,Arguments,Return>(this, shuffle(Return.any)(selecting));
     shared default IIterating<{Element*},Arguments,Element> by(Integer step) => Iterating<{Element*},Arguments,Return,Element>(this, shuffle(Return.by)(step));
     shared default IIterating<{Element|Other*},Arguments,Element|Other> chain<Other, OtherAbsent>(Iterable<Other,OtherAbsent> other)
@@ -66,21 +66,29 @@ shared interface IIterating<Return, Arguments, Element> satisfies IInvocable<Ret
     //    takeWhile
 }
 
+shared interface IIterable<Return, Arguments> satisfies IInvocable<Return> {
+
+    shared default IIterating<NewReturn,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return) newFunc)
+            given NewReturn satisfies {FuncReturn*}
+            => Iterating<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
+}
+
+
 "An Iterating start is just a tipical start, but given its return should be an iterable"
 class Iterating<NewReturn, Arguments, PrevReturn, NewReturnItem>(IInvocable<PrevReturn> prev, NewReturn(PrevReturn) func)
         extends InvocableChain<NewReturn,PrevReturn>(prev, func)
-satisfies IIterating<NewReturn,Arguments,NewReturnItem>
+        satisfies IIterating<NewReturn,Arguments,NewReturnItem>
         given NewReturn satisfies {NewReturnItem*} {}
-
-class IteratingStart<Return, Arguments, FuncParam>(Return(Arguments) func, Arguments arguments)
-        extends InvocableStart<Return,Arguments>(func, arguments)
-        satisfies IIterating<Return,Arguments,FuncParam>
-        given Return satisfies {FuncParam*}
-//        given Arguments satisfies Anything[]
-{}
 
 "Iterable start"
 shared IIterating<Return,Arguments,FuncParam> iterate<Return, Arguments, FuncParam>(Return(Arguments) func, Arguments arguments)
         given Return satisfies {FuncParam*}
-//        given Arguments satisfies Anything[]
-        => IteratingStart(func, arguments);
+        => object extends InvocableStart<Return,Arguments>(func, arguments)
+        satisfies IIterating<Return,Arguments,FuncParam> {};
+
+"Iterable start"
+shared IIterating<Return,Arguments,FuncParam> iterates<Return, Arguments, FuncParam>(Return(*Arguments) func, Arguments arguments)
+        given Return satisfies {FuncParam*}
+        given Arguments satisfies Anything[]
+        => object extends InvocableStartSpreading<Return,Arguments>(func, arguments)
+        satisfies IIterating<Return,Arguments,FuncParam> {};

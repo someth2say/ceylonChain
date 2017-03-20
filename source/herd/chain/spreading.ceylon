@@ -1,18 +1,21 @@
 "ISpreadable provide spreading capabilities to chaining callables"
-shared interface ISpreading<Return, Arguments> //satisfies IChainToOthers<Return,Arguments>
-        satisfies IInvocable<Return> given Return satisfies [Anything*] {
-    shared default IChaining<NewReturn,Arguments> to<NewReturn>(NewReturn(*Return) newFunc)
-            => SpreadingChainable<NewReturn,Arguments,Return>(this, newFunc);
-    //shared default IOptionable<NewReturn,Arguments> optionallyToSpreadable<NewReturn>(NewReturn(* Return) newFunc)
-    // => SpreadingOptionable(this, newFunc);
-    shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(*Return) newFunc) given NewReturn satisfies [Anything*]
-            => SpreadingSpreadable<NewReturn,Arguments,Return>(this, newFunc);
-    shared default IProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
-            => Probing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
-    shared default IIterating<NewReturn,Arguments,FuncReturn> iterate<NewReturn, FuncReturn>(NewReturn(Return) newFunc)
-            given NewReturn satisfies {FuncReturn*}
-            => Iterating<NewReturn,Arguments,Return,FuncReturn>(this, newFunc);
+shared interface ISpreading<Return, Arguments>
+        satisfies IInvocable<Return> & IIterable<Return,Arguments> & IProbable<Return,Arguments>
+        given Return satisfies [Anything*] {
 
+    shared default IChaining<NewReturn,Arguments> to<NewReturn>(NewReturn(*Return) newFunc)
+            => SpreadChaining<NewReturn,Arguments,Return>(this, newFunc);
+
+    shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(*Return) newFunc)
+            given NewReturn satisfies [Anything*]
+            => SpreadSpreading<NewReturn,Arguments,Return>(this, newFunc);
+}
+
+shared interface ISpreadable<Return, Arguments>
+        satisfies IInvocable<Return> {
+    shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return) newFunc)
+            given NewReturn satisfies [Anything*]
+            => Spreading<NewReturn,Arguments,Return>(this, newFunc);
 }
 
 "Basic class implementing ISpreadable.
@@ -24,34 +27,26 @@ class Spreading<NewReturn, Arguments, Return>(IInvocable<Return> prev, NewReturn
         given NewReturn satisfies Anything[] {}
 
 "SpreadingChainable actually implemente the spreading functionality"
-class SpreadingChainable<NewReturn, Arguments, Return>(IInvocable<Return> prev, NewReturn(*Return) func)
+class SpreadChaining<NewReturn, Arguments, Return>(IInvocable<Return> prev, NewReturn(*Return) func)
         extends InvocableSpreading<NewReturn,Return>(prev, func)
         satisfies IChaining<NewReturn,Arguments>
         given Return satisfies [Anything*] {}
 
 "Like SpreadingChainable, but also provides the spreading capability to the next chain step."
-class SpreadingSpreadable<NewReturn, Arguments, Return>(IInvocable<Return> prevSpreadable, NewReturn(*Return) func)
+class SpreadSpreading<NewReturn, Arguments, Return>(IInvocable<Return> prevSpreadable, NewReturn(*Return) func)
         extends InvocableSpreading<NewReturn,Return>(prevSpreadable, func)
         satisfies ISpreading<NewReturn,Arguments>
         given Return satisfies [Anything*]
-        given NewReturn satisfies [Anything*]
-{}
+        given NewReturn satisfies [Anything*] {}
 
 "Initial step for a Chaining Callable, but adding spreading capabilities, so result can be spread to next step."
 shared ISpreading<Return,Arguments> spread<Return, Arguments>(Return(Arguments) func, Arguments arguments)
         given Return satisfies Anything[]
-        => ChainStartSpread(func, arguments);
+        => object extends InvocableStart<Return,Arguments>(func, arguments)
+        satisfies ISpreading<Return,Arguments> {};
 
-class ChainStartSpread<Return, Arguments>(Return(Arguments) func, Arguments arguments)
-        extends InvocableStart<Return,Arguments>(func, arguments) satisfies ISpreading<Return,Arguments>
+shared ISpreading<Return,Arguments> spreads<Return, Arguments>(Return(*Arguments) func, Arguments arguments)
         given Return satisfies Anything[]
-{
-    shared actual Return do() => (super of InvocableStart<Return,Arguments>).do();
-}
-//TODO: Spreading start allow multiple parameters at the beginning, so need to many more starts for Iterating, chaining....
-
-// Spreading optional is currently disabled: Should find a way to express Null|*Type
-//"SpreadingOptionable mixes both capabilities: Spreading and exisxtence checking"
-//class SpreadingOptionable<NewReturn,in Arguments,Return>(IInvocable<Return?,Arguments> prevSpreadable, NewReturn(* Return) func) satisfies IOptionable<NewReturn,Arguments> given Return satisfies Anything[] {
-//    shared actual NewReturn? with(Arguments arguments) => let (prevResult = prevSpreadable.with(arguments)) if (exists prevResult) then func(*prevResult) else null;
-//}
+        given Arguments satisfies Anything[]
+        => object extends InvocableStartSpreading<Return,Arguments>(func, arguments)
+        satisfies ISpreading<Return,Arguments> {};
