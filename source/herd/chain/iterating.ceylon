@@ -30,12 +30,10 @@ shared interface IIterating<Return, Arguments, Element>
             given OtherAbsent satisfies Null => Iterating<{NewResult*},Arguments,Return,NewResult>(this, shuffle(Return.flatMap<NewResult,OtherAbsent>)(collecting));
     shared default IChaining<NewResult,Arguments> fold<NewResult>(NewResult initial, NewResult(NewResult, Element) operation) => Chaining<NewResult,Arguments,Return>(this, lastParamToFirst(Return.fold<NewResult>)(initial)(operation));
     shared default IIterating<{Element|Other*},Arguments,Element|Other> follow<Other>(Other head) => Iterating<{Element|Other*},Arguments,Return,Element|Other>(this, shuffle(Return.follow<Other>)(head));
-    //TODO Consider translating IChaining<Map...> to IIterating
-    shared default IChaining<Map<Element&Object,Integer>,Arguments> frequencies() => Chaining<Map<Element&Object,Integer>,Arguments,Return>(this, shuffle(Return.frequencies)());
+    shared default IIterating<Map<Element&Object,Integer>,Arguments,Element&Object->Integer> frequencies() => Iterating<Map<Element&Object,Integer>,Arguments,Return,Element&Object->Integer>(this, shuffle(Return.frequencies)());
     shared default IChaining<Element?,Arguments> getFromFirst(Integer index) => Chaining<Element?,Arguments,Return>(this, shuffle(Return.getFromFirst)(index));
-    //TODO Consider translating IChaining<Map...> to IIterating
-    shared default IChaining<Map<Group,[Element+]>,Arguments> group<Group>(Group?(Element) grouping)
-            given Group satisfies Object => Chaining<Map<Group,[Element+]>,Arguments,Return>(this, shuffle(Return.group<Group>)(grouping));
+    shared default IIterating<Map<Group,[Element+]>,Arguments,Group->[Element+]> group<Group>(Group?(Element) grouping)
+            given Group satisfies Object => Iterating<Map<Group,[Element+]>,Arguments,Return,Group->[Element+]>(this, shuffle(Return.group<Group>)(grouping));
     //TODO Consider translating IChaining<Range...> to IIterating
     shared default IChaining<Range<Integer>|[],Arguments> indexes() => Chaining<Range<Integer>|[],Arguments,Return>(this, shuffle(Return.indexes)());
     //    indexes
