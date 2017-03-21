@@ -6,7 +6,7 @@ import ceylon.test {
 
 import herd.chain {
     chain,
-    probe,
+    probe,bwprobe,
     iterate
 }
 
@@ -18,6 +18,15 @@ shared test void testProbe() {
     assertEquals(null, probe(cTtoT, null).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals("invalid", probe(cTtoT, "invalid").do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals([0, "invalid"], probe(cTtoT, [0, "invalid"]).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
+}
+
+shared test void testBwProbe() {
+    assertEquals(1, bwprobe<Integer?,Integer,Integer>(cNtoT).with(0), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(0, bwprobe<Integer?,Integer,Integer?>(cNtoT).with(null), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(1, bwprobe<Integer,Integer,Integer>(cTtoT).with(0), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(null, bwprobe<Integer,Integer,Integer?>(cTtoT).with(null), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals("invalid", bwprobe<Integer,Integer,Integer|String>(cTtoT).with("invalid"), "Optional Chaining callable should be able to start on callables NOT accepting null");
+    assertEquals([0, "invalid"], bwprobe<Integer,Integer,Anything>(cTtoT).with([0, "invalid"]), "Optional Chaining callable should be able to start on callables NOT accepting null");
 }
 
 shared test void testChainProbe() {
@@ -35,11 +44,11 @@ shared test void testChainProbe() {
 shared test void testProbingMethods() {
     //to
     assertEquals(2, probe(cTtoT, 0).to(cTtoT).do(), "Probe matchin chained to a simple shain");
-    assertEquals(false, probe(cTtoT, false).to(cTTtoT).do(), "Probe non-matching chained to a simple chain");
+    assertEquals(false, probe(cTtoT, false).to(cUtoT).do(), "Probe non-matching chained to a simple chain");
 
     //spread
-    assertEquals([2, true], probe(cTtoI, 1).spread(cTItoS).do(), "Probe matchin chained to a spread");
-    assertEquals([1, false], probe(cTtoI, { 1,0 }).spread(cTItoS).do(), "Probe non-matching chained to a spread");
+    assertEquals([2, true], probe(cTtoI, 1).spread(cUItoS).do(), "Probe matchin chained to a spread");
+    assertEquals([1, false], probe(cTtoI, { 1,0 }).spread(cUItoS).do(), "Probe non-matching chained to a spread");
 
     //probe
     assertEquals(2, probe(cTtoI, 2).probe(cItoT).do(), "Probe matchin chained to another probe");
@@ -50,6 +59,6 @@ shared test void testProbingMethods() {
     assertTrue(iterableEquals({ 3, 1 }, do), "Probe chained to a non-matching probe: ``do``");
 
     //iterating
-    value do2 = probe(cTtoI, 3).iterate(cTItoI).do();
+    value do2 = probe(cTtoI, 3).iterate(cUItoI).do();
     assertTrue(iterableEquals({ 6 }, do2), "Probe chained to an matching iterating ``do2``");
 }

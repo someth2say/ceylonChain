@@ -10,7 +10,6 @@ shared interface IProbable<Return, Arguments>
         satisfies IInvocable<Return> {
     shared default IProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
             => Probing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
-
 }
 
 "Basic class implementing IOptionable. Optionable actually implements the existence checking capability."
@@ -31,3 +30,5 @@ shared IProbing<Return|GivenArgs,Arguments> probes<Return, Arguments, GivenArgs>
         => object satisfies IProbing<Return|GivenArgs,Arguments> {
     shared actual Return|GivenArgs do() => if (is Arguments arguments) then func(*arguments) else arguments;
 };
+
+

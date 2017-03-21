@@ -1,12 +1,12 @@
 "Basic interface to substitute `Callable`"
 shared interface IInvocable<out Return>
 {
-    "Actually invoke the callable with specified arguments."
+    "Invoke the callable with default arguments."
     shared formal Return do() ;
+
 }
 
-"Basic implementation for an IInvocable start of chain.
- Note that will ALWAYS spread input arguments"
+"Basic implementation for an IInvocable start of chain."
 abstract class InvocableStart<out Return, Arguments>(Return(Arguments) func, Arguments arguments)
         satisfies IInvocable<Return>
 {
@@ -31,4 +31,5 @@ abstract class InvocableSpreading<out Return, PrevReturn>(IInvocable<PrevReturn>
         satisfies IInvocable<Return>
         given PrevReturn satisfies Anything[] {
     shared actual default Return do() => let (prevResult = prev.do()) func(*prevResult);
+
 }
