@@ -1,12 +1,18 @@
 "IOptionable is just a tag interface, separating chaining callables that can return nullable types. "
 shared interface IBwProbing<Return, Arguments>
         satisfies IBwInvocable<Return|Arguments,Arguments>
-//        & IBwIterable<Return|Arguments,Arguments>
+        & IBwIterable<Return|Arguments,Arguments>
         & IBwChainable<Return|Arguments,Arguments>
-//        & IBwProbable<Return|Arguments,Arguments>
-//        & IBwSpreadable<Return|Arguments,Arguments>
+        & IBwProbable<Return|Arguments,Arguments>
+        & IBwSpreadable<Return|Arguments,Arguments>
 {}
 
+
+shared interface IBwProbable<Return, Arguments>
+        satisfies IBwInvocable<Return, Arguments> {
+    shared default IBwProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
+            => BwProbing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
+}
 
 "Basic class implementing IOptionable. Optionable actually implements the existence checking capability."
 class BwProbing<NewReturn, Arguments, Return, FuncArgs>(IBwInvocable<Return,Arguments> prev, NewReturn(FuncArgs) func)
