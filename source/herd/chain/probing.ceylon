@@ -44,12 +44,21 @@ shared interface IProbing<Return, Arguments>
 "Aspect or trait interface that provide probing capability."
 shared interface IProbable<Return, Arguments>
         satisfies IInvocable<Return> {
+    "Adds a new step to the chain, by trying to apply result so far to the provided function.
+     If function accepts the result type for previous chain step, then this step will return the result
+     of applying the function to the previous result.
+     If function does not accept the retult type for previous chain step, then this same previous result
+     is returned, with no further modification."
     shared default IProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
             => Probing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
 }
 
 class Probing<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, NewReturn(FuncArgs) func)
         satisfies IProbing<NewReturn|Return,Arguments> {
+    "If function accepts the result type for previous chain step, then this step will return the result
+     of applying the function to the previous result.
+     If function does not accept the retult type for previous chain step, then this same previous result
+     is returned, with no further modification."
     shared actual NewReturn|Return do() => let (prevResult = prev.do()) if (is FuncArgs prevResult) then func(prevResult) else prevResult;
 }
 

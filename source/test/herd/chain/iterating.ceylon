@@ -9,19 +9,9 @@ import herd.chain {
     iterate
 }
 
-import herd.chain.bwchain {
-    bwchain,
-    bwiterate
-}
-
 shared test void testIterate() {
     assertTrue(iterableEquals({ 3, 1 }, chain(1, cTtoT).iterate(cTtoI).do()), "Iterable composition after a chain");
     assertTrue(iterableEquals({ 2, 0 }, iterate(1, cTtoI).do()), "Iterable start");
-}
-
-shared test void testBwIterate() {
-    assertTrue(iterableEquals({ 3, 1 }, bwchain(cTtoT).iterate(cTtoI).with(1)), "Iterable Bw composition after a chain");
-    assertTrue(iterableEquals((1..10), bwiterate((Integer i) => (1..i)).with(10)), "Iterable bw start");
 }
 
 shared test void testIteratingMethods() {

@@ -14,4 +14,4 @@
     chain(step1,[init]).to(step2)...to(stepN).do().
  "
 by ("Jordi Sola")
-module herd.chain "1.1.1" {}
+module herd.chain "1.2.0" {}

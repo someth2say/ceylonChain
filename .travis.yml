@@ -1,6 +1,5 @@
 language: java
 
-#sudo: false
 sudo: required
 
 os:
@@ -9,33 +8,18 @@ os:
 jdk:
   - oraclejdk8
 
-#env:
-#  global:
-#    - JAVA_OPTS="-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
-#    - MALLOC_ARENA_MAX=2
-
 branches:
   only:
     - master
 
 before_install:
   - wget -O - https://downloads.ceylon-lang.org/apt/ceylon-debian-repo.gpg.key | sudo apt-key add -
-# - sudo add-apt-repository "deb https://downloads.ceylon-lang.org/apt/ unstable main"
-# - echo "deb https://downloads.ceylon-lang.org/apt/dists/unstable/Release/ precise ceylon-1.2.0" | sudo tee -a /etc/apt/sources.list
   - echo "deb https://downloads.ceylon-lang.org/apt/ unstable main" | sudo tee -a /etc/apt/sources.list
   - cat /etc/apt/sources.list
   - sudo apt-get update -qq
 
-install: sudo apt-get install ceylon-1.3.1
-
-#before_script:
-#  - export MAVEN_SKIP_RC=true
-#  - export MAVEN_OPTS="-Xmx512m -XX:MaxPermSize=512m"
-#  - unset GEM_PATH GEM_HOME IRBRC JRUBY_OPTS
-#  - "export PATH=`pwd`/bin:$PATH"
-#  - echo $HOME
+install: sudo apt-get install ceylon-1.3.2
 
 script:
 - ceylon compile
-- ceylon compile --src=./test-source/
-- ceylon test test.herd.chain/1.1.1
+- ceylon test test.herd.chain/1.2.0

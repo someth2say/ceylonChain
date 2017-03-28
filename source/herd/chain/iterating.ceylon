@@ -4,9 +4,8 @@ import herd.chain {
 }
 
 "Chain step that provides iterating capabilities.
- That is, provide the ability to perform same operations that user can perform onto an iterable..
- Iterating chain steps require a function whose return type can be iterated (i.o.w, satisfies {Anything*})
-
+ That is, provide the ability to perform same operations that user can perform onto an iterable.
+ Iterating chain steps require a function whose return type can be iterated (i.o.w, satisfies {Anything*}).
  Example:
  <pre>
     Range<Integer> foo(Integer i) => (1..i); // Note Range<...> satisfies Iterable
@@ -36,7 +35,6 @@ shared interface IIterating<Return, Arguments, Element, Absent=Null>
             given Default satisfies Object => Iterating<{Element&Object|Default*},Arguments,Return,Element&Object|Default>(this, shuffle(Return.defaultNullElements<Default>)(defaultValue));
     shared default IIterating<Return,Arguments,Element> each(Anything(Element) operation) => Iterating<Return,Arguments,Return,Element>(this, identityEach<Return,Element>(operation));
     shared default IChaining<Boolean,Arguments> every(Boolean(Element) operation) => Chaining<Boolean,Arguments,Return>(this, shuffle(Return.every)(operation));
-    //TODO: Why filter (and many other) opperations do not present absent type?
     shared default IIterating<{Element*},Arguments,Element> filter(Boolean(Element) operation) => Iterating<{Element*},Arguments,Return,Element>(this, shuffle(Return.filter)(operation));
     shared default IChaining<Element?,Arguments> find(Boolean(Element&Object) operation) => Chaining<Element?,Arguments,Return>(this, shuffle(Return.find)(operation));
     shared default IChaining<Element?,Arguments> findLast(Boolean(Element&Object) operation) => Chaining<Element?,Arguments,Return>(this, shuffle(Return.findLast)(operation));
@@ -87,31 +85,33 @@ shared interface IIterating<Return, Arguments, Element, Absent=Null>
 
 "Aspect or trait interface that provide iterating capability. "
 shared interface IIterable<Return, Arguments> satisfies IInvocable<Return> {
-
-    shared default IIterating<NewReturn,Arguments,FuncReturn,Absent> iterate<NewReturn, FuncReturn, Absent=Null>(NewReturn(Return) newFunc)
+    "Adds a new step to the chain, by passing the result of the chain so far to a new function.
+     The new function MUST accept the return type for the chain so far as its only parameter,
+     and MUST return an Iterable type (i.o.w. return type for the new function should satisfy Iterable<Element,Absent>"
+    shared default IIterating<NewReturn,Arguments,Element,Absent> iterate<NewReturn, Element, Absent=Null>(NewReturn(Return) newFunc)
             given Absent satisfies Null
-            given NewReturn satisfies Iterable<FuncReturn,Absent>
-            => Iterating<NewReturn,Arguments,Return,FuncReturn,Absent>(this, newFunc);
+            given NewReturn satisfies Iterable<Element,Absent>
+            => Iterating<NewReturn,Arguments,Return,Element,Absent>(this, newFunc);
 }
 
-class Iterating<NewReturn, Arguments, PrevReturn, NewReturnItem, Absent=Null>(IInvocable<PrevReturn> prev, NewReturn(PrevReturn) func)
+class Iterating<NewReturn, Arguments, PrevReturn, Element, Absent=Null>(IInvocable<PrevReturn> prev, NewReturn(PrevReturn) func)
         extends InvocableChain<NewReturn,PrevReturn>(prev, func)
-        satisfies IIterating<NewReturn,Arguments,NewReturnItem,Absent>
+        satisfies IIterating<NewReturn,Arguments,Element,Absent>
         given Absent satisfies Null
-        given NewReturn satisfies Iterable<NewReturnItem,Absent> {}
+        given NewReturn satisfies Iterable<Element,Absent> {}
 
 "Initial iterable step for a chain, whose results can be iterated."
-shared IIterating<Return,Arguments,FuncParam,Absent> iterate<Return, Arguments, FuncParam, Absent=Null>(Arguments arguments, Return(Arguments) func)
+shared IIterating<Return,Arguments,Element,Absent> iterate<Return, Arguments, Element, Absent=Null>(Arguments arguments, Return(Arguments) func)
         given Absent satisfies Null
-        given Return satisfies Iterable<FuncParam,Absent>
+        given Return satisfies Iterable<Element,Absent>
         => object extends InvocableStart<Return,Arguments>(func, arguments)
-        satisfies IIterating<Return,Arguments,FuncParam,Absent> {};
+        satisfies IIterating<Return,Arguments,Element,Absent> {};
 
 "Initial iterable step for a backward chain, whose results can be iterated.
   The only difference with [[iterate]] is that [[iterates]] will accept a tuple as chain arguments, that will be spread into this step's function."
-shared IIterating<Return,Arguments,FuncParam,Absent> iterates<Return, Arguments, FuncParam, Absent=Null>(Arguments arguments, Return(*Arguments) func)
+shared IIterating<Return,Arguments,Element,Absent> iterates<Return, Arguments, Element, Absent=Null>(Arguments arguments, Return(*Arguments) func)
         given Absent satisfies Null
-        given Return satisfies Iterable<FuncParam,Absent>
+        given Return satisfies Iterable<Element,Absent>
         given Arguments satisfies Anything[]
         => object extends InvocableStartSpreading<Return,Arguments>(func, arguments)
-        satisfies IIterating<Return,Arguments,FuncParam,Absent> {};
+        satisfies IIterating<Return,Arguments,Element,Absent> {};

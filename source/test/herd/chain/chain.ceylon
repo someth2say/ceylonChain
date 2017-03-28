@@ -8,9 +8,6 @@ import herd.chain {
     chains
 }
 
-import herd.chain.bwchain {
-    bwchain
-}
 
 shared test void testChain() {
     // Chain start and parameter setting
@@ -20,13 +17,6 @@ shared test void testChain() {
     assertEquals([2, true], chain([1, true], cStoS).do(), "Basic chain, tuple params, tuple return");
     assertEquals([1, true], chain(0, cTtoS).do(), "Basic chain, tuple return ");
     assertEquals([0, true], chain(null, cNtoS).do(), "Basic chain, null params, tuple return");
-}
-
-shared test void testBwChain() {
-    // Chain start and parameter setting
-    assertEquals(2, bwchain(cTtoT).with(1), "Basic Fw chain");
-    assertEquals(0, bwchain(cNtoT).with(null), "Basic Fw chain, null params");
-    assertEquals(null, bwchain(cTtoN).with(1), "Basic Fw chain, null params, null return");
 }
 
 shared test void testChainSpread() {

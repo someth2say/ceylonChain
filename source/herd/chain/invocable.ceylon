@@ -4,10 +4,10 @@
  <pre>
     IBwInvocable<String,Integer> bwch = ...;
     String str = bwcw.do();
- </pre>
- "shared interface IInvocable<out Return>
+ </pre>"
+shared interface IInvocable<out Return>
 {
-    "Invoke the callable with default arguments."
+    "Actually invokes the chain, with the values set at first chain step"
     shared formal Return do() ;
 }
 

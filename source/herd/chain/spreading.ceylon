@@ -14,9 +14,17 @@ shared interface ISpreading<Return, Arguments>
         satisfies IInvocable<Return> & IIterable<Return,Arguments> & IProbable<Return,Arguments>
         given Return satisfies [Anything*] {
 
+    "Adds a new step to the chain, by spreading the result of the chain so far to a new function.
+     Chain so far MUST be spreadable (i.o.w should satisfy ISpreadable interface).
+     The new function MUST accept an spreadable type (i.o.w a Tuple)."
+    see(`interface ISpreadable`)
     shared default IChaining<NewReturn,Arguments> to<NewReturn>(NewReturn(*Return) newFunc)
             => SpreadChaining<NewReturn,Arguments,Return>(this, newFunc);
 
+    "Adds a new step to the chain, by spreading the result of the chain so far to a new function.
+     Chain so far MUST be spreadable (i.o.w should satisfy ISpreadable interface), and so will be the new chain.
+     The new function MUST BOTH accept return an spreadable type (i.o.w a Tuple)."
+    see(`interface ISpreadable`)
     shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(*Return) newFunc)
             given NewReturn satisfies [Anything*]
             => SpreadSpreading<NewReturn,Arguments,Return>(this, newFunc);

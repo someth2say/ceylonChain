@@ -10,11 +10,6 @@ import herd.chain {
     iterate
 }
 
-import herd.chain.bwchain {
-    bwprobe
-}
-
-
 shared test void testProbe() {
     assertEquals(1, probe(0, cNtoT).do(), "Optional Chaining callable should be able to start on callables accepting null");
     assertEquals(0, probe(null, cNtoT).do(), "Optional Chaining callable should be able to start on callables accepting null");
@@ -22,15 +17,6 @@ shared test void testProbe() {
     assertEquals(null, probe(null, cTtoT).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals("invalid", probe("invalid", cTtoT).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals([0, "invalid"], probe([0, "invalid"], cTtoT).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
-}
-
-shared test void testBwProbe() {
-    assertEquals(1, bwprobe<Integer?,Integer,Integer>(cNtoT).with(0), "Optional Chaining callable should be able to start on callables accepting null");
-    assertEquals(0, bwprobe<Integer?,Integer,Integer?>(cNtoT).with(null), "Optional Chaining callable should be able to start on callables accepting null");
-    assertEquals(1, bwprobe<Integer,Integer,Integer>(cTtoT).with(0), "Optional Chaining callable should be able to start on callables accepting null");
-    assertEquals(null, bwprobe<Integer,Integer,Integer?>(cTtoT).with(null), "Optional Chaining callable should be able to start on callables NOT accepting null");
-    assertEquals("invalid", bwprobe<Integer,Integer,Integer|String>(cTtoT).with("invalid"), "Optional Chaining callable should be able to start on callables NOT accepting null");
-    assertEquals([0, "invalid"], bwprobe<Integer,Integer,Anything>(cTtoT).with([0, "invalid"]), "Optional Chaining callable should be able to start on callables NOT accepting null");
 }
 
 shared test void testChainProbe() {
