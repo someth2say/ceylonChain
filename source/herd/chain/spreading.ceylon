@@ -1,4 +1,15 @@
-"ISpreadable provide spreading capabilities to chaining callables"
+"Chain step that provides spreading capabilities.
+ That is, provide the ability to spread the returning tuple elements into the next chain step's function parameters.
+ Spreading chain steps require a function whose return type can be spreaded (i.o.w, satisfies [Anything*])
+
+ Example:
+ <pre>
+    [Integer,Boolean] foo(Integer i) => [i,i.even];
+    Integer bar(Integer i, Boolean b) => if (b) then i else 0;
+
+    assertEquals(spread(1,foo).to(bar).do(),0); // foo returns [1,false], hence bar returns 0;
+    assertEquals(spread(2,foo).to(bar).do(),2); // foo returns [2,true], hence bar returns 2;
+ </pre>"
 shared interface ISpreading<Return, Arguments>
         satisfies IInvocable<Return> & IIterable<Return,Arguments> & IProbable<Return,Arguments>
         given Return satisfies [Anything*] {
@@ -11,6 +22,7 @@ shared interface ISpreading<Return, Arguments>
             => SpreadSpreading<NewReturn,Arguments,Return>(this, newFunc);
 }
 
+"Aspect or trait interface that provide spreading capability. "
 shared interface ISpreadable<Return, Arguments>
         satisfies IInvocable<Return> {
     shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return) newFunc)
@@ -18,34 +30,31 @@ shared interface ISpreadable<Return, Arguments>
             => Spreading<NewReturn,Arguments,Return>(this, newFunc);
 }
 
-"Basic class implementing ISpreadable.
- This class actually does nothing but being an ISpreadable, because spreading should be done in the results (handled in next chain step).
- So `to` methods actually provide the capability."
 class Spreading<NewReturn, Arguments, Return>(IInvocable<Return> prev, NewReturn(Return) func)
         extends InvocableChain<NewReturn,Return>(prev, func)
         satisfies ISpreading<NewReturn,Arguments>
         given NewReturn satisfies Anything[] {}
 
-"SpreadingChainable actually implemente the spreading functionality"
 class SpreadChaining<NewReturn, Arguments, Return>(IInvocable<Return> prev, NewReturn(*Return) func)
         extends InvocableSpreading<NewReturn,Return>(prev, func)
         satisfies IChaining<NewReturn,Arguments>
         given Return satisfies [Anything*] {}
 
-"Like SpreadingChainable, but also provides the spreading capability to the next chain step."
 class SpreadSpreading<NewReturn, Arguments, Return>(IInvocable<Return> prevSpreadable, NewReturn(*Return) func)
         extends InvocableSpreading<NewReturn,Return>(prevSpreadable, func)
         satisfies ISpreading<NewReturn,Arguments>
         given Return satisfies [Anything*]
         given NewReturn satisfies [Anything*] {}
 
-"Initial step for a Chaining Callable, but adding spreading capabilities, so result can be spread to next step."
-shared ISpreading<Return,Arguments> spread<Return, Arguments>(Return(Arguments) func, Arguments arguments)
+"Initial spreading step for a chain, that can spread its results to the following chain step's function. "
+shared ISpreading<Return,Arguments> spread<Return, Arguments>(Arguments arguments, Return(Arguments) func)
         given Return satisfies Anything[]
         => object extends InvocableStart<Return,Arguments>(func, arguments)
         satisfies ISpreading<Return,Arguments> {};
 
-shared ISpreading<Return,Arguments> spreads<Return, Arguments>(Return(*Arguments) func, Arguments arguments)
+"Initial spreading step for a chain, that can spread its results to the following chain step's function.
+ The only difference with [[spread]] is that [[spreads]] will accept a tuple as chain arguments, that will be spread into this step's function."
+shared ISpreading<Return,Arguments> spreads<Return, Arguments>(Arguments arguments, Return(*Arguments) func)
         given Return satisfies Anything[]
         given Arguments satisfies Anything[]
         => object extends InvocableStartSpreading<Return,Arguments>(func, arguments)

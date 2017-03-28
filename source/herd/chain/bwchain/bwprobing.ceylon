@@ -27,9 +27,9 @@
     IBwProbing<Integer|ParseException,Integer> hi = he.probe(handleInt);
 
     assertEquals(he.with(\"3\"),4); // parse is succesfull, so handleException does not math, but handleInt does
-    assertEquals(he.with(\"three\"),1) // parse returns and exceptions, handled by handleException, that prints and returns 0, that is then matched by handleInt
+    assertEquals(he.with(\"three\"),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
  </pre>
- Note that probing chain steps will not 'absorb' the actually matched type. This mean that the matched type will keep appraring forward in the chain type paramters (in sample, ParseException).
+ Note that probing chain steps will not 'absorb' the actually matched type. This mean that the matched type will keep appearing forward in the chain type paramters (in sample, ParseException).
  Also note that, when using a initial probing chain step (say [[bwprobe]] or [[bwprobes]], the initial 'Argument' type (meaning the type the chain will accept) need not to be exactly the same parameter
  type than the initial function used. Hence, type checker is unable to infer the 'Argument' type, and it should be provided by the developer.
 
