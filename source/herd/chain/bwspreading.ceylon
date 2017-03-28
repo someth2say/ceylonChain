@@ -1,4 +1,18 @@
-"ISpreadable provide spreading capabilities to chaining callables"
+"Backward chain step that provides spreading capabilities.
+ That is, provide the ability to spread the returning tuple elements into the next chain step's function parameters.
+ Spreading chain steps require a function whose return type can be spreaded (i.o.w, satisfies [Anything*])
+
+ Example:
+ <pre>
+    [Integer,Boolean] foo(Integer i) => [i,i.even];
+    Integer bar(Integer i, Boolean b) => if (b) then i else 0;
+
+    IBwSpreading<[Integer,Boolean],Integer> sp = bwspread(foo)
+    IBwChaining<Integer,Integer> ch = sp.to(bar);
+    assertEquals(ch.with(1),0);
+    assertEquals(ch.with(2),2);
+ </pre>
+ "
 shared interface IBwSpreading<Return, Arguments>
         satisfies IBwInvocable<Return,Arguments>
         & IBwIterable<Return,Arguments>
@@ -13,6 +27,7 @@ shared interface IBwSpreading<Return, Arguments>
             => BwSpreadSpreading<NewReturn,Arguments,Return>(this, newFunc);
 }
 
+"Aspect or trait interface that provide backward spreading capability. "
 shared interface IBwSpreadable<Return, Arguments>
         satisfies IBwInvocable<Return,Arguments> {
     shared default IBwSpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return) newFunc)
@@ -20,33 +35,30 @@ shared interface IBwSpreadable<Return, Arguments>
             => BwSpreading<NewReturn,Arguments,Return>(this, newFunc);
 }
 
-"Basic class implementing ISpreadable.
- This class actually does nothing but being an ISpreadable, because spreading should be done in the results (handled in next chain step).
- So `to` methods actually provide the capability."
 class BwSpreading<NewReturn, Arguments, Return>(IBwInvocable<Return,Arguments> prev, NewReturn(Return) func)
         extends BwInvocableChain<NewReturn,Return,Arguments>(prev, func)
         satisfies IBwSpreading<NewReturn,Arguments>
         given NewReturn satisfies Anything[] {}
 
-"SpreadingChainable actually implemente the spreading functionality"
 class BwSpreadChaining<NewReturn, Arguments, Return>(IBwInvocable<Return,Arguments> prev, NewReturn(*Return) func)
         extends BwInvocableSpreading<NewReturn,Return,Arguments>(prev, func)
         satisfies IBwChaining<NewReturn,Arguments>
         given Return satisfies [Anything*] {}
 
-"Like SpreadingChainable, but also provides the spreading capability to the next chain step."
 class BwSpreadSpreading<NewReturn, Arguments, Return>(IBwInvocable<Return,Arguments> prevSpreadable, NewReturn(*Return) func)
         extends BwInvocableSpreading<NewReturn,Return,Arguments>(prevSpreadable, func)
         satisfies IBwSpreading<NewReturn,Arguments>
         given Return satisfies [Anything*]
         given NewReturn satisfies [Anything*] {}
 
-"Initial step for a Chaining Callable, but adding spreading capabilities, so result can be spread to next step."
+"Initial spreading step for a backward chain, that can spread its results to the following chain step's function. "
 shared IBwSpreading<Return,Arguments> bwspread<Return, Arguments>(Return(Arguments) func)
         given Return satisfies Anything[]
         => object extends BwInvocableStart<Return,Arguments>(func)
         satisfies IBwSpreading<Return,Arguments> {};
 
+"Initial spreading step for a backward chain, that can spread its results to the following chain step's function.
+ The only difference with [[bwspread]] is that [[bwspreads]] will accept a tuple as chain arguments, that will be spread into this step's function."
 shared IBwSpreading<Return,Arguments> bwspreads<Return, Arguments>(Return(*Arguments) func)
         given Return satisfies Anything[]
         given Arguments satisfies Anything[]

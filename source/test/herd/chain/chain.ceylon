@@ -26,7 +26,6 @@ shared test void testBwChain() {
     assertEquals(null, bwchain(cTtoN).with(1), "Basic Fw chain, null params, null return");
 }
 
-
 shared test void testChainSpread() {
     assertEquals(2, chains(cTTtoT, [1, true]).do(), "Basic chain, spreading params");
 }

@@ -4,8 +4,8 @@ import ceylon.test {
 }
 
 import herd.chain {
-    chain,
-    spread
+    chain, bwchain,
+    spread, bwspread
 }
 
 shared test void testSpread() {
@@ -20,12 +20,33 @@ shared test void testSpread() {
     assertEquals(2, chain(cNtoT, null).spread(cTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
 
     // Optionally spreading
-    //    assertEquals(2, spread(cTtoS).thenOptionalyto(cTtoS).with(0), "Spreadable composition should be able to compose on callables accepting null");
-    //    assertEquals(1, spread(cTtoS).thenOptionalyto(cStoT).with(1), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals([1,true], spread(cTtoS, 0).probe(cTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(1, spread(cTtoS, 1).probe(cStoT).do(), "Spreadable composition should be able to compose on callables accepting null");
 
-    // Spreading to an spreadable
+    // Spreading
     assertEquals([2, true], spread(cTtoS, 0).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([3, false], spread(cTtoS, 1).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([1, true], spread(cNtoS, null).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
+}
+
+shared test void testBwSpread() {
+    //Starting from an spreadable
+    assertEquals(2, bwspread(cTtoS).to(cTTtoT).with(0), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(1, bwspread(cTtoS).to(cTTtoT).with(1), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(1, bwspread(cNtoS).to(cTTtoT).with(null), "Spreadable composition should be able to compose on callables accepting null");
+
+    //Continuing from a non-spreadable...
+    assertEquals(1, bwchain(cTtoT).spread(cTtoS).to(cTTtoT).with(0), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(4, bwchain(cTtoT).spread(cTtoS).to(cTTtoT).with(1), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(2, bwchain(cNtoT).spread(cTtoS).to(cTTtoT).with(null), "Spreadable composition should be able to compose on callables accepting null");
+
+    // Optionally spreading
+    assertEquals([1,true], bwspread(cTtoS).probe(cTtoS).with(0), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(1, bwspread(cTtoS).probe(cStoT).with(1), "Spreadable composition should be able to compose on callables accepting null");
+
+    // Spreading to an spreadable
+    assertEquals([2, true], bwspread(cTtoS).spread(cTTtoS).with(0), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals([3, false], bwspread(cTtoS).spread(cTTtoS).with(1), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals([1, true], bwspread(cNtoS).spread(cTTtoS).with(null), "Spreadable composition should be able to compose on callables accepting null");
 }
 

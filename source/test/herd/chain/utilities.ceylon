@@ -18,6 +18,7 @@ Integer(Integer, Boolean) cTTtoT = (Integer int, Boolean b) => if (b) then int.s
 Integer?(Integer, Boolean) cTTtoN = (Integer int, Boolean b) => if (b) then int.successor else null;
 
 [Integer, Boolean]([Integer, Boolean]) cStoS = ([Integer, Boolean] s) => if (s[1]) then [s[0].successor, s[1]] else [s[0].predecessor, s[1]];
+Integer([Integer, Boolean]) cStoT = ([Integer, Boolean] s) => if (s[1]) then s[0].successor else s[0].predecessor;
 [Integer, Boolean](Integer, Boolean) cTTtoS = (Integer i, Boolean b) => if (b) then [i.successor, b] else [i.successor, b];
 
 {Integer*}(Integer) cTtoI = (Integer int) => { int.successor, int.predecessor };
