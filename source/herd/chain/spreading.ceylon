@@ -33,6 +33,9 @@ shared interface ISpreading<Return, Arguments>
 "Aspect or trait interface that provide spreading capability. "
 shared interface ISpreadable<Return, Arguments>
         satisfies IInvocable<Return> {
+    "Adds a new step to the chain, by trying to apply result so far to the provided function.
+     Function MUST return an spreadable type (i.o.w. a Tuple).
+     The resulting chain's result MAY be spread into further chain steps."
     shared default ISpreading<NewReturn,Arguments> spread<NewReturn>(NewReturn(Return) newFunc)
             given NewReturn satisfies [Anything*]
             => Spreading<NewReturn,Arguments,Return>(this, newFunc);
