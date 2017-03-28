@@ -1,12 +1,16 @@
-"Basic interface to substitute `Callable`"
-shared interface IInvocable<out Return>
+"Invocable chain step that provides capability for providing chain arguments.
+ As this is part of a backward chain, arguments are provided at the end of the chain, in the [[do]] method.
+ Example:
+ <pre>
+    IBwInvocable<String,Integer> bwch = ...;
+    String str = bwcw.do();
+ </pre>
+ "shared interface IInvocable<out Return>
 {
     "Invoke the callable with default arguments."
     shared formal Return do() ;
-
 }
 
-"Basic implementation for an IInvocable start of chain."
 abstract class InvocableStart<out Return, Arguments>(Return(Arguments) func, Arguments arguments)
         satisfies IInvocable<Return>
 {
@@ -20,13 +24,11 @@ abstract class InvocableStartSpreading<out Return, Arguments>(Return(*Arguments)
     shared actual default Return do() => func(*arguments);
 }
 
-"Basic implementation for an IInvocable chain step."
 abstract class InvocableChain<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(PrevReturn) func)
         satisfies IInvocable<Return> {
     shared actual default Return do() => let (prevResult = prev.do()) func(prevResult);
 }
 
-"Spreading implementation for an IInvocable chain step."
 abstract class InvocableSpreading<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(*PrevReturn) func)
         satisfies IInvocable<Return>
         given PrevReturn satisfies Anything[] {
