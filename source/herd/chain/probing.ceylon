@@ -65,16 +65,16 @@ class Probing<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, N
 
 "Initial probing step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Use with caution."
-shared IProbing<Return|GivenArgs,Arguments> probe<Return, Arguments, GivenArgs>(GivenArgs arguments, Return(Arguments) func)
-        => object satisfies IProbing<Return|GivenArgs,Arguments> {
-    shared actual Return|GivenArgs do() => if (is Arguments arguments) then func(arguments) else arguments;
+shared IProbing<Return|Arguments,Arguments> probe<Return, FuncArgs, Arguments>(Arguments arguments, Return(FuncArgs) func)
+        => object satisfies IProbing<Return|Arguments,Arguments> {
+    shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(arguments) else arguments;
 };
 
 "Initial probing step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Difference with [[probe]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
  Use with caution."
-shared IProbing<Return|GivenArgs,Arguments> probes<Return, Arguments, GivenArgs>(GivenArgs arguments, Return(*Arguments) func)
-        given Arguments satisfies Anything[]
-        => object satisfies IProbing<Return|GivenArgs,Arguments> {
-    shared actual Return|GivenArgs do() => if (is Arguments arguments) then func(*arguments) else arguments;
+shared IProbing<Return|Arguments,Arguments> probes<Return, FuncArgs, Arguments>(Arguments arguments, Return(*FuncArgs) func)
+        given FuncArgs satisfies Anything[]
+        => object satisfies IProbing<Return|Arguments,Arguments> {
+    shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(*arguments) else arguments;
 };
