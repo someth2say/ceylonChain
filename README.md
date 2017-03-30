@@ -11,19 +11,20 @@ writeResponse(output);
 ```
 
 This is pretty clear, but much verbose.
-Some languages offer headfish (`|>`) operator, allowing chaining `methods`, in a fashion that the result for the first one is used as parameter for the second one.
+Some languages offer fishead (`|>`) operator, allowing chaining `methods`, in a fashion that the result for the first one is used as parameter for the second one.
 This library offer emulating this operator (as described in https://github.com/ceylon/ceylon/issues/6615, but using only standard Ceylon classes, and the strength of the typechecker.
 
-Sources for Chaining Callables can be retrieved from https://github.com/someth2say/ceylonChain
+Sources for Chaining Callables can be found at https://github.com/someth2say/ceylonChain
 
 ## Usage
-Simply use the `chain` top-level method to start a chained method call, and provide a function reference.
+Simply use the `chain` top-level method to start a chained method call, providing initial value and a function reference.
 ```
-IChainable<Integer,String> stringSizeChain = chain(String.size);
+value stringSizeChain = chain("Hello", String.size);
 ```
 
-This will create a `IChainable` object, that allows to chain other methods in different flavours. Chain more function references by using the provided methods:
-- `\ithen`: Headfish operator `|>`. Invokes the first function, and then passes its results to the second function.
+This will create a initial "chain" object, that allows to chain other steps in different flavours.
+In order to add more chain steps you can use following methods:
+- `to`: Adds a new chain step, so the value returned by previous steps is used
 - `thenOptionally`: Crying-headfish operator `|?>`. Also forwards the value from the first method to the second, but only if this value is not `null`. If first function returned `null`, then second function is not evaluated, and `null` is returned.
 - `thenSpreadable`: Dead-headfish opeator `|*>`. It works with methods that accept several parameters, instead of a single one. Result from first method (should be an iterable) is spread, and sent to the second method as its arguments.
 - `with`: This method finalizes the chain, by providing its parameters, and evaluating functions in the right order. You can understand it as the invocation operation.

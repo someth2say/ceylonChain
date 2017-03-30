@@ -49,6 +49,7 @@ shared interface IProbable<Return, Arguments>
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
+    see (`function package.probe`, `function package.probes`)
     shared default IProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
             => Probing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
 }

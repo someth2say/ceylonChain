@@ -37,18 +37,18 @@ shared test void testProbingMethods() {
     assertEquals(false, probe(false, cTtoT).to(cUtoT).do(), "Probe non-matching chained to a simple chain");
 
     //spread
-    assertEquals([2, true], probe(1, cTtoI).spread(cUItoS).do(), "Probe matchin chained to a spread");
-    assertEquals([1, false], probe({ 1,0 }, cTtoI).spread(cUItoS).do(), "Probe non-matching chained to a spread");
+    assertEquals([1, false], probe(1, cTtoI).spread(cUItoS).do(), "Probe matching chained to a spread");
+    assertEquals([2, true], probe({ 2, 0 }, cTtoI).spread(cUItoS).do(), "Probe non-matching chained to a spread");
 
     //probe
-    assertEquals(2, probe(2, cTtoI).probe(cItoT).do(), "Probe matchin chained to another probe");
-    assertEquals(1, probe({2}, cTtoI).probe(cItoT).do(), "Probe NON-matchin chained to another probe");
+    assertEquals(3, probe(2, cTtoI).probe(cItoT).do(), "Probe matchin chained to another probe");
+    assertEquals(1, probe({ 2 }, cTtoI).probe(cItoT).do(), "Probe NON-matchin chained to another probe");
 
     Integer|{Integer*} do = iterate(2, cTtoI).probe(cTtoT).do();
     assert (is {Integer*} do);
-    assertTrue(iterableEquals({ 3, 1 }, do), "Probe chained to a non-matching probe: ``do``");
+    assertTrue(deepEquals({ 0, 1, 2 }, do), "Probe chained to a non-matching probe: ``do``");
 
     //iterating
     value do2 = probe(3, cTtoI).iterate(cUItoI).do();
-    assertTrue(iterableEquals({ 6 }, do2), "Probe chained to an matching iterating ``do2``");
+    assertTrue(deepEquals({ 6 }, do2), "Probe chained to an matching iterating ``do2``");
 }

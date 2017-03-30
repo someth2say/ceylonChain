@@ -51,7 +51,8 @@ shared interface IIterating<Return, Arguments, Element, Absent=Null>
     shared default IChaining<Iterator<Element>,Arguments> iterator() => Chaining<Iterator<Element>,Arguments,Return>(this, shuffle(Return.iterator)());
     shared default IChaining<<Integer->Element&Object>?,Arguments> locate(Boolean(Element&Object) selecting) => Chaining<<Integer->Element&Object>?,Arguments,Return>(this, shuffle(Return.locate)(selecting));
     shared default IChaining<<Integer->Element&Object>?,Arguments> locateLast(Boolean(Element&Object) selecting) => Chaining<<Integer->Element&Object>?,Arguments,Return>(this, shuffle(Return.locateLast)(selecting));
-    shared default IIterating<{<Integer->Element&Object>*},Arguments,<Integer->Element&Object>> locations(Boolean(Element&Object) selecting) => Iterating<{<Integer->Element&Object>*},Arguments,Return,<Integer->Element&Object>>(this, shuffle(Return.locations)(selecting));
+    shared default IIterating<{<Integer->Element&Object>*},Arguments,<Integer->Element&Object>> locations(Boolean(Element&Object) selecting)
+            => Iterating<{<Integer->Element&Object>*},Arguments,Return,<Integer->Element&Object>>(this, shuffle(Return.locations)(selecting));
     shared default IChaining<Boolean,Arguments> longerThan(Integer length) => Chaining<Boolean,Arguments,Return>(this, shuffle(Return.longerThan)(length));
     shared default IIterating<{NewReturn*},Arguments,NewReturn> map<NewReturn>(NewReturn(Element) operation) => Iterating<{NewReturn*},Arguments,Return,NewReturn>(this, shuffle(Return.map<NewReturn>)(operation));
     shared default IChaining<Element|Absent,Arguments> max(Comparison(Element, Element) comparing) => Chaining<Element|Absent,Arguments,Return>(this, shuffle(Return.max)(comparing));
@@ -88,6 +89,7 @@ shared interface IIterable<Return, Arguments> satisfies IInvocable<Return> {
     "Adds a new step to the chain, by passing the result of the chain so far to a new function.
      The new function MUST accept the return type for the chain so far as its only parameter,
      and MUST return an Iterable type (i.o.w. return type for the new function should satisfy Iterable<Element,Absent>"
+    see( `function package.iterate`, `function package.iterates`)
     shared default IIterating<NewReturn,Arguments,Element,Absent> iterate<NewReturn, Element, Absent=Null>(NewReturn(Return) newFunc)
             given Absent satisfies Null
             given NewReturn satisfies Iterable<Element,Absent>
