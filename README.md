@@ -93,7 +93,20 @@ Will be shown as:
 ```
 return spread(request, parseParameters).spread(validateParameters).spread(doStuff).to(writeResponse).do()
 ```
-
+Or, when multiple initial parameters:
+```
+Request request = ...;
+Encoding encoding = ...;
+[Params,Encoding] params = parseParameters(request, encoding);
+[Params, Params] params = validateParameters(params[0], params[1]);
+[Output, Params] output = doStuff(params[0],param[1]);
+Result result = writeResponse(output);
+return result;
+```
+Goes to:
+```
+return spreads([request,encoding], parseParameters).spread(validateParameters).spread(doStuff).to(writeResponse).do()
+```
 
 ### Nullable types and probe
 Another use case is when used functions can return 'null', and it should be handled.
@@ -156,15 +169,7 @@ If an exception is returned by `validateParameters`, it will be catched by `catc
 If no exception is returned by `validateParameters`, it won't match `catchException` parameter types, and hence valid `Params` will flow to `doStuff`.
 Almost magic!
 
-
-
-
-
-
-
-
-
-
+-----------------------------------------------------------------
 
 
 ## Extended Chain starts
