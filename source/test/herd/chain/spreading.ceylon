@@ -27,5 +27,9 @@ shared test void testSpread() {
     assertEquals([2, true], spread(0, cTtoS).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([3, false], spread(1, cTtoS).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
     assertEquals([1, true], spread(null, cNtoS).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
+
+    assertEquals(3, spread(0, cTtoS).spread(cTTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(2, spread(1, cTtoS).spread(cTTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(2, spread(null, cNtoS).spread(cTTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
 }
 
