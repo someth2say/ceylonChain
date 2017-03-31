@@ -17,6 +17,7 @@ shared test void testChain() {
     assertEquals([2, true], chain([1, true], cStoS).do(), "Basic chain, tuple params, tuple return");
     assertEquals([1, true], chain(0, cTtoS).do(), "Basic chain, tuple return ");
     assertEquals([0, true], chain(null, cNtoS).do(), "Basic chain, null params, tuple return");
+    assertEquals(4,chain(4,Integer).do(),"Basic chain onto a constructor");
 }
 
 shared test void testChainSpread() {

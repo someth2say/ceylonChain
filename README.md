@@ -178,21 +178,24 @@ return result;
 ```
 But `doStuff` do only accept `Params`, not `Params?`!
 
-Probing chains come to save the day. By using the `probe` method, `validParams` will be passed to `doStuff` **only** if they are not `null`. Else, the chain step result will just be the same `null`:
+Probing chains come to save the day.
+By using the `probe` method, `validParams` will be passed to `doStuff` **only** if they are not `null`. Else, the chain step result will just be the same `null`.
+Consequently, the result of this probing chain step may be both 'null', or the result of applying the 'validateParameters' function:
 ```
 return chain(request, parseParameters).to(validateParameters).probe(doStuff).probe(writeResponse).do()
 ```
 You may have noticed that `probe` is not only used with `doStuff`, but also with `writeResponse`. Why?
 Easy: the moment you use `probe`, the non-accepted `null` can just pass by to next chain steps. And `writeResponse` do not accept `null`! Hence, `probe` is needed.
-Also, we have another trick in this sample. Previously, the `result` may never be `null`, but with this approach, `null` can lurk to the end of the chain. Hence, now `result` can be null!
+Also, the result for the whole chain changed. Previously, the `result` may never be `null`, but with this approach, `null` can lurk to the end of the chain. Hence, now `result` can be null!
 
 #### Advanced probing
 Probing `null` values is just one usage for `probe`. But `probe` can also be used for more advanced situations.
 
 Let's say that `validateParameters` can return the *union type* `Params|InvalidParametersException`. Not that uncommon in Ceylon that exceptional cases are handled just as united return types.
 No problem for `probe`!
-In fact, `probe` will check if the *run time* type for the previous chain steps do match the type accepted by its function. If types mach, function will be applied. Else, the previous chain step's
+In fact, `probe` will check if the *run time* return type for the previous chain steps do match the type accepted by its function. If types mach, function will be applied. Else, the previous chain step's
 value will be passed by.
+
 Let's rewrite the previous example, with exception handling!
 ```
 Request request = ...;
@@ -206,24 +209,24 @@ Will be:
 ```
  return chain(request, parseParameters).to(validateParameters).probe(doStuff).probe(writeResponse).do()
 ```
-Hey! this is exactly the same code shown in "Nullable types and probe"!
-Yes, it is. Does not matter what parameter types you are using, probe will handle them.
+Hey! this is exactly the same code shown before!
+Yes, it is. It does not matter what parameter types you are using, 'Null' or whatever, probe will handle them properly.
 
-Even more: what if you actually want to catch the exception?
+More useful tricks : What if you actually want to handle the exception, instead of just letting it pass by?
 No problem, just add another step in the chain:
 ```
- Result catchException(InvalidParametersException e) => ... ;
+ Result catchException(InvalidParametersException e) => ... ; // build default Result in case of exception
  return chain(request, parseParameters).to(validateParameters).probe(doStuff).probe(writeResponse).probe(cathException).do()
 ```
 And this way you can react to the exception.
 
 But we are not done here! You can even catch the exception in earlier places, and provide a default value for the chain to continue with:
 ```
- Params catchException(InvalidParametersException e) => ... ; // build default params
+ Params catchException(InvalidParametersException e) => ... ; // build default Params in case of exception
  return chain(request, parseParameters).to(validateParameters).probe(cathException).probe(doStuff).probe(writeResponse).do()
 ```
 If an exception is returned by `validateParameters`, it will be catched by `catchException`, and default parameters will flow to `doStuff`.
-If no exception is returned by `validateParameters`, it won't match `catchException` parameter types, and hence valid `Params` will flow to `doStuff`.
+If no exception is returned by `validateParameters`, it won't match `catchException` parameter types, and hence valid `Params` will flow directly to `doStuff`.
 Almost magic!
 
 :warning:
@@ -231,37 +234,157 @@ Probing chain steps do not validate the used function parameters are somehow rel
 So you can add to a chain useless functions that will never be matched! Be careful!
 
 ##### Gotcha:
-**Probing chain steps (both initial and intermediate) do not "absorb" a matched type.**
+**Probing chain steps (both initial and intermediate) will not "absorb" a matched type.**
 
 Say you use a `probe` step that with an incoming type `A|B` and a function of type `A(B)`.<br>
   At **run time**, when `B` incomes to the step, it will match, function will be applied, and `A` will be returned. Good.<br>
   But at **compile time**, return type for a `probe` chain step will always be the *union* of both *incoming* type and the type returned by the function.<br>
   That is: `A|B` (the incoming type) union `A` (the returned type for the function) = `(A|B)|A` = `(A|B)`.
-  Despite many times the objective of using `prove` is to handle some of the cases for the chain, the handled cases are not "removed" for the chain return type.
-
-
-
-
-## Extended Chain starts
-Wise reader will notice that, if you must use `thenSpreadable` before spreading you can not spread the first chain step!
-True! Even more general: `chain`s first step do not have either spreading nor null-checking capabilities.
-
-If you need this capabilities on the first chain step, then you need to use extended chain starts.
-
-- For being able to spread the first step, use the `chainSpreadable` top-level:
+  Despite sometimes (most of the time?) the objective of using `prove` is to handle some of the cases for the chain, the handled cases are not "removed" from the chain return type.
+If you actually need to "absorb" a type when handling it, you will need to use a construct like the following one:
 ```
-chainSpreadable(iReturnATuple).spreadTo(iAcceptManyParameters).with(initial);
+ Params catchException(Params|InvalidParametersException paramsOrException) => if (is InvalidParametersException paramsOrException) then buildDefaultParams(...) else paramsOrException;
+ return chain(request, parseParameters).to(validateParameters).to(cathException).to(doStuff).to(writeResponse).do()
 ```
-- For null-safety on the first step, use `chainOptional` top-level:
-```
-chainOptional(iDoNotAcceptNulls).with(iCanBeNull);
-```
+Maybe some day this construct can be directly included into the chain to save your code :)
 
 ## Caveats
 There are several points of improvement on this code:
 - There is a (minimal) memory footprint for using this construct, opposed to a native `|>` operator that is just syntax sugar.
-- You actually can not mix both Optional an Spreadable capabilities, so methods returning something like Null|*Type are not supported
-(in fact, this notation is not even supported in current Ceylon distribution).
+- As already said, `probe` steps do not actually remove the type when matched.
+
+
+# F.A.Q.
+
+###### Previous versions do accept passing the initial parameters **at the end of the chain**. That allowed me to use chains as a 'strategy', and pass non-applied chains
+as method references! Why this feature has been removed?
+
+Yes, previously you were able to write chains like this:
+```
+value ch = chain(...).to(...);
+...
+value = ch.with(initialValue);
+```
+On one side, this is less readable: initial value is at the end of the chain, instead of the beginning.
+But most important, this have been proven to be not type safe, specially with probing chains.
+Can you guess the type for the following:
+```
+value ch = probe(Integer.successor);
+```
+One may thing it is something like a chain that accepts an `Integer` and returns another `Integer`. But you are wrong.
+`probe` detaches the chain argument type from the initial function arguments type, in order to perform optional application.
+Hence, the type for the previous chain is `IProbing<Integer,Nothing>` meaning that the return type is known to be `Integer`, but compiler
+known nothing for the chain argument's type.
+
+If you need to create method references for chains, you may simply wrap the chain into a function:
+  ```
+  function myChain(Initial initialValue) => chain(initialValue).to(...)...do();
+  value reference = myChain; // reference to the chain
+  value val = reference(foo); // Invoking the reference.
+  ```
+
+###### So good, so far. But can I see real life examples where this library can be used?
+Sure! Here are some:
+From Gyokuro Spring demo:
+```
+shared void run() {
+    addLogWriter(writeSimpleLog);
+    defaultPriority = trace;
+
+    print("Scanning current package for Spring-annotated classes");
+    value springContext = AnnotationConfigApplicationContext(`package`.qualifiedName);
+
+    print("Starting gyokuro application");
+
+    value controllerAnnotation = javaAnnotationClass<ControllerAnnotation>();
+    value controllers = [*springContext.getBeansWithAnnotation(controllerAnnotation).values()];
+
+    Application {
+        // We provide our own controller instances instead of letting gyokuro scan a package
+        controllers = bind(controllers);
+    }.run();
+}
+```
+Can be rewritten as:
+```
+shared void run() {
+    addLogWriter(writeSimpleLog);
+    defaultPriority = trace;
+    value controllerAnnotation = javaAnnotationClass<ControllerAnnotation>();
+
+    print("Scanning current package for Spring-annotated classes");
+
+    value controllers = chain(`package`.qualifiedName, AnnotationConfigApplicationContext)
+        .to(AnnotationConfigApplicationContext.getBeansWithAnnotation(controllerAnnotation))
+        .to(JMap.values).do();
+
+    print("Starting gyokuro application");
+
+     Application {
+        // We provide our own controller instances instead of letting gyokuro scan a package
+        controllers = bind(controllers);
+    }.run();
+}
+
+```
+
+
+From `ceylon.build`:
+```
+shared void run() {
+    value writer = consoleWriter;
+    Options options = commandLineOptions(process.arguments);
+    compileModule(options);
+    Module? mod = loadModule(options.moduleName, options.moduleVersion);
+    if (exists mod) {
+        GoalDefinitionsBuilder|[InvalidGoalDeclaration+] goals = readAnnotations(mod);
+        Integer exitCode;
+        switch (goals)
+        case (is GoalDefinitionsBuilder) {
+            exitCode = start(goals, writer, options.runtime, [*options.goals]);
+        } case (is [InvalidGoalDeclaration+]) {
+            reportInvalidDeclarations(goals, writer);
+            exitCode = 1;
+        }
+        process.exit(exitCode);
+    } else {
+        process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
+        process.exit(1);
+    }
+}
+```
+Goes to
+```
+shared void run() {
+    Options options = commandLineOptions(process.arguments);
+    compileModule(options);
+    chains([options.moduleName, options.moduleVersion],loadModule)
+        .to(exitIfNull)
+        .to(readAnnotations)
+        .probe(startGdb(options))
+        .probe(reportInvalid)
+        .probe(process.exit)
+        .do();
+}
+
+function startGdb(GoalDefinitionsBuilder gdb)(Options options) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
+
+function reportInvalid(GoalDefinitionsBuilder gdb) {
+   reportInvalidDeclarations(goals, consoleWriter);
+   return 1;
+}
+
+Module exitIfNull(Module? mod){
+    if (exists mod){
+        return mod
+    } else {
+        process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
+        process.exit(1);
+    }
+}
+```
+
+Many more examples will come.
 
 # Enjoy!
 Don't hesitate using and distributing this library, and getting back to me to any doubts or issues you may have.
