@@ -132,7 +132,7 @@ return result;
 ```
 Is transformed to:
 ```
-return chain(chain(request,parseParameters).do().map(validate),doStuff).to(writeResponse);
+return chain(chain(request,parseParameters).do().map(validate),doStuff).to(writeResponse).do();
 ```
 As you can see, you need to "leave" the chain in order to apply the `map` function, and then use its result to re-start the chain. Too bad.
 
@@ -140,18 +140,19 @@ In fact, there is a trick in Ceylon language that can be used to avoid leaving t
 This top-level method allow to transform a function *on a type instance* to a function that *receives an instance* as a parameter.
 So previous can be rewritten to:
 ```
-return chain(request,parseParameters).to(shuffle(map<Params>)(validate)).to(doStuff).to(writeResponse);
+return chain(request,parseParameters).to(shuffle(map<Params>)(validate)).to(doStuff).to(writeResponse).do();
 ```
 
 Not bad! But still a bit cumbersome.
 So Iterating chains come to save the day, and they will do the `shuffle` work for you.
 For creating a chain step that can be used like an stream, just use the `iterate` method (or the `iterate`/`iterates` top-level for a chain start):
 ```
-return iterate(request,parseParameters).map(validate).to(doStuff).to(writeResponse);
+return iterate(request,parseParameters).map(validate).to(doStuff).to(writeResponse).do();
 ```
 Et voilà! All methods that can be used onto an `Iterable`, can be used onto the chain step, but without the need of leaving the chain: `fold` , `every`, `contains`... no limits!
 
- :point_up: Some methods, like `map`,`narrow`,`filter`... when used onto an `Iterable` do actually return another `Iterable`.
+ :point_up:
+  Some methods, like `map`,`narrow`,`filter`... when used onto an `Iterable` do actually return another `Iterable`.
  Those same methods, when used onto an `iterate` chain step, will also return another `iterate` chain step! This allows you to write things like:
  ```
     ...iterate(...).map(...).filter(...)...
@@ -160,7 +161,8 @@ Et voilà! All methods that can be used onto an `Iterable`, can be used onto the
  Some other `Iterable` methods (some times called "collecting" methods), do not return a stream, but "simple" values: `any`, `find`,`shorterThan`...
  Those, when applied onto a `iterate` chain step will provide a new simple chain step, whose return type will be the same than the original method.
 
-:warning: The `spread` method of `Iterable` clashes with the `spread` method for spreading the values of a chain step over the next step.
+:warning:
+ The `spread` method of `Iterable` clashes with the `spread` method for spreading the values of a chain step over the next step.
 For avoiding this, `spread` method of `iterate` chain steps have been renamed to `spreadIterable`.
 
 ### Nullable types and probe
@@ -224,7 +226,8 @@ If an exception is returned by `validateParameters`, it will be catched by `catc
 If no exception is returned by `validateParameters`, it won't match `catchException` parameter types, and hence valid `Params` will flow to `doStuff`.
 Almost magic!
 
-:warning: Probing chain steps do not validate the used function parameters are somehow related to incoming parameters!
+:warning:
+Probing chain steps do not validate the used function parameters are somehow related to incoming parameters!
 So you can add to a chain useless functions that will never be matched! Be careful!
 
 ##### Gotcha:
