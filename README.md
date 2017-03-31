@@ -358,29 +358,26 @@ Goes to
 shared void run() {
     Options options = commandLineOptions(process.arguments);
     compileModule(options);
-    chains([options.moduleName, options.moduleVersion],loadModule)
-        .to(exitIfNull)
-        .to(readAnnotations)
-        .probe(startGdb(options))
-        .probe(reportInvalid)
+    value exitCode = chains([options.moduleName, options.moduleVersion],loadModule)
+        .probe(writeOnNullModule)
+        .probe(readAnnotations)
+            .probe(startGdb(options))
+            .probe(reportInvalid)
         .probe(process.exit)
         .do();
+    // Execution should never reach this point
 }
 
-function startGdb(GoalDefinitionsBuilder gdb)(Options options) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
+Integer startGdb(GoalDefinitionsBuilder gdb)(Options options) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
 
-function reportInvalid(GoalDefinitionsBuilder gdb) {
+Integer reportInvalid([InvalidGoalDeclaration+] gdb) {
    reportInvalidDeclarations(goals, consoleWriter);
    return 1;
 }
 
-Module exitIfNull(Module? mod){
-    if (exists mod){
-        return mod
-    } else {
-        process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
-        process.exit(1);
-    }
+Integer writeOnNullModule(Null null){
+    process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
+    return 1;
 }
 ```
 
