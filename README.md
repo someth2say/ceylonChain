@@ -108,6 +108,61 @@ Goes to:
 return spreads([request,encoding], parseParameters).spread(validateParameters).spread(doStuff).to(writeResponse).do()
 ```
 
+### Iterating chain
+Nowadays, *streams* and *functional programming* are trending topics.
+
+The idea about `streams` is that data (the streams) can accept *method references* (from *FP*),
+ so those methods do actually work out the data in a "standard" way, many times creating a new instance of the data.
+ So you can say this approach is just "chaining" data instances, by providing *method references* on each step.
+
+`Chains`, on the other way, face this same concept from the perspective of `functions`, instead of `data`.
+ Instead of chaining data instances, we are chaining `functions`.
+
+Concepts are transverse.
+
+Then, can you use both? Sure you can, but by default, seems not very useful:
+
+```
+Request request = ...;
+{Params*} params = parseParameters(request);
+{Params*} validParams = params.map(validate);
+value output = doStuff(validParams);
+value result = writeResponse(output);
+return result;
+```
+Is transformed to:
+```
+return chain(chain(request,parseParameters).do().map(validate),doStuff).to(writeResponse);
+```
+As you can see, you need to "leave" the chain in order to apply the `map` function, and then use its result to re-start the chain. Too bad.
+
+In fact, there is a trick in Ceylon language that can be used to avoid leaving the chain: the [`shuffle`](https://modules.ceylon-lang.org/repo/1/ceylon/language/1.3.2/module-doc/api/index.html#shuffle) top-level.
+This top-level method allow to transform a function *on a type instance* to a function that *receives an instance* as a parameter.
+So previous can be rewritten to:
+```
+return chain(request,parseParameters).to(shuffle(map<Params>)(validate)).to(doStuff).to(writeResponse);
+```
+
+Not bad! But still a bit cumbersome.
+So Iterating chains come to save the day, and they will do the `shuffle` work for you.
+For creating a chain step that can be used like an stream, just use the `iterate` method (or the `iterate`/`iterates` top-level for a chain start):
+```
+return iterate(request,parseParameters).map(validate).to(doStuff).to(writeResponse);
+```
+Et voilà! All methods that can be used onto an `Iterable`, can be used onto the chain step, but without the need of leaving the chain: `fold` , `every`, `contains`... no limits!
+
+ :point_up: Some methods, like `map`,`narrow`,`filter`... when used onto an `Iterable` do actually return another `Iterable`.
+ Those same methods, when used onto an `iterate` chain step, will also return another `iterate` chain step! This allows you to write things like:
+ ```
+    ...iterate(...).map(...).filter(...)...
+ ```
+
+ Some other `Iterable` methods (some times called "collecting" methods), do not return a stream, but "simple" values: `any`, `find`,`shorterThan`...
+ Those, when applied onto a `iterate` chain step will provide a new simple chain step, whose return type will be the same than the original method.
+
+:warning: The `spread` method of `Iterable` clashes with the `spread` method for spreading the values of a chain step over the next step.
+For avoiding this, `spread` method of `iterate` chain steps have been renamed to `spreadIterable`.
+
 ### Nullable types and probe
 Another use case is when used functions can return 'null', and it should be handled.
 Let's say `validateParameters` return `null` if parameters are not valid:
@@ -169,7 +224,19 @@ If an exception is returned by `validateParameters`, it will be catched by `catc
 If no exception is returned by `validateParameters`, it won't match `catchException` parameter types, and hence valid `Params` will flow to `doStuff`.
 Almost magic!
 
------------------------------------------------------------------
+:warning: Probing chain steps do not validate the used function parameters are somehow related to incoming parameters!
+So you can add to a chain useless functions that will never be matched! Be careful!
+
+##### Gotcha:
+**Probing chain steps (both initial and intermediate) do not "absorb" a matched type.**
+
+Say you use a `probe` step that with an incoming type `A|B` and a function of type `A(B)`.<br>
+  At **run time**, when `B` incomes to the step, it will match, function will be applied, and `A` will be returned. Good.<br>
+  But at **compile time**, return type for a `probe` chain step will always be the *union* of both *incoming* type and the type returned by the function.<br>
+  That is: `A|B` (the incoming type) union `A` (the returned type for the function) = `(A|B)|A` = `(A|B)`.
+  Despite many times the objective of using `prove` is to handle some of the cases for the chain, the handled cases are not "removed" for the chain return type.
+
+
 
 
 ## Extended Chain starts

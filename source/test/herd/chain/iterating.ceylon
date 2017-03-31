@@ -40,6 +40,7 @@ shared test void testStreamMethods() {
     assertTrue(deepEquals({ 0, 1, 2, -1, -2 }, iterate(2, cTtoI).chain({ -1, -2 }).do()), "Iterable chain");
     value collect = iterate(2, cTtoI).collect(Integer.successor).do();
     assertTrue(deepEquals([1, 2, 3], collect), "Iterable collect: ``collect```");
+
     assertEquals(iterate(3, cTtoI).contains(2).do(), true, "Iterable contains");
     assertEquals(iterate(3, cTtoI).contains(4).do(), false, "Iterable contains");
     assertEquals(iterate(3, cTtoI).count(Integer.even).do(), 2, "Iterable count");

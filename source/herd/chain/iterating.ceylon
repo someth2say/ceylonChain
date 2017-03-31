@@ -28,7 +28,7 @@ shared interface IIterating<Return, Arguments, Element, Absent=Null>
     shared default IIterating<Iterable<Element,Absent>,Arguments,Element> by(Integer step) => Iterating<Iterable<Element,Absent>,Arguments,Return,Element>(this, shuffle(Return.by)(step));
     shared default IIterating<{Element|Other*},Arguments,Element|Other> chain<Other, OtherAbsent>(Iterable<Other,OtherAbsent> other)
             given OtherAbsent satisfies Null => Iterating<{Element|Other*},Arguments,Return,Element|Other>(this, shuffle(Return.chain<Other,OtherAbsent>)(other));
-    shared default ISpreading<CollectResult[],Arguments> collect<CollectResult>(CollectResult(Element) collecting) => Spreading<CollectResult[],Arguments,Return>(this, shuffle(Return.collect<CollectResult>)(collecting));
+    shared default IIterating<Result[],Arguments,Result> collect<Result>(Result(Element) collecting) => Iterating<Result[],Arguments,Return,Result>(this, shuffle(Return.collect<Result>)(collecting));
     shared default IChaining<Boolean,Arguments> contains(Object element) => Chaining<Boolean,Arguments,Return>(this, shuffle(Return.contains)(element));
     shared default IChaining<Integer,Arguments> count(Boolean(Element) selecting) => Chaining<Integer,Arguments,Return>(this, shuffle(Return.count)(selecting));
     shared default IIterating<{Element&Object|Default*},Arguments,Element&Object|Default> defaultNullElements<Default>(Default defaultValue)
