@@ -11,7 +11,9 @@
     assertEquals(spread(2,foo).to(bar).do(),2); // foo returns [2,true], hence bar returns 2;
  </pre>"
 shared interface ISpreading<Return, Arguments>
-        satisfies IInvocable<Return> & IIterable<Return,Arguments> & IProbable<Return,Arguments>
+        satisfies IInvocable<Return>
+        & IIterable<Return,Arguments>
+        & IProbable<Return,Arguments>
         given Return satisfies [Anything*] {
 
     "Adds a new step to the chain, by spreading the result of the chain so far to a new function.
