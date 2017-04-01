@@ -35,11 +35,11 @@
  Use with caution.
  "
 shared interface IProbing<Return, Arguments>
-        satisfies IInvocable<Return|Arguments>
-        & IIterable<Return|Arguments,Arguments>
-        & IChainable<Return|Arguments,Arguments>
-        & IProbable<Return|Arguments,Arguments>
-        & ISpreadable<Return|Arguments,Arguments> {}
+        satisfies IInvocable<Return>
+        & IIterable<Return,Arguments>
+        & IChainable<Return,Arguments>
+        & IProbable<Return,Arguments>
+        & ISpreadable<Return,Arguments> {}
 
 "Aspect or trait interface that provide probing capability."
 shared interface IProbable<Return, Arguments>
