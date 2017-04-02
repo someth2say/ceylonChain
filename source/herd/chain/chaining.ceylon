@@ -16,7 +16,9 @@ shared interface IChaining<Return, Arguments>
         & IIterable<Return,Arguments>
         & IChainable<Return,Arguments>
         & IProbable<Return,Arguments>
-        & ISpreadable<Return,Arguments> {}
+        & ISpreadable<Return,Arguments>
+        & IShrinkable<Return,Arguments>
+{}
 
 "Aspect or trait interface that provide chaining capability. "
 shared interface IChainable<Return, Arguments>
