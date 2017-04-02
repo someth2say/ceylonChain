@@ -52,60 +52,49 @@ shared interface IShrinkable<Return, Arguments>
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
     see (`function package.probe`, `function package.probes`)
-    shared default IShrinking<NewReturn,Arguments> shrink<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
-            => Shrinking<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
+    shared default IShrinking<FuncReturn,Arguments> shrink<FuncReturn, FuncArgs>(FuncReturn(FuncArgs) newFunc)
+    //given FuncReturn satisfies Return <-- Cyclic inheritance
+    {
+        return Shrinking<FuncReturn,Arguments,FuncArgs, Return>(this, newFunc);
+    }
 }
 
-class Shrinking<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, NewReturn(FuncArgs) func)
-        satisfies IShrinking<NewReturn,Arguments>
+class Shrinking<FuncReturn, Arguments, FuncArgs, Return>(IInvocable<Return> prev, FuncReturn(FuncArgs) func)
+        satisfies IShrinking<FuncReturn,Arguments>
 {
     "If function accepts the result type for previous chain step, then this step will return the result
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
-    shared actual NewReturn do() {
+    shared actual FuncReturn do() {
         value prevResult = prev.do();
-        switch (prevResult){
-        case (is FuncArgs) return func(prevResult);
-        case (is NewReturn) return prevResult;
-        default
-        }
-        if (is FuncArgs prevResult) {
-            return func(prevResult);
-        } else {
-            assert (is NewReturn prevResult);
-            return prevResult;
-        }
+        assert(is FuncArgs|FuncReturn prevResult);
+        return switch (prevResult)
+        case (is FuncArgs) func(prevResult)
+        else prevResult;
     }
 }
 
 "Initial Shrinking step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Use with caution."
-shared IShrinking<Return,Arguments> shrink<Return, FuncArgs, Arguments>(Arguments arguments, Return(FuncArgs) func)
-   // given Arguments satisfies FuncArgs|Return <-- Unsupported
-        => object satisfies IShrinking<Return,Arguments> {
-    shared actual Return do() {
-        if (is FuncArgs arguments) {
-            return func(arguments);
-        } else {
-            assert (is Return arguments);
-            return arguments;
-        }
+shared IShrinking<FuncReturn,Arguments> shrink<FuncReturn, FuncArgs, Arguments>(FuncReturn|FuncArgs arguments, FuncReturn(FuncArgs) func)
+// given Arguments satisfies FuncArgs|Return <-- Unsupported
+        => object satisfies IShrinking<FuncReturn,Arguments> {
+    shared actual FuncReturn do() {
+        return switch (arguments)
+        case (is FuncArgs) func(arguments)
+        else arguments;
     }
 };
-
 "Initial Shrinking step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Difference with [[probe]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
  Use with caution."
-shared IShrinking<Return,Arguments> shrinks<Return, FuncArgs, Arguments>(Arguments arguments, Return(*FuncArgs) func)
+shared IShrinking<FuncReturn,Arguments> shrinks<FuncReturn, FuncArgs, Arguments>(FuncReturn|FuncArgs arguments, FuncReturn(*FuncArgs) func)
         given FuncArgs satisfies Anything[]
-        => object satisfies IShrinking<Return,Arguments> {
-    shared actual Return do() {
-        if (is FuncArgs arguments) {
-            return func(*arguments);
-        } else {
-            assert (is Return arguments);
-            return arguments;
-        }
+        => object satisfies IShrinking<FuncReturn,Arguments> {
+    shared actual FuncReturn do() {
+        return switch (arguments)
+        case (is FuncArgs) func(*arguments)
+        else arguments;
     }
 };

@@ -7,15 +7,15 @@
  U -> Union type (i.e. Integer|Boolean)"
 */
 Integer(Integer) cTtoT = Integer.successor;
-Integer?(Integer) cTtoN = (Integer int) => if (int.even) then int.successor else null;
+Integer?(Integer) cTtoTN = (Integer int) => if (int.even) then int.successor else null;
 [Integer, Boolean](Integer) cTtoS = (Integer int) => [int.successor, int.even];
 
-Integer(Integer?) cNtoT = (Integer? int) => if (exists int) then int.successor else 0;
-Integer?(Integer?) cNtoN = (Integer? int) => if (exists int) then int.successor else null;
-[Integer, Boolean](Integer?) cNtoS = (Integer? int) => if (exists int) then [int.successor, int.even] else [0, true];
+Integer(Integer?) cTNtoT = (Integer? int) => if (exists int) then int.successor else 0;
+Integer?(Integer?) cTNtoTN = (Integer? int) => if (exists int) then int.successor else null;
+[Integer, Boolean](Integer?) cTNtoS = (Integer? int) => if (exists int) then [int.successor, int.even] else [0, true];
 
 Integer(Integer, Boolean) cTTtoT = (Integer int, Boolean b) => if (b) then int.successor else int.predecessor;
-Integer?(Integer, Boolean) cTTtoN = (Integer int, Boolean b) => if (b) then int.successor else null;
+Integer?(Integer, Boolean) cTTtoTN = (Integer int, Boolean b) => if (b) then int.successor else null;
 
 [Integer, Boolean]([Integer, Boolean]) cStoS = ([Integer, Boolean] s) => if (s[1]) then [s[0].successor, s[1]] else [s[0].predecessor, s[1]];
 Integer([Integer, Boolean]) cStoT = ([Integer, Boolean] s) => if (s[1]) then s[0].successor else s[0].predecessor;

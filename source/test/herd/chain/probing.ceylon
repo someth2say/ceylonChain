@@ -11,8 +11,8 @@ import herd.chain {
 }
 
 shared test void testProbe() {
-    assertEquals(1, probe(0, cNtoT).do(), "Optional Chaining callable should be able to start on callables accepting null");
-    assertEquals(0, probe(null, cNtoT).do(), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(1, probe(0, cTNtoT).do(), "Optional Chaining callable should be able to start on callables accepting null");
+    assertEquals(0, probe(null, cTNtoT).do(), "Optional Chaining callable should be able to start on callables accepting null");
     assertEquals(1, probe(0, cTtoT).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals(null, probe(null, cTtoT).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
     assertEquals("invalid", probe("invalid", cTtoT).do(), "Optional Chaining callable should be able to start on callables NOT accepting null");
@@ -21,14 +21,14 @@ shared test void testProbe() {
 
 shared test void testChainProbe() {
     // For callables accepting null types
-    assertEquals(2, chain(0, cTtoN).probe(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
-    assertEquals(0, chain(1, cTtoN).probe(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
-    assertEquals(0, chain(null, cNtoN).probe(cNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
+    assertEquals(2, chain(0, cTtoTN).probe(cTNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
+    assertEquals(0, chain(1, cTtoTN).probe(cTNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
+    assertEquals(0, chain(null, cTNtoTN).probe(cTNtoT).do(), "Conditional composition should be able to compose on callables accepting null");
 
     // For callables NOT accepting null types
-    assertEquals(2, chain(0, cTtoN).probe(cTtoT).do(), "Conditional composition should be able to compose on callables not accepting null.");
-    assertEquals(null, chain(1, cTtoN).probe(cTtoT).do(), "Conditional composition should be able to compose on callables not accepting null.");
-    assertEquals(null, chain(null, cNtoN).probe(cTtoT).do(), "Conditional composition should be able to compose on callables not accepting null.");
+    assertEquals(2, chain(0, cTtoTN).probe(cTtoT).do(), "Conditional composition should be able to compose on callables not accepting null.");
+    assertEquals(null, chain(1, cTtoTN).probe(cTtoT).do(), "Conditional composition should be able to compose on callables not accepting null.");
+    assertEquals(null, chain(null, cTNtoTN).probe(cTtoT).do(), "Conditional composition should be able to compose on callables not accepting null.");
 }
 
 shared test void testProbingMethods() {
