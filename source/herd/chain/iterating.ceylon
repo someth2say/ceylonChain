@@ -21,7 +21,6 @@ shared interface IIterating<Return, Arguments, Element, Absent=Null>
         & IChainable<Return,Arguments>
         & IProbable<Return,Arguments>
         & ISpreadable<Return,Arguments>
-        & IShrinkable<Return,Arguments>
 given Absent satisfies Null
         given Return satisfies Iterable<Element,Absent>
 {

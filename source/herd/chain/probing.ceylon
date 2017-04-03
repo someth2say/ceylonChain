@@ -40,7 +40,6 @@ shared interface IProbing<Return, Arguments>
         & IChainable<Return,Arguments>
         & IProbable<Return,Arguments>
         & ISpreadable<Return,Arguments>
-        & IShrinkable<Return,Arguments>
 {}
 
 "Aspect or trait interface that provide probing capability."
@@ -62,7 +61,11 @@ class Probing<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, N
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
-    shared actual NewReturn|Return do() => let (prevResult = prev.do()) if (is FuncArgs prevResult) then func(prevResult) else prevResult;
+    shared actual NewReturn|Return do() {
+        value prevResult = prev.do();
+        assert (is NewReturn|FuncArgs prevResult);
+        return if (is FuncArgs prevResult) then func(prevResult) else prevResult;
+    }
 }
 
 "Initial probing step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
