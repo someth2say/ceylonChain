@@ -358,17 +358,17 @@ Goes to
 shared void run() {
     Options options = commandLineOptions(process.arguments);
     compileModule(options);
-    value exitCode = chains([options.moduleName, options.moduleVersion],loadModule) // Produces Null|Modulle
+    chains([options.moduleName, options.moduleVersion],loadModule) // Produces Null|Module
         .handle(handleNullModule)                                                   // Produces Integer|Module
         .handle(readModuleAnnotations)                                              // Produces Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]
             .handle(startGdb(options))                                              // Produces Integer|[InvalidGoalDeclaration+]
             .handle(reportInvalid)                                                  // Produces Integer
+        .to(process.exit)
         .do();
-    process.exit(exitCode);
 }
 
 Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+] readModuleAnnotations(Module mod) => readAnnotations(mod);
-Integer|[InvalidGoalDeclaration+] startGdb(GoalDefinitionsBuilder gdb)(Options options) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
+Integer|[InvalidGoalDeclaration+] startGdb(Options options)(GoalDefinitionsBuilder gdb) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
 
 Integer reportInvalid([InvalidGoalDeclaration+] gdb) {
    reportInvalidDeclarations(goals, consoleWriter);

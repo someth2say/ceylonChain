@@ -13,7 +13,6 @@ import herd.chain {
 shared test void testHandle() {
     assertEquals(1, handle(0, cTtoT).do(), "Handling Chaining callable should be able to start on a positive match");
     assertEquals(null, handle(null, cTtoTN).do(), "Handling Chaining callable should be able to start on a negative match");
-
 }
 
 shared test void testChainHandle() {
