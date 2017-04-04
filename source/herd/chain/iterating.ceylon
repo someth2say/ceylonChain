@@ -21,7 +21,8 @@ shared interface IIterating<Return, Arguments, Element, Absent=Null>
         & IChainable<Return,Arguments>
         & IProbable<Return,Arguments>
         & ISpreadable<Return,Arguments>
-given Absent satisfies Null
+        & IHandleable<Return,Arguments>
+        given Absent satisfies Null
         given Return satisfies Iterable<Element,Absent>
 {
     shared default IChaining<Boolean,Arguments> any(Boolean(Element) selecting) => Chaining<Boolean,Arguments,Return>(this, shuffle(Return.any)(selecting));

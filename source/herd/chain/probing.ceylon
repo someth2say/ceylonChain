@@ -1,5 +1,7 @@
 "Chain step that provides probing capabilities.
- That is, those chain step are able to accept functions whose arguments are not exaclty the return type for the previous step,
+  This is the type un-safe relative for [[IHandling]].
+
+ That is, these chain steps are able to accept functions whose arguments are not exaclty the return type for the previous step,
  or the type for the initially provided parameter for starting steps (from now on, the incomming type).
 
  If the incoming type is assignable to the arguments for this chain step's function, then this step will apply the function to the
@@ -40,6 +42,7 @@ shared interface IProbing<Return, Arguments>
         & IChainable<Return,Arguments>
         & IProbable<Return,Arguments>
         & ISpreadable<Return,Arguments>
+        & IHandleable<Return,Arguments>
 {}
 
 "Aspect or trait interface that provide probing capability."
@@ -61,11 +64,7 @@ class Probing<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, N
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
-    shared actual NewReturn|Return do() {
-        value prevResult = prev.do();
-        assert (is NewReturn|FuncArgs prevResult);
-        return if (is FuncArgs prevResult) then func(prevResult) else prevResult;
-    }
+    shared actual NewReturn|Return do() => let (prevResult = prev.do()) if (is FuncArgs prevResult) then func(prevResult) else prevResult;
 }
 
 "Initial probing step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.

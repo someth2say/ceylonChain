@@ -358,24 +358,24 @@ Goes to
 shared void run() {
     Options options = commandLineOptions(process.arguments);
     compileModule(options);
-    value exitCode = chains([options.moduleName, options.moduleVersion],loadModule)
-        .probe(writeOnNullModule)
-        .probe(readAnnotations)
-            .probe(startGdb(options))
-            .probe(reportInvalid)
-        .probe(process.exit)
+    value exitCode = chains([options.moduleName, options.moduleVersion],loadModule) // Produces Module?
+        .handle(handleNullModule)                                                   // Produces Integer|Module
+        .handle(readModuleAnnotations)                                              // Produces Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]
+            .handle(startGdb(options))                                              // Produces Integer|[InvalidGoalDeclaration+]
+            .handle(reportInvalid)                                                  // Produces Integer
         .do();
-    // Execution should never reach this point
+    process.exit(exitCode);
 }
 
-Integer startGdb(GoalDefinitionsBuilder gdb)(Options options) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
+Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+] readModuleAnnotations(Module mod) => readAnnotations(mod);
+Integer|[InvalidGoalDeclaration+] startGdb(GoalDefinitionsBuilder gdb)(Options options) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
 
 Integer reportInvalid([InvalidGoalDeclaration+] gdb) {
    reportInvalidDeclarations(goals, consoleWriter);
    return 1;
 }
 
-Integer writeOnNullModule(Null null){
+Integer|Module handleNullModule(Null null){
     process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
     return 1;
 }

@@ -31,6 +31,9 @@ Integer(Integer|{Integer*}) cUItoT = (Integer|{Integer*} ios) => if (is {Integer
 [Integer, Boolean](Integer|{Integer*}) cUItoS = (Integer|{Integer*} ios) => let (int = cUItoT(ios)) [int, int.even];
 {Integer*}(Integer|{Integer*}) cUItoI = (Integer|{Integer*} ios) => let (int = cUItoT(ios)) { int };
 
+Integer(Null) cNtoI = (Null n) => 0;
+
+
 /* Utility methods */
 Boolean optEquals(Anything first, Anything second) {
     return if (exists first, exists second) then first.equals(second) else (!first exists&& !second exists);

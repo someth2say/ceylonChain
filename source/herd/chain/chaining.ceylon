@@ -17,6 +17,7 @@ shared interface IChaining<Return, Arguments>
         & IChainable<Return,Arguments>
         & IProbable<Return,Arguments>
         & ISpreadable<Return,Arguments>
+        & IHandleable<Return,Arguments>
 {}
 
 "Aspect or trait interface that provide chaining capability. "
