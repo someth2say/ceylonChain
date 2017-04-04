@@ -358,7 +358,7 @@ Goes to
 shared void run() {
     Options options = commandLineOptions(process.arguments);
     compileModule(options);
-    value exitCode = chains([options.moduleName, options.moduleVersion],loadModule) // Produces Module?
+    value exitCode = chains([options.moduleName, options.moduleVersion],loadModule) // Produces Null|Modulle
         .handle(handleNullModule)                                                   // Produces Integer|Module
         .handle(readModuleAnnotations)                                              // Produces Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]
             .handle(startGdb(options))                                              // Produces Integer|[InvalidGoalDeclaration+]
