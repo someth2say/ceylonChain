@@ -36,17 +36,17 @@
  Behaviour for [[IProbing]] can be very tricky in complex cases (i.e. when return types are complex, or many different paths can be taken.
  Use with caution.
  "
-shared interface IProbing<Return, Arguments>
+shared interface IProbing<Return>
         satisfies IInvocable<Return>
-        & IIterable<Return,Arguments>
-        & IChainable<Return,Arguments>
-        & IProbable<Return,Arguments>
-        & ISpreadable<Return,Arguments>
-        & IHandleable<Return,Arguments>
+        & IIterable<Return>
+        & IChainable<Return>
+        & IProbable<Return>
+        & ISpreadable<Return>
+        & IHandleable<Return>
 {}
 
 "Aspect or trait interface that provide probing capability."
-shared interface IProbable<Return, Arguments>
+shared interface IProbable<Return>
         satisfies IInvocable<Return> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.
      If function accepts the result type for previous chain step, then this step will return the result
@@ -54,12 +54,12 @@ shared interface IProbable<Return, Arguments>
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
     see (`function package.probe`, `function package.probes`)
-    shared default IProbing<NewReturn|Return,Arguments> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
-            => Probing<NewReturn,Arguments,Return,FuncArgs>(this, newFunc);
+    shared default IProbing<NewReturn|Return> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
+            => Probing<NewReturn,Return,FuncArgs>(this, newFunc);
 }
 
-class Probing<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, NewReturn(FuncArgs) func)
-        satisfies IProbing<NewReturn|Return,Arguments> {
+class Probing<NewReturn, Return, FuncArgs>(IInvocable<Return> prev, NewReturn(FuncArgs) func)
+        satisfies IProbing<NewReturn|Return> {
     "If function accepts the result type for previous chain step, then this step will return the result
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
@@ -69,16 +69,16 @@ class Probing<NewReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, N
 
 "Initial probing step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Use with caution."
-shared IProbing<Return|Arguments,Arguments> probe<Return, FuncArgs, Arguments>(Arguments arguments, Return(FuncArgs) func)
-        => object satisfies IProbing<Return|Arguments,Arguments> {
+shared IProbing<Return|Arguments> probe<Return, FuncArgs, Arguments>(Arguments arguments, Return(FuncArgs) func)
+        => object satisfies IProbing<Return|Arguments> {
     shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(arguments) else arguments;
 };
 
 "Initial probing step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Difference with [[probe]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
  Use with caution."
-shared IProbing<Return|Arguments,Arguments> probes<Return, FuncArgs, Arguments>(Arguments arguments, Return(*FuncArgs) func)
+shared IProbing<Return|Arguments> probes<Return, FuncArgs, Arguments>(Arguments arguments, Return(*FuncArgs) func)
         given FuncArgs satisfies Anything[]
-        => object satisfies IProbing<Return|Arguments,Arguments> {
+        => object satisfies IProbing<Return|Arguments> {
     shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(*arguments) else arguments;
 };

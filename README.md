@@ -358,7 +358,7 @@ Goes to
 shared void run() {
     Options options = commandLineOptions(process.arguments);
     compileModule(options);
-    chains([options.moduleName, options.moduleVersion],loadModule) // Produces Null|Module
+    chains([options.moduleName, options.moduleVersion],loadModule)                  // IChaining<Null|Module,
         .handle(handleNullModule)                                                   // Produces Integer|Module
         .handle(readModuleAnnotations)                                              // Produces Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]
             .handle(startGdb(options))                                              // Produces Integer|[InvalidGoalDeclaration+]

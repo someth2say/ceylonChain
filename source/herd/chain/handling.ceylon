@@ -46,17 +46,17 @@
 
  As says, [[IHandling]] is the type-unsafe relative for [[IProbing]]. Despite being unsafe, many times it is recommended its ussage, instead of [[IProbing]]. The reason is that [[IHandling]] actually absorb the handled type, asserting the only type
  outgouing will be the type returned by the chain step function. "
-shared interface IHandling<Return, Arguments>
+shared interface IHandling<Return>
         satisfies IInvocable<Return>
-        & IIterable<Return,Arguments>
-        & IChainable<Return,Arguments>
-        & IHandleable<Return,Arguments>
-        & IProbable<Return,Arguments>
-        & ISpreadable<Return,Arguments>
+        & IIterable<Return>
+        & IChainable<Return>
+        & IHandleable<Return>
+        & IProbable<Return>
+        & ISpreadable<Return>
 {}
 
 "Aspect or trait interface that provide Handling capability."
-shared interface IHandleable<Return, Arguments>
+shared interface IHandleable<Return>
         satisfies IInvocable<Return> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.
      If function accepts the result type for previous chain step, then this step will return the result
@@ -64,12 +64,12 @@ shared interface IHandleable<Return, Arguments>
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
     see (`function package.handle`, `function package.handles`)
-    shared default IHandling<FuncReturn,Arguments> handle<FuncReturn, FuncArgs>(FuncReturn(FuncArgs) newFunc)
-            => Handling<FuncReturn,Arguments,Return,FuncArgs>(this, newFunc);
+    shared default IHandling<FuncReturn> handle<FuncReturn, FuncArgs>(FuncReturn(FuncArgs) newFunc)
+            => Handling<FuncReturn,Return,FuncArgs>(this, newFunc);
 }
 
-class Handling<FuncReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev, FuncReturn(FuncArgs) func)
-        satisfies IHandling<FuncReturn,Arguments> {
+class Handling<FuncReturn, Return, FuncArgs>(IInvocable<Return> prev, FuncReturn(FuncArgs) func)
+        satisfies IHandling<FuncReturn> {
     "If function accepts the result type for previous chain step, then this step will return the result
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
@@ -83,8 +83,8 @@ class Handling<FuncReturn, Arguments, Return, FuncArgs>(IInvocable<Return> prev,
 
 "Initial Handling step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Use with caution."
-shared IHandling<FuncReturn,Arguments> handle<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(FuncArgs) func)
-        => object satisfies IHandling<FuncReturn,Arguments> {
+shared IHandling<FuncReturn> handle<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(FuncArgs) func)
+        => object satisfies IHandling<FuncReturn> {
     shared actual FuncReturn do() {
         assert (is FuncReturn|FuncArgs arguments);
         return if (is FuncArgs arguments) then func(arguments) else arguments;
@@ -94,9 +94,9 @@ shared IHandling<FuncReturn,Arguments> handle<FuncReturn, FuncArgs, Arguments>(A
 "Initial Handling step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Difference with [[handle]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
  Use with caution."
-shared IHandling<FuncReturn,Arguments> handles<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(*FuncArgs) func)
+shared IHandling<FuncReturn> handles<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(*FuncArgs) func)
         given FuncArgs satisfies Anything[]
-        => object satisfies IHandling<FuncReturn,Arguments> {
+        => object satisfies IHandling<FuncReturn> {
     shared actual FuncReturn do() {
         assert (is FuncReturn|FuncArgs arguments);
         return if (is FuncArgs arguments) then func(*arguments) else arguments;

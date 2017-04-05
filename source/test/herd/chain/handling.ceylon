@@ -26,6 +26,32 @@ shared test void testChainHandle() {
     assertThatException(() => chain(1, cTtoTN).handle(cTtoT).do()).hasType(`AssertionError`); //"Handling composition should throw when incomming type can not be cast"
 }
 
+shared test void testHandleDemo() {
+    class O(shared Boolean b) {}
+    class M() {}
+
+    class G() {}
+
+    class I() {}
+
+
+    M? loadM(O o) => o.b then M() else null;
+    Integer|M handleNullM(Null null) => 1;
+    Integer|G|[I+] mToGorI(M mod) => 2;
+    Integer|[I+] gToInteger(O options)(G gdb) => 3;
+    Integer iToInteger([I+] gdb) => 4;
+
+    Integer ch(Boolean b)=> let (o=O(b)) chain(o, loadM)        // IChaining<Null|M>,
+        .handle(handleNullM)                                    // Produces Integer|M
+        .handle(mToGorI)                                        // Produces Integer|G|[I+]
+        .handle(gToInteger(o))                                  // Produces Integer|[I+]
+        .handle(iToInteger)                                     // Produces Integer
+        .do();
+    assertEquals(ch(false), 1);
+    assertEquals(ch(true), 2);
+
+}
+
 shared test void testHandleMethods() {
     //to
     assertEquals(2, handle(0, cTtoT).to(cTtoT).do(), "Handle matchin chained to a simple shain");
