@@ -29,11 +29,8 @@ shared test void testChainHandle() {
 shared test void testHandleDemo() {
     class O(shared Boolean b) {}
     class M() {}
-
     class G() {}
-
     class I() {}
-
 
     M? loadM(O o) => o.b then M() else null;
     Integer|M handleNullM(Null null) => 1;
@@ -41,15 +38,15 @@ shared test void testHandleDemo() {
     Integer|[I+] gToInteger(O options)(G gdb) => 3;
     Integer iToInteger([I+] gdb) => 4;
 
-    Integer ch(Boolean b)=> let (o=O(b)) chain(o, loadM)        // IChaining<Null|M>,
-        .handle(handleNullM)                                    // Produces Integer|M
-        .handle(mToGorI)                                        // Produces Integer|G|[I+]
-        .handle(gToInteger(o))                                  // Produces Integer|[I+]
-        .handle(iToInteger)                                     // Produces Integer
+    Integer ch(Boolean b)=> let (o=O(b))
+        chain(o, loadM)                                         // IChaining<Null|M>,
+        .handle(handleNullM)                                    // IHandling<Integer|M>
+        .handle(mToGorI)                                        // IHandling<Integer|G|[I+]>
+        .handle(gToInteger(o))                                  // IHandling<Integer|[I+]>
+        .handle(iToInteger)                                     // IHandling<Integer>
         .do();
     assertEquals(ch(false), 1);
     assertEquals(ch(true), 2);
-
 }
 
 shared test void testHandleMethods() {
