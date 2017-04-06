@@ -248,10 +248,68 @@ If you actually need to "absorb" a type when handling it, you will need to use a
 ```
 Maybe some day this construct can be directly included into the chain to save your code :)
 
+### Alternative to probing: handling.
+`probe` chain steps are type-safe, but may really mess things up when the amount of types keep increasing.
+Wouldn't it be good to have a way to 'decrease' the amount of types?
+Bad news that, actually, there is no type-safe way to do so.
+Good news that you have a type-unsafe way: the `handle` chain steps.
+
+`handle` chain steps are designed to translate a sub-type for the incoming type to another sub-type for the incoming type.
+ Clearer with an example: Say you have an incoming type `A|B`. You can use `handle` to transform `A` to `B`. Then, the outgoing type will be `A|A`, that is just `A`.
+
+Now, a real life example. Let's get back to the request example, to the point where validating parameters return `Params|InvalidParameterException`:
+```
+Request request = ...;
+Params params = parseParameters(request);
+Params|InvalidParametersException validParams = validateParameters(params);
+Output output = doStuff(validParams); // Error, doStuff accepts Params, not Params|InvalidParametersException
+Result result = writeResponse(output);
+return result;
+```
+By using `handle` chain steps, this can be rewritten to:
+```
+ Params buildDefaultParams(InvalidParametersException ipe) => Params(...);
+ return chain(request, parseParameters).to(validateParameters).handle(buildDefaultParams).to(doStuff).to(writeResponse).do()
+```
+Here, `buildDefaultParams` will just generate default parameters in case request parameters where invalid.
+Note that the return type for `buildDefaultParams` is `Params`. Hence, the outcoming type for the `.handle(buildDefaultParams)` step is `Params|Params`, that is just `Params`.
+
+Sounds a great way for the "try or default" pattern, isn't it?
+Unluckily, not that easy. `handle` steps do have some restrictions:
+
+- Remember that the outgoing type for a `handle` step with a function with type `A(B)` is the union for the incoming type (say `Z`) with the function's return type (`A`).
+  So, if `A` and `Z` are not somehow covering each other, you will simply get the outcoming type `A|Z`.
+   This is not necessary bad, but maybe not the thing you will expect.
+- `handle` steps **require** the incomming type `Z` to satisfy united function types `A|B`. In other words, whatever `Z` is,
+  either it should satisfy `A` (and then it will be transformed to `B`), or should satisfy `B` (then `Z` will be returned).
+  This means you should pick functions carefully. You can not use a function like `Integer(Boolean)` if the incomming type is `Boolean`: `Boolean` does not satisfy `Integer`!
+- What if the function you use have a return type **incompatible** with the incomming type? Then, **`handle` will throw an `AssertionError` on runtime!**.
+  That's why I insist: `handle` is not type-safe.
+
+Finally, let's show another typical usage for `handle`, this time with null values:
+```
+    {Integer*} ints = ...;
+    Integer? int = ints.find(...);
+    if (is Null int) {
+        Integer default = 0;
+        foo(default);
+    } else {
+        foo(int)
+    }
+```
+Can be rewritten as:
+```
+    chain(ints,({Integer*} ints) => ints.find(Integer.even)).handle((Null n)=>0).to(foo).do();
+```
+
+
+
+
+
 ## Caveats
 There are several points of improvement on this code:
 - There is a (minimal) memory footprint for using this construct, opposed to a native `|>` operator that is just syntax sugar.
-- As already said, `probe` steps do not actually remove the type when matched.
+- As already said, `probe` steps do not actually remove the type when matched, nor `handle` is actually type safe. Maybe someday...
 
 
 # F.A.Q.
