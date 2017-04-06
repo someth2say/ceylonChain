@@ -274,6 +274,23 @@ By using `handle` chain steps, this can be rewritten to:
 Here, `buildDefaultParams` will just generate default parameters in case request parameters where invalid.
 Note that the return type for `buildDefaultParams` is `Params`. Hence, the outcoming type for the `.handle(buildDefaultParams)` step is `Params|Params`, that is just `Params`.
 
+
+Let's show another typical usage for `handle`, this time with null values:
+```
+    String str = ..
+    Character? start = str.first;
+    if (is Null start) {
+        Character default = ' ';
+        foo(default);
+    } else {
+        foo(int)
+    }
+```
+Can be rewritten as:
+```
+    chain(str,String.first).handle((Null n)=>' ').to(foo).do();
+```
+
 Sounds a great way for the "try or default" pattern, isn't it?
 Unluckily, not that easy. `handle` steps do have some restrictions:
 
@@ -285,22 +302,6 @@ Unluckily, not that easy. `handle` steps do have some restrictions:
   This means you should pick functions carefully. You can not use a function like `Integer(Boolean)` if the incomming type is `Boolean`: `Boolean` does not satisfy `Integer`!
 - What if the function you use have a return type **incompatible** with the incomming type? Then, **`handle` will throw an `AssertionError` on runtime!**.
   That's why I insist: `handle` is not type-safe.
-
-Finally, let's show another typical usage for `handle`, this time with null values:
-```
-    {Integer*} ints = ...;
-    Integer? int = ints.find(...);
-    if (is Null int) {
-        Integer default = 0;
-        foo(default);
-    } else {
-        foo(int)
-    }
-```
-Can be rewritten as:
-```
-    chain(ints,({Integer*} ints) => ints.find(Integer.even)).handle((Null n)=>0).to(foo).do();
-```
 
 
 
@@ -442,5 +443,5 @@ Integer|Module handleNullModule(Null null){
 Many more examples will come.
 
 # Enjoy!
-Don't hesitate using and distributing this library, and getting back to me to any doubts or issues you may have.
+Don't hesitate using and distributing this library, or getting back to me to any doubts or issues you may have.
 
