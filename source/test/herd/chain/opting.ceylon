@@ -15,7 +15,7 @@ shared test void testHandle() {
     assertEquals(null, opt(null, cTtoTN).do(), "Handling Chaining callable should be able to start on a negative match");
 }
 
-shared test void testChainHandle() {
+shared test void testChainOpt() {
     // For callables accepting null types
     assertEquals(2, chain(0, cTtoTN).opt(cTNtoT).do(), "Handling composition should be able to compose on full match (1)");
     assertEquals(0, chain(1, cTtoTN).opt(cTNtoT).do(), "Handling composition should be able to compose on full match (2)");
@@ -26,7 +26,7 @@ shared test void testChainHandle() {
     assertThatException(() => chain(1, cTtoTN).opt(cTtoT).do()).hasType(`AssertionError`); //"Handling composition should throw when incomming type can not be cast"
 }
 
-shared test void testHandleDemo() {
+shared test void testOptDemo() {
     class O(shared Boolean b) {}
     class M() {}
     class G() {}
@@ -40,16 +40,16 @@ shared test void testHandleDemo() {
 
     Integer ch(Boolean b)=> let (o=O(b))
         chain(o, loadM)                                         // IChaining<Null|M>,
-        .opt(handleNullM)                                    // IHandling<Integer|M>
-        .opt(mToGorI)                                        // IHandling<Integer|G|[I+]>
-        .opt(gToInteger(o))                                  // IHandling<Integer|[I+]>
-        .opt(iToInteger)                                     // IHandling<Integer>
+        .opt(handleNullM)                                    // IOpting<Integer|M>
+        .opt(mToGorI)                                        // IOpting<Integer|G|[I+]>
+        .opt(gToInteger(o))                                  // IOpting<Integer|[I+]>
+        .opt(iToInteger)                                     // IOpting<Integer>
         .do();
     assertEquals(ch(false), 1);
     assertEquals(ch(true), 2);
 }
 
-shared test void testHandleMethods() {
+shared test void testOptMethods() {
     //to
     assertEquals(2, opt(0, cTtoT).to(cTtoT).do(), "Handle matchin chained to a simple shain");
     assertEquals(false, opt(false, Integer.even).to(cUtoT).do(), "Handle non-matching chained to a simple chain");

@@ -1,5 +1,5 @@
 "Chain step that provides probing capabilities.
-  This is the type un-safe relative for [[IHandling]].
+  This is the type un-safe relative for [[IOpting]].
 
  That is, these chain steps are able to accept functions whose arguments are not exaclty the return type for the previous step,
  or the type for the initially provided parameter for starting steps (from now on, the incomming type).
