@@ -53,6 +53,7 @@ shared interface IHandling<Return>
         & IHandleable<Return>
         & IProbable<Return>
         & ISpreadable<Return>
+        & ITeeable<Return>
 {}
 
 "Aspect or trait interface that provide Handling capability."

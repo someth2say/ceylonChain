@@ -43,6 +43,7 @@ shared interface IProbing<Return>
         & IProbable<Return>
         & ISpreadable<Return>
         & IHandleable<Return>
+        & ITeeable<Return>
 {}
 
 "Aspect or trait interface that provide probing capability."

@@ -108,6 +108,38 @@ Goes to:
 return spreads([request,encoding], parseParameters).spread(validateParameters).spread(doStuff).to(writeResponse).do()
 ```
 
+### Teeing chain
+Sometimes, intermediate values are used for several functions, or just need the intermediate value to be passed to a function, but return is expected.
+```
+Request request = ...;
+value params = parseParameters(request);
+validateParameters(params); // Let's say this just throws if params are invalid. No return type expected.
+value output = doStuff(params);
+value result = writeResponse(output);
+return result;
+```
+
+For sure, you can wrapp the `validateParameters` function with another function that returns the same input parameter, and then use the new function for chaining:
+```
+    function validate(Params params) { validateParameters(params); return params; }
+    return chain(request, parseParameters).to(validate).to(doStuff).to(writeResponse).do();
+```
+
+This works, no issues. But it is tedious having to write functions just to return the input parameters.
+So `tee` chain steps will do for you:
+```
+    return chain(request, parseParameters).tee(validateParameters).to(doStuff).to(writeResponse).do();
+```
+
+`tee` chain steps just get the incomming parameters, apply the function, and return the same parameters.
+
+Even you can use them to split the chain into two chain paths:
+```
+function validate(Params params) => chain(params, validateParameter).to(logValidation).to(andSomeMoreStuff).do();
+return chain(request, parseParameters).tee(validate).to(doStuff).to(writeResponse).do();
+```
+This way, you can create some kind of "sub-chain", that will be executed on `tee` step, but after done, original `params` will be used to continue the chain.
+
 ### Iterating chain
 Nowadays, *streams* and *functional programming* are trending topics.
 
@@ -417,27 +449,86 @@ Goes to
 shared void run() {
     Options options = commandLineOptions(process.arguments);
     compileModule(options);
-    chains([options.moduleName, options.moduleVersion],loadModule)                  // IChaining<Null|Module,
-        .handle(handleNullModule)                                                   // Produces Integer|Module
-        .handle(readModuleAnnotations)                                              // Produces Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]
-            .handle(startGdb(options))                                              // Produces Integer|[InvalidGoalDeclaration+]
-            .handle(reportInvalid)                                                  // Produces Integer
-        .to(process.exit)
-        .do();
+    chains([options.moduleName, options.moduleVersion],loadModule)      // IChaining<Null|Module>,
+        .to(handleNullModule(options))                                  // IChaining<Module|Integer>
+        .probe(readAnnotations)                                         // IProbing<Module|Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
+            .probe(startGdb(options))                                   // IProbing<Module|Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
+            .probe(reportInvalid)                                       // IProbing<Module|Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
+        .probe(process.exit)                                            // IProbing<Module|Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
+        .do();                                                          // If execution actually leaves the chain, something really gone wrong.
 }
 
-Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+] readModuleAnnotations(Module mod) => readAnnotations(mod);
-Integer|[InvalidGoalDeclaration+] startGdb(Options options)(GoalDefinitionsBuilder gdb) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
+Integer startGdb(Options options)(GoalDefinitionsBuilder gdb) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
 
 Integer reportInvalid([InvalidGoalDeclaration+] gdb) {
    reportInvalidDeclarations(goals, consoleWriter);
    return 1;
 }
 
-Integer|Module handleNullModule(Null null){
-    process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
-    return 1;
+Integer|Module handleNullModule(Options options)(Module? mod){
+    if (exists mod) {
+        return mod;
+    } else {
+        process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
+        return 1;
+    }
 }
+```
+An alternative approach may be eliminating all `Integer` return types, and directly invoke `process.exit`... but this way is more educational :)
+```
+shared void run() {
+    Options options = commandLineOptions(process.arguments);
+    compileModule(options);
+    chains([options.moduleName, options.moduleVersion],loadModule)      // IChaining<Null|Module>,
+        .to(handleNullModule(options))                                  // IChaining<Module>
+        .to(readAnnotations)                                            // IChaining<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
+            .probe(startGdb(options))                                   // IProbing<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
+            .probe(reportInvalid)                                       // IProbing<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
+        .do();                                                          // If execution actually leaves the chain, something really gone wrong.
+}
+
+Module handleNullModule(Options options)(Module? mod){
+    if (!exists mod) {
+        process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
+        return process.exit(1);
+    }
+    return mod;
+}
+
+Nothing startGdb(Options options)(GoalDefinitionsBuilder gdb) => process.exit(start(gdb, consoleWriter, options.runtime, [*options.goals]));
+
+Nothing reportInvalid([InvalidGoalDeclaration+] gdb) {
+   reportInvalidDeclarations(goals, consoleWriter);
+   return process.exit(1);
+}
+
+```
+
+Even, if you feel adventurous, you can opt for the `handle` chain step:
+```
+shared void run() {
+    Options options = commandLineOptions(process.arguments);
+    compileModule(options);
+    chains([options.moduleName, options.moduleVersion],loadModule)      // IChaining<Null|Module>,
+        .handle(handleNullModule(options))                              // IHandling<Module>
+        .to(readAnnotations)                                            // IChaining<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
+            .handle(startGdb(options))                                  // IHandling<[InvalidGoalDeclaration+]>
+            .to(reportInvalid)                                          // IProbing<Nothing>
+        .do();
+}
+
+Module handleNullModule(Options options)(Null mod){
+    process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
+    return process.exit(1);
+}
+
+[InvalidGoalDeclaration+] startGdb(Options options)(GoalDefinitionsBuilder gdb) => process.exit(start(gdb, consoleWriter, options.runtime, [*options.goals]));
+
+Nothing reportInvalid([InvalidGoalDeclaration+] gdb) {
+   reportInvalidDeclarations(goals, consoleWriter);
+   return process.exit(1);
+}
+
 ```
 
 Many more examples will come.

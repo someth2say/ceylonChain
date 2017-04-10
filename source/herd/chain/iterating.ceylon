@@ -22,6 +22,7 @@ shared interface IIterating<Return, Element, Absent=Null>
         & IProbable<Return>
         & ISpreadable<Return>
         & IHandleable<Return>
+        & ITeeable<Return>
         given Absent satisfies Null
         given Return satisfies Iterable<Element,Absent>
 {

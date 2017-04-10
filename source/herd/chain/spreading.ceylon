@@ -15,6 +15,7 @@ shared interface ISpreading<Return>
         & IIterable<Return>
         & IProbable<Return>
         & IHandleable<Return>
+        & ITeeable<Return>
         given Return satisfies [Anything*] {
 
     "Adds a new step to the chain, by spreading the result of the chain so far to a new function.
