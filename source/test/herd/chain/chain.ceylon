@@ -19,8 +19,8 @@ shared test void testChain() {
     assertEquals([0, true], chain(null, cTNtoS).do(), "Basic chain, null params, tuple return");
     assertEquals(4, chain(4, Integer).do(), "Basic chain onto a constructor");
 
-    assertEquals(3, chain({ 1, 2, 3 }, ({Integer*} ints) => ints.find(Integer.even)).handle((Null n) => 0).to(Integer.successor).do(), "Chain on iterable 1");
-    assertEquals(1, chain({ 1, 3, 5 }, ({Integer*} ints) => ints.find(Integer.even)).handle((Null n) => 0).to(Integer.successor).do(), "Chain on iterable 2");
+    assertEquals(3, chain({ 1, 2, 3 }, ({Integer*} ints) => ints.find(Integer.even)).opt((Null n) => 0).to(Integer.successor).do(), "Chain on iterable 1");
+    assertEquals(1, chain({ 1, 3, 5 }, ({Integer*} ints) => ints.find(Integer.even)).opt((Null n) => 0).to(Integer.successor).do(), "Chain on iterable 2");
 }
 
 shared test void testChainSpread() {

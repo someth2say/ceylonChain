@@ -42,7 +42,7 @@ shared interface IProbing<Return>
         & IChainable<Return>
         & IProbable<Return>
         & ISpreadable<Return>
-        & IHandleable<Return>
+        & IOptable<Return>
         & ITeeable<Return>
 {}
 

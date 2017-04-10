@@ -1,4 +1,4 @@
-"Chain step that provides Handling capabilities.
+"Chain step that provides capabilities to invoking based on incomming type.
  This is the type un-safe relative for [[IProbing]].
  That is, these chain steps are able to accept functions whose arguments are not exaclty the return type for the previous step,
  or the type for the initially provided parameter for starting steps (from now on, the incomming type).
@@ -20,7 +20,7 @@
  <pre>
     Integer? foo(Integer i) => if (i.even) i else null;
 
-    // Standard way to use [[handle]]
+    // Standard way to use [[opt]]
     Integer baz(Null n) => 0;
     assertEquals(chain(2,foo).handle(baz).do(),3); // `baz` can not handle `Integer` as returned from `foo`, hence `baz` casts '2' to `Integer`. All good.
     assertEquals(chain(1,foo).handle(baz).do(),0); //`baz` can handle `Null` as returned from `foo`, hence `baz` returns '0'. All good also.
@@ -44,33 +44,33 @@
     chain(\"Three\", Integer.parse).handle(Integer.successor).do(); // `parse` returns a `ParseException`, but that can not be accepted by `succesor`. `successor`s return type is `Integer`, so `handle` tryes to cast `ParseException` to `Integer`, and throws.
  </pre>
 
- As says, [[IHandling]] is the type-unsafe relative for [[IProbing]]. Despite being unsafe, many times it is recommended its ussage, instead of [[IProbing]]. The reason is that [[IHandling]] actually absorb the handled type, asserting the only type
+ As says, [[IOpting]] is the type-unsafe relative for [[IProbing]]. Despite being unsafe, many times it is recommended its ussage, instead of [[IProbing]]. The reason is that [[IOpting]] actually absorb the handled type, asserting the only type
  outgouing will be the type returned by the chain step function. "
-shared interface IHandling<Return>
+shared interface IOpting<Return>
         satisfies IInvocable<Return>
         & IIterable<Return>
         & IChainable<Return>
-        & IHandleable<Return>
+        & IOptable<Return>
         & IProbable<Return>
         & ISpreadable<Return>
         & ITeeable<Return>
 {}
 
 "Aspect or trait interface that provide Handling capability."
-shared interface IHandleable<Return>
+shared interface IOptable<Return>
         satisfies IInvocable<Return> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.
      If function accepts the result type for previous chain step, then this step will return the result
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
-    see (`function package.handle`, `function package.handles`)
-    shared default IHandling<FuncReturn> handle<FuncReturn, FuncArgs>(FuncReturn(FuncArgs) newFunc)
-            => Handling<FuncReturn,Return,FuncArgs>(this, newFunc);
+    see (`function package.opt`, `function package.opts`)
+    shared default IOpting<FuncReturn> opt<FuncReturn, FuncArgs>(FuncReturn(FuncArgs) newFunc)
+            => Opting<FuncReturn,Return,FuncArgs>(this, newFunc);
 }
 
-class Handling<FuncReturn, Return, FuncArgs>(IInvocable<Return> prev, FuncReturn(FuncArgs) func)
-        satisfies IHandling<FuncReturn> {
+class Opting<FuncReturn, Return, FuncArgs>(IInvocable<Return> prev, FuncReturn(FuncArgs) func)
+        satisfies IOpting<FuncReturn> {
     "If function accepts the result type for previous chain step, then this step will return the result
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
@@ -84,8 +84,8 @@ class Handling<FuncReturn, Return, FuncArgs>(IInvocable<Return> prev, FuncReturn
 
 "Initial Handling step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Use with caution."
-shared IHandling<FuncReturn> handle<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(FuncArgs) func)
-        => object satisfies IHandling<FuncReturn> {
+shared IOpting<FuncReturn> opt<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(FuncArgs) func)
+        => object satisfies IOpting<FuncReturn> {
     shared actual FuncReturn do() {
         assert (is FuncReturn|FuncArgs arguments);
         return if (is FuncArgs arguments) then func(arguments) else arguments;
@@ -93,11 +93,11 @@ shared IHandling<FuncReturn> handle<FuncReturn, FuncArgs, Arguments>(Arguments a
 };
 
 "Initial Handling step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
- Difference with [[handle]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
+ Difference with [[opt]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
  Use with caution."
-shared IHandling<FuncReturn> handles<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(*FuncArgs) func)
+shared IOpting<FuncReturn> opts<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(*FuncArgs) func)
         given FuncArgs satisfies Anything[]
-        => object satisfies IHandling<FuncReturn> {
+        => object satisfies IOpting<FuncReturn> {
     shared actual FuncReturn do() {
         assert (is FuncReturn|FuncArgs arguments);
         return if (is FuncArgs arguments) then func(*arguments) else arguments;

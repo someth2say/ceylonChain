@@ -280,14 +280,14 @@ If you actually need to "absorb" a type when handling it, you will need to use a
 ```
 Maybe some day this construct can be directly included into the chain to save your code :)
 
-### Alternative to probing: handling.
+### Alternative to probing: Option.
 `probe` chain steps are type-safe, but may really mess things up when the amount of types keep increasing.
 Wouldn't it be good to have a way to 'decrease' the amount of types?
 Bad news that, actually, there is no type-safe way to do so.
-Good news that you have a type-unsafe way: the `handle` chain steps.
+Good news that you have a type-unsafe way: the `opt` chain steps.
 
-`handle` chain steps are designed to translate a sub-type for the incoming type to another sub-type for the incoming type.
- Clearer with an example: Say you have an incoming type `A|B`. You can use `handle` to transform `A` to `B`. Then, the outgoing type will be `A|A`, that is just `A`.
+`opt` chain steps are designed to translate a sub-type for the incoming type to another sub-type for the incoming type.
+ Clearer with an example: Say you have an incoming type `A|B`. You can use `opt` to transform `A` to `B`. Then, the outgoing type will be `A|A`, that is just `A`.
 
 Now, a real life example. Let's get back to the request example, to the point where validating parameters return `Params|InvalidParameterException`:
 ```
@@ -298,16 +298,16 @@ Output output = doStuff(validParams); // Error, doStuff accepts Params, not Para
 Result result = writeResponse(output);
 return result;
 ```
-By using `handle` chain steps, this can be rewritten to:
+By using `opt` chain steps, this can be rewritten to:
 ```
  Params buildDefaultParams(InvalidParametersException ipe) => Params(...);
- return chain(request, parseParameters).to(validateParameters).handle(buildDefaultParams).to(doStuff).to(writeResponse).do()
+ return chain(request, parseParameters).to(validateParameters).opt(buildDefaultParams).to(doStuff).to(writeResponse).do()
 ```
 Here, `buildDefaultParams` will just generate default parameters in case request parameters where invalid.
-Note that the return type for `buildDefaultParams` is `Params`. Hence, the outcoming type for the `.handle(buildDefaultParams)` step is `Params|Params`, that is just `Params`.
+Note that the return type for `buildDefaultParams` is `Params`. Hence, the outcoming type for the `.opt(buildDefaultParams)` step is `Params|Params`, that is just `Params`.
 
 
-Let's show another typical usage for `handle`, this time with null values:
+Let's show another typical usage for `opt`, this time with null values:
 ```
     String str = ..
     Character? start = str.first;
@@ -320,29 +320,26 @@ Let's show another typical usage for `handle`, this time with null values:
 ```
 Can be rewritten as:
 ```
-    chain(str,String.first).handle((Null n)=>' ').to(foo).do();
+    chain(str,String.first).opt((Null n)=>' ').to(foo).do();
 ```
 
 Sounds a great way for the "try or default" pattern, isn't it?
-Unluckily, not that easy. `handle` steps do have some restrictions:
+Unluckily, not that easy. `opt` steps do have some restrictions:
 
-- Remember that the outgoing type for a `handle` step with a function with type `A(B)` is the union for the incoming type (say `Z`) with the function's return type (`A`).
+- Remember that the outgoing type for a `opt` step with a function with type `A(B)` is the union for the incoming type (say `Z`) with the function's return type (`A`).
   So, if `A` and `Z` are not somehow covering each other, you will simply get the outcoming type `A|Z`.
    This is not necessary bad, but maybe not the thing you will expect.
-- `handle` steps **require** the incomming type `Z` to satisfy united function types `A|B`. In other words, whatever `Z` is,
+- `opt` steps **require** the incomming type `Z` to satisfy united function types `A|B`. In other words, whatever `Z` is,
   either it should satisfy `A` (and then it will be transformed to `B`), or should satisfy `B` (then `Z` will be returned).
   This means you should pick functions carefully. You can not use a function like `Integer(Boolean)` if the incomming type is `Boolean`: `Boolean` does not satisfy `Integer`!
-- What if the function you use have a return type **incompatible** with the incomming type? Then, **`handle` will throw an `AssertionError` on runtime!**.
-  That's why I insist: `handle` is not type-safe.
-
-
-
+- What if the function you use have a return type **incompatible** with the incomming type? Then, **`opt` will throw an `AssertionError` on runtime!**.
+  That's why I insist: `opt` is not type-safe.
 
 
 ## Caveats
 There are several points of improvement on this code:
 - There is a (minimal) memory footprint for using this construct, opposed to a native `|>` operator that is just syntax sugar.
-- As already said, `probe` steps do not actually remove the type when matched, nor `handle` is actually type safe. Maybe someday...
+- As already said, `probe` steps do not actually remove the type when matched, nor `opt` is actually type safe. Maybe someday...
 
 
 # F.A.Q.
@@ -376,7 +373,8 @@ If you need to create method references for chains, you may simply wrap the chai
 
 ###### So good, so far. But can I see real life examples where this library can be used?
 Sure! Here are some:
-From Gyokuro Spring demo:
+
+**From Gyokuro Spring demo:**
 ```
 shared void run() {
     addLogWriter(writeSimpleLog);
@@ -420,7 +418,7 @@ shared void run() {
 ```
 
 
-From `ceylon.build`:
+**From `ceylon.build`**
 ```
 shared void run() {
     value writer = consoleWriter;
@@ -495,24 +493,23 @@ Module handleNullModule(Options options)(Module? mod){
     return mod;
 }
 
-Nothing startGdb(Options options)(GoalDefinitionsBuilder gdb) => process.exit(start(gdb, consoleWriter, options.runtime, [*options.goals]));
+Nothing startGdb(Options options)(GoalDefinitionsBuilder gdb) => chain([gdb, consoleWriter, options.runtime, [*options.goals]],start).to(process.exit).do();
 
 Nothing reportInvalid([InvalidGoalDeclaration+] gdb) {
    reportInvalidDeclarations(goals, consoleWriter);
    return process.exit(1);
 }
-
 ```
 
-Even, if you feel adventurous, you can opt for the `handle` chain step:
+Even, if you feel adventurous, you can opt for the `opt` chain step:
 ```
 shared void run() {
     Options options = commandLineOptions(process.arguments);
     compileModule(options);
     chains([options.moduleName, options.moduleVersion],loadModule)      // IChaining<Null|Module>,
-        .handle(handleNullModule(options))                              // IHandling<Module>
+        .opt(handleNullModule(options))                                 // IOpting<Module>
         .to(readAnnotations)                                            // IChaining<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-            .handle(startGdb(options))                                  // IHandling<[InvalidGoalDeclaration+]>
+            .opt(startGdb(options))                                     // IOpting<[InvalidGoalDeclaration+]>
             .to(reportInvalid)                                          // IProbing<Nothing>
         .do();
 }
@@ -522,13 +519,12 @@ Module handleNullModule(Options options)(Null mod){
     return process.exit(1);
 }
 
-[InvalidGoalDeclaration+] startGdb(Options options)(GoalDefinitionsBuilder gdb) => process.exit(start(gdb, consoleWriter, options.runtime, [*options.goals]));
+[InvalidGoalDeclaration+] startGdb(Options options)(GoalDefinitionsBuilder gdb) => chain([gdb, consoleWriter, options.runtime, [*options.goals]],start).to(process.exit).do();
 
 Nothing reportInvalid([InvalidGoalDeclaration+] gdb) {
    reportInvalidDeclarations(goals, consoleWriter);
    return process.exit(1);
 }
-
 ```
 
 Many more examples will come.

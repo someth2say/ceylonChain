@@ -14,7 +14,7 @@ shared interface ISpreading<Return>
         satisfies IInvocable<Return>
         & IIterable<Return>
         & IProbable<Return>
-        & IHandleable<Return>
+        & IOptable<Return>
         & ITeeable<Return>
         given Return satisfies [Anything*] {
 
