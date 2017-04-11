@@ -17,7 +17,7 @@ shared interface ITeeing<Return>
         & IChainable<Return>
         & IProbable<Return>
         & ISpreadable<Return>
-        & IOptable<Return>
+        & IForzable<Return>
         & ITeeable<Return>
 {}
 

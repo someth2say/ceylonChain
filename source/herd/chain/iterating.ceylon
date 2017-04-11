@@ -21,7 +21,7 @@ shared interface IIterating<Return, Element, Absent=Null>
         & IChainable<Return>
         & IProbable<Return>
         & ISpreadable<Return>
-        & IOptable<Return>
+        & IForzable<Return>
         & ITeeable<Return>
         given Absent satisfies Null
         given Return satisfies Iterable<Element,Absent>
