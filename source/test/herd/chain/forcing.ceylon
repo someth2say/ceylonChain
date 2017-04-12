@@ -7,12 +7,18 @@ import ceylon.test {
 
 import herd.chain {
     chain,
-    force
+    force,
+    IForcing
 }
 
 shared test void testForce() {
-    assertEquals(1, force(0, cTtoT).do(), "Forcing Chaining callable should be able to start on a positive match");
+    IForcing<Nothing> nonForced = force(0, cTtoT);
+    assertEquals(1, nonForced.do(), "Forcing Chaining callable should be able to start on a positive match");
     assertEquals(null, force(null, cTtoTN).do(), "Forcing Chaining callable should be able to start on a negative match");
+
+    IForcing<Integer> forcedType = force<Integer?,Integer,Integer,Integer>(0, cTtoTN);
+    assertEquals(1, forcedType.do(), "Forcing Chaining callable should be able to start on a positive match, with forced return type");
+
 }
 
 shared test void testChainForce() {

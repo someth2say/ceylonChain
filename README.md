@@ -109,7 +109,7 @@ return spreads([request,encoding], parseParameters).spread(validateParameters).s
 ```
 
 ### Teeing chain
-Sometimes, intermediate values are used for several functions, or just need the intermediate value to be passed to a function, but return is expected.
+Sometimes, intermediate values are used for several functions, or just need the intermediate value to be passed to a function, but no return is expected.
 ```
 Request request = ...;
 value params = parseParameters(request);
@@ -119,14 +119,14 @@ value result = writeResponse(output);
 return result;
 ```
 
-For sure, you can wrapp the `validateParameters` function with another function that returns the same input parameter, and then use the new function for chaining:
+For sure, you can wrap the `validateParameters` function with another function that returns the same input parameter, and then use the new function for chaining:
 ```
     function validate(Params params) { validateParameters(params); return params; }
     return chain(request, parseParameters).to(validate).to(doStuff).to(writeResponse).do();
 ```
 
 This works, no issues. But it is tedious having to write functions just to return the input parameters.
-So `tee` chain steps will do for you:
+So `tee` chain steps will do it for you:
 ```
     return chain(request, parseParameters).tee(validateParameters).to(doStuff).to(writeResponse).do();
 ```
@@ -184,40 +184,75 @@ return iterate(request,parseParameters).map(validate).to(doStuff).to(writeRespon
 Et voilà! All methods that can be used onto an `Iterable`, can be used onto the chain step, but without the need of leaving the chain: `fold` , `every`, `contains`... no limits!
 
  :point_up:
-  Some methods, like `map`,`narrow`,`filter`... when used onto an `Iterable` do actually return another `Iterable`.
+ Some methods, like `map`,`narrow`,`filter`... when used onto an `Iterable` do actually return another `Iterable`.
  Those same methods, when used onto an `iterate` chain step, will also return another `iterate` chain step! This allows you to write things like:
  ```
     ...iterate(...).map(...).filter(...)...
  ```
 
  Some other `Iterable` methods (some times called "collecting" methods), do not return a stream, but "simple" values: `any`, `find`,`shorterThan`...
- Those, when applied onto a `iterate` chain step will provide a new simple chain step, whose return type will be the same than the original method.
+ Those, when applied onto a `iterate` chain step will provide a new basic chain step, whose return type will be the same than the original method.
 
 :warning:
- The `spread` method of `Iterable` clashes with the `spread` method for spreading the values of a chain step over the next step.
+The `spread` method of `Iterable` clashes with the `spread` method of a chain step over the next step.
 For avoiding this, `spread` method of `iterate` chain steps have been renamed to `spreadIterable`.
 
-### Nullable types and probe
-Another use case is when used functions can return 'null', and it should be handled.
-Let's say `validateParameters` return `null` if parameters are not valid:
+### Probing and forcing
+Sometimes (many times) functions do not match completely. I.e. many times, a function can return a nullable type (`Element|Null`, or just `Element?`),
+but the next function to be chained just accept non-nullable types (say `Element`).
+The canonical example for this is:
+```
+Element? elemOrNot = getElement(...);
+Partial? partialOrNot = if (exists element = elementOrNot) then doSomethingWithElement(element) else null;
+Result? result = if (exists partial = partialOrNot) then doSomethingWithPartial(partial) else null;
+```
+You see, `Null` keeps on flowing down to each function, forcing an `exists` check to be included every time.
+
+Getting back to our previous sample functions, let's present the following:
 ```
 Request request = ...;
 Params params = parseParameters(request);
-Params? validParams = validateParameters(params);
-value output = doStuff(validParams); // Error, doStuff accepts Params, not Params?
+Params? validParams = validateParameters(params); // Now, validate return `Null` if params are not valid.
+Output output = doStuff(validParams); // Error, doStuff accepts Params, not Params?
 Result result = writeResponse(output);
 return result;
 ```
-But `doStuff` do only accept `Params`, not `Params?`!
+How can we express that using chains? `probe` come to save the day.
+`probe` chain steps will apply incoming values to the provided functions **only if** its type match. 
+Else, the incoming value will just flow to next chain steps.
 
-Probing chains come to save the day.
-By using the `probe` method, `validParams` will be passed to `doStuff` **only** if they are not `null`. Else, the chain step result will just be the same `null`.
-Consequently, the result of this probing chain step may be both 'null', or the result of applying the 'validateParameters' function:
+So, in the example, we can just `probe` to apply `validParams` to `doStuff`, and the chain will do the trick:
 ```
 return chain(request, parseParameters).to(validateParameters).probe(doStuff).probe(writeResponse).do()
 ```
-You may have noticed that `probe` is not only used with `doStuff`, but also with `writeResponse`. Why?
-Easy: the moment you use `probe`, the non-accepted `null` can just pass by to next chain steps. And `writeResponse` do not accept `null`! Hence, `probe` is needed.
+If parameters are valid, `validateParameters` will return an instance of `Params`, that will flow to `doStuff`.
+ But if parameters are not valid, `validateParameters` will return `null`. As `Null` is not accepted by `doStuff`, this function will not be used, and `null` will flow to `writeResponse`.
+Because `null` can also flow to `writeResponse`, but it does not accept `Null`, `probe` is also needed in that chain step.
+
+Being true, the chain just shown is not completely equivalent to the non-chaining version. The actual return type for the whole chain is not `Result`, 
+but `Null|Params|Output|Result`! WTF! 
+Clever reader will say: "Hey! Pure Ceylon code can actually check the type, and downcast to `Result`!"
+And you are right... partially. Ceylon can do that because either TypeChecker can "remove" types from an union type, or the developer is smart enough 
+  to remove the types manually (via `assert is`).  
+But the compiler can not. There is no way to say "assert(is Params|Null & ~Null)" (meaning ~ the type negation or complementary types).
+Hence, the outcoming type for  a `probe` step will always be its incoming type **plus** (meaning "union to") the return type for the function.
+ 
+"Ok. You are right, you can not remove the matched type. So why don't you just assert on the type?"
+Sure... are you able to tell me (from the point of view of the library) the type I need to assert to?
+ Think it a bit, and you will find you can not decide the type you need to assert to, in a general way.
+
+But...
+
+You can not decide the type, but you can `force` it.
+
+
+
+  
+
+
+
+
+
 Also, the result for the whole chain changed. Previously, the `result` may never be `null`, but with this approach, `null` can lurk to the end of the chain. Hence, now `result` can be null!
 
 #### Advanced probing

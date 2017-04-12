@@ -52,41 +52,47 @@ shared interface IForzable<Return>
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
     see (`function package.force`, `function package.forces`)
-    shared IForcing<FuncReturn> force<FuncReturn, FuncArgs>(FuncReturn(FuncArgs) newFunc)
-            => Forcing<FuncReturn,Return,FuncArgs>(this, newFunc);
+    shared IForcing<ForcedReturn> force<FuncReturn, FuncArgs, ForcedReturn=Return|FuncReturn>(FuncReturn(FuncArgs) newFunc)
+            given FuncReturn satisfies ForcedReturn
+            => Forcing<FuncReturn,Return,FuncArgs,ForcedReturn>(this, newFunc);
 }
 
-class Forcing<FuncReturn, Return, FuncArgs>(IInvocable<Return> prev, FuncReturn(FuncArgs) func)
-        satisfies IForcing<FuncReturn> {
+class Forcing<FuncReturn, Return, FuncArgs, ForcedReturn=Return|FuncReturn>(IInvocable<Return> prev, FuncReturn(FuncArgs) func)
+        satisfies IForcing<ForcedReturn>
+        given FuncReturn satisfies ForcedReturn
+{
     "If function accepts the result type for previous chain step, then this step will return the result
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
-    shared actual FuncReturn do() {
+    shared actual ForcedReturn do() {
         value prevResult = prev.do();
-        assert (is FuncReturn|FuncArgs prevResult);
-        return if (is FuncArgs prevResult) then func(prevResult) else prevResult;
+        FuncReturn|Return result = if (is FuncArgs prevResult) then func(prevResult) else prevResult;
+        assert (is ForcedReturn result);
+        return result;
     }
 }
 
 "Initial Handling step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Use with caution."
-shared IForcing<FuncReturn> force<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(FuncArgs) func)
-        => object satisfies IForcing<FuncReturn> {
-    shared actual FuncReturn do() {
-        assert (is FuncReturn|FuncArgs arguments);
-        return if (is FuncArgs arguments) then func(arguments) else arguments;
+shared IForcing<ForcedReturn> force<FuncReturn, FuncArgs, Arguments, ForcedReturn=Arguments|FuncReturn>(Arguments arguments, FuncReturn(FuncArgs) func)
+        => object satisfies IForcing<ForcedReturn> {
+    shared actual ForcedReturn do() {
+        FuncReturn|Arguments result = if (is FuncArgs arguments) then func(arguments) else arguments;
+        assert (is ForcedReturn result);
+        return result;
     }
 };
 
 "Initial Handling step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Difference with [[force]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
  Use with caution."
-shared IForcing<FuncReturn> forces<FuncReturn, FuncArgs, Arguments>(Arguments arguments, FuncReturn(*FuncArgs) func)
+shared IForcing<ForcedReturn> forces<FuncReturn, FuncArgs, Arguments, ForcedReturn=Arguments|FuncReturn>(Arguments arguments, FuncReturn(*FuncArgs) func)
         given FuncArgs satisfies Anything[]
-        => object satisfies IForcing<FuncReturn> {
-    shared actual FuncReturn do() {
-        assert (is FuncReturn|FuncArgs arguments);
-        return if (is FuncArgs arguments) then func(*arguments) else arguments;
+        => object satisfies IForcing<ForcedReturn> {
+    shared actual ForcedReturn do() {
+        FuncReturn|Arguments result = if (is FuncArgs arguments) then func(*arguments) else arguments;
+        assert (is ForcedReturn result);
+        return result;
     }
 };
