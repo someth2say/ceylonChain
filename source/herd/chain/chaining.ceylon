@@ -11,15 +11,7 @@
 
  Note that chaining different steps does not vary the type for chain arguments, as those are defined by the parameters for chain initial step."
 
-shared interface IChaining<Return>
-        satisfies IInvocable<Return>
-        & IIterable<Return>
-        & IChainable<Return>
-        & IProbable<Return>
-        & ISpreadable<Return>
-        & IForzable<Return>
-        & ITeeable<Return>
-{}
+shared interface IChaining<Return> satisfies DefaultChain<Return>{}
 
 "Aspect or trait interface that provide chaining capability. "
 shared interface IChainable<Return>
@@ -27,7 +19,7 @@ shared interface IChainable<Return>
     "Adds a new step to the chain, by passing the result of the chain so far to a new function.
      The new function MUST accept the return type for the chain so far as its only parameter."
     see( `function package.chain`, `function package.chains`)
-    shared default IChaining<NewReturn> to<NewReturn>(NewReturn(Return) newFunc)
+    shared IChaining<NewReturn> to<NewReturn>(NewReturn(Return) newFunc)
             => Chaining<NewReturn,Return>(this, newFunc);
 }
 

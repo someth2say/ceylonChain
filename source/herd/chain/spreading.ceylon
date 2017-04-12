@@ -10,8 +10,8 @@
     assertEquals(spread(1,foo).to(bar).do(),0); // foo returns [1,false], hence bar returns 0;
     assertEquals(spread(2,foo).to(bar).do(),2); // foo returns [2,true], hence bar returns 2;
  </pre>"
-shared interface ISpreading<Return>
-        satisfies IInvocable<Return>
+shared interface ISpreading<Return> satisfies
+          IInvocable<Return>
         & IIterable<Return>
         & IProbable<Return>
         & IForzable<Return>
@@ -22,14 +22,14 @@ shared interface ISpreading<Return>
      Chain so far MUST be spreadable (i.o.w should satisfy ISpreadable interface).
      The new function MUST accept an spreadable type (i.o.w a Tuple)."
     see (`interface ISpreadable`, `function package.spread`, `function package.spreads`)
-    shared default IChaining<NewReturn> to<NewReturn>(NewReturn(*Return) newFunc)
+    shared IChaining<NewReturn> to<NewReturn>(NewReturn(*Return) newFunc)
             => SpreadChaining<NewReturn,Return>(this, newFunc);
 
     "Adds a new step to the chain, by spreading the result of the chain so far to a new function.
      Chain so far MUST be spreadable (i.o.w should satisfy ISpreadable interface), and so will be the new chain.
      The new function MUST BOTH accept return an spreadable type (i.o.w a Tuple)."
     see (`interface ISpreadable`, `function package.spread`, `function package.spreads`)
-    shared default ISpreading<NewReturn> spread<NewReturn>(NewReturn(*Return) newFunc)
+    shared ISpreading<NewReturn> spread<NewReturn>(NewReturn(*Return) newFunc)
             given NewReturn satisfies [Anything*]
             => SpreadSpreading<NewReturn,Return>(this, newFunc);
 }
@@ -40,7 +40,7 @@ shared interface ISpreadable<Return>
     "Adds a new step to the chain, by trying to apply result so far to the provided function.
      Function MUST return an spreadable type (i.o.w. a Tuple).
      The resulting chain's result MAY be spread into further chain steps."
-    shared default ISpreading<NewReturn> spread<NewReturn>(NewReturn(Return) newFunc)
+    shared ISpreading<NewReturn> spread<NewReturn>(NewReturn(Return) newFunc)
             given NewReturn satisfies [Anything*]
             => Spreading<NewReturn,Return>(this, newFunc);
 }

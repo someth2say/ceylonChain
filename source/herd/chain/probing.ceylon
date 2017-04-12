@@ -34,15 +34,7 @@
  Behaviour for [[IProbing]] can be very tricky in complex cases (i.e. when return types are complex, or many different paths can be taken.
  Use with caution.
  "
-shared interface IProbing<Return>
-        satisfies IInvocable<Return>
-        & IIterable<Return>
-        & IChainable<Return>
-        & IProbable<Return>
-        & ISpreadable<Return>
-        & IForzable<Return>
-        & ITeeable<Return>
-{}
+shared interface IProbing<Return> satisfies DefaultChain<Return>{}
 
 "Aspect or trait interface that provide probing capability."
 shared interface IProbable<Return>
@@ -53,7 +45,7 @@ shared interface IProbable<Return>
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
     see (`function package.probe`, `function package.probes`)
-    shared default IProbing<NewReturn|Return> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
+    shared IProbing<NewReturn|Return> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
             => Probing<NewReturn,Return,FuncArgs>(this, newFunc);
 }
 

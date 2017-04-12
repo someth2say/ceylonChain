@@ -41,15 +41,7 @@
  As said, [[IForcing]] is the type-unsafe relative for [[IProbing]]. Despite being unsafe, many times it is recommended its usage,
  instead of [[IProbing]]. The reason is that [[IForcing]] actually absorb the handled type, asserting the only type
  outgouing will be the type returned by the chain step function. "
-shared interface IForcing<Return>
-        satisfies IInvocable<Return>
-        & IIterable<Return>
-        & IChainable<Return>
-        & IForzable<Return>
-        & IProbable<Return>
-        & ISpreadable<Return>
-        & ITeeable<Return>
-{}
+shared interface IForcing<Return> satisfies DefaultChain<Return> {}
 
 "Aspect or trait interface that provide Handling capability."
 shared interface IForzable<Return>
@@ -60,7 +52,7 @@ shared interface IForzable<Return>
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
     see (`function package.force`, `function package.forces`)
-    shared default IForcing<FuncReturn> force<FuncReturn, FuncArgs>(FuncReturn(FuncArgs) newFunc)
+    shared IForcing<FuncReturn> force<FuncReturn, FuncArgs>(FuncReturn(FuncArgs) newFunc)
             => Forcing<FuncReturn,Return,FuncArgs>(this, newFunc);
 }
 
