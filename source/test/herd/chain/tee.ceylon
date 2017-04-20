@@ -22,7 +22,7 @@ shared test void testTee() {
 
 shared test void testTeeTo() {
     assertEquals(1, tee(0, cTtoT).to(cTtoT).do(), "Basic tee to basic chain");
-    assertEquals(0, tee(null, cTNtoT).to(cNtoI).do(), "Basic tee to basic chain, null params");
+    assertEquals(0, tee(null, cTNtoT).to(cNtoT).do(), "Basic tee to basic chain, null params");
 }
 
 shared test void testChainToTee() {

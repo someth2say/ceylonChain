@@ -18,7 +18,7 @@ shared test void testProbe() {
     assertEquals("invalid", probe("invalid", cTtoT).do(), "Probing Chaining callable should be able to start on callables NOT accepting null");
     assertEquals([0, "invalid"], probe([0, "invalid"], cTtoT).do(), "Probing Chaining callable should be able to start on callables NOT accepting null");
 
-    assertEquals(0,probe(null,cItoV).to(cNtoI).do(),"Probing a 'Nothing' returning function: as it does not match, 'nothing' is not evaluated.");
+    assertEquals(0,probe(null, cTtoV).to(cNtoT).do(),"Probing a 'Nothing' returning function: as it does not match, 'nothing' is not evaluated.");
 
 }
 

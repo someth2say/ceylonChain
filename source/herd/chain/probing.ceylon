@@ -1,10 +1,13 @@
 "Chain step that provides probing capabilities. This is the type un-safe relative for [[IForcing]].
 
- That is, these chain steps are able to accept functions whose arguments are not exaclty the return type for the previous step,
- or the type for the initially provided parameter for starting steps (from now on, the incomming type).
- If the incoming type is assignable to the arguments for this chain step's function, then this step will apply the function to the
+ This is the type non-aserting relative for [[IForcing]].
+ That is, both [[IProbing]] and [[IForcing]] chain steps are capable to accept incomming values that are not accepted by the used function.
+
+ In both cases, if the incoming type is assignable to the arguments for this chain step's function, then this step will apply the function to the
  incomming value, and return the value returned by that function.
- If the incomming type is *NOT* assignable, then the same incomming value will be returned.
+
+ If the incomming type is *NOT* assignable, then the incomming value is returned.
+ Being able to return the incomming type implies that the incoming type will be part for the outgoing (return) type.
 
  Example: Null value passing
  <pre>

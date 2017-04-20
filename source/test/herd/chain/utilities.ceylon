@@ -31,9 +31,9 @@ Integer(Integer|{Integer*}) cUItoT = (Integer|{Integer*} ios) => if (is {Integer
 [Integer, Boolean](Integer|{Integer*}) cUItoS = (Integer|{Integer*} ios) => let (int = cUItoT(ios)) [int, int.even];
 {Integer*}(Integer|{Integer*}) cUItoI = (Integer|{Integer*} ios) => let (int = cUItoT(ios)) { int };
 
-Integer(Null) cNtoI = (Null n) => 0;
+Integer(Null) cNtoT = (Null n) => 0;
 
-Nothing(Integer) cItoV = (Integer int) { return process.exit(1); };
+Nothing(Integer) cTtoV = (Integer int) { return process.exit(1); };
 
 /* Utility methods */
 Boolean optEquals(Anything first, Anything second) {
