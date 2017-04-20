@@ -110,17 +110,17 @@ shared test void testForceDemo() {
     class I() {}
 
     M? loadM(O o) => o.b then M() else null;
-    Integer|M handleNullM(Null null) => 1;
-    Integer|G|[I+] mToGorI(M mod) => 2;
-    Integer|[I+] gToInteger(O options)(G gdb) => 3;
-    Integer iToInteger([I+] gdb) => 4;
+    Integer handleNullM(Null null) => 1;
+    G|[I+] mToGorI(M mod) => G();
+    Integer gToInt(O options)(G gdb) => 2;
+    Integer iToInt([I+] gdb) => 3;
 
     Integer ch(Boolean b) => let (o = O(b))
-    chain(o, loadM)                                         // IChaining<Null|M>,
-        .force(handleNullM)                                    // IForcing<Integer|M>
-        .force(mToGorI)                                        // IForcing<Integer|G|[I+]>
-        .force(gToInteger(o))                                  // IForcing<Integer|[I+]>
-        .force(iToInteger)                                     // IForcing<Integer>
+    chain(o, loadM)                                     // IChaining<Null|M>,
+        .force<Integer,Null,M|Integer>(handleNullM)            // IForcing<M|Integer>
+        .force<G|[I+],M,Integer|G|[I+]>(mToGorI)               // IChaining<G|[I+]|Integer>
+        .force<Integer,G,Integer|[I+]>(gToInt(o))      // IForcing<Integer|[I+]>
+        .force(iToInt)                                         // IForcing<Integer>
         .do();
     assertEquals(ch(false), 1);
     assertEquals(ch(true), 2);

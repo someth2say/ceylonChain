@@ -184,30 +184,6 @@ Nothing reportInvalid([InvalidGoalDeclaration+] gdb) {
 }
 ```
 
-Even, if you feel adventurous, you can opt for the `force` chain step:
-```
-shared void run() {
-    Options options = commandLineOptions(process.arguments);
-    compileModule(options);
-    chains([options.moduleName, options.moduleVersion],loadModule)      // IChaining<Null|Module>,
-        .force(handleNullModule(options))                               // IForcing<Module>
-        .to(readAnnotations)                                            // IChaining<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-            .force(startGdb(options))                                   // IForcing<[InvalidGoalDeclaration+]>
-            .to(reportInvalid)                                          // IProbing<Nothing>
-        .do();
-}
-
-Module handleNullModule(Options options)(Null mod){
-    process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
-    return process.exit(1);
-}
-
-[InvalidGoalDeclaration+] startGdb(Options options)(GoalDefinitionsBuilder gdb) => chain([gdb, consoleWriter, options.runtime, [*options.goals]],start).to(process.exit).do();
-
-Nothing reportInvalid([InvalidGoalDeclaration+] gdb) {
-   reportInvalidDeclarations(goals, consoleWriter);
-   return process.exit(1);
-}
-```
+Even, if you feel adventurous, you can opt for the `force` chain step!
 
 Many more examples will come.
