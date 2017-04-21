@@ -7,4 +7,5 @@ shared interface DefaultChain<Return> satisfies
         & ISpreadable<Return>
         & IForzable<Return>
         & ITeeable<Return>
+        & INullTryable<Return>
 {}

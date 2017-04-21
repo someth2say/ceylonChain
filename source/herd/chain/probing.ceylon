@@ -1,4 +1,4 @@
-"Chain step that provides probing capabilities. This is the type un-safe relative for [[IForcing]].
+"Chain step that provides probing capabilities.
 
  This is the type non-aserting relative for [[IForcing]].
  That is, both [[IProbing]] and [[IForcing]] chain steps are capable to accept incomming values that are not accepted by the used function.
@@ -14,8 +14,8 @@
     Integer? foo(Integer i) => if (i.even) i else null;
     Integer bar(Integer i) => i.successor;
 
-    IProbing<Integer?,Integer> sp = chain(2,foo)
-    IChaining<Integer?,Integer> ch = sp.probe(bar); //Note that 'bar' just accepts Integer, not Integer?
+    IChaining<Integer?,Integer> sp = chain(2,foo)
+    IProbing<Integer?,Integer> ch = sp.probe(bar); //Note that 'bar' just accepts Integer, not Integer?
     assertEquals(sp.do(),3); // foo returns 2, then bar return 3
     assertEquals(chain(1,foo).probe(bar).do(),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
@@ -76,3 +76,6 @@ shared IProbing<Return|Arguments> probes<Return, FuncArgs, Arguments>(Arguments 
         => object satisfies IProbing<Return|Arguments> {
     shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(*arguments) else arguments;
 };
+
+
+
