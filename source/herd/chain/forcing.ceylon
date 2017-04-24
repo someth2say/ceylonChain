@@ -22,9 +22,10 @@
  - With all type parameters set *but* the *forced return type*:
  [[Chain]] then behaves like [[IProbable]], forwarding types that can not be handling, and never throwing. Return type is not controled.
  <pre>
-    IForcing<Integer|String|Null> f = force<Integer,Null,Integer|String|Null>(null, cNtoT); // returns 0
-    IForcing<Integer|String|Null> f = force<Integer,Null,Integer|String|Null>(2, cNtoT); // returns 2
-    IForcing<Integer|String|Null> f = force<Integer,Null,Integer|String|Null>(\"Three\", cNtoT); // returns \"Three\"
+    IForcing<Integer|Null> f = force<Integer,Null,Integer|Null>(null, cNtoT); // returns 0
+    IForcing<Integer|Null> f = force<Integer,Null,Integer|Null>(2, cNtoT); // returns 2
+    IForcing<Integer|Null|String> f = force<Integer,Null,Integer|Null|String>(\"Three\", cNtoT); // returns \"Three\"
+    IForcing<...> f = force<Integer,Null,Integer|Null>(\"Three\", cNtoT); // // Throws an assertion error
  </pre>
  - With all type parameters set:
  [[Chain]] then behaves like [[IProbable]], but with type asserting.
@@ -32,7 +33,7 @@
  <pre>
     IForcing<String> f = force<Integer,Null,Integer|String|Null,Integer>(null, (Null n) => 0); // returns 0.
     IForcing<String> f = force<Integer,Null,Integer|String|Null,Integer>(3, (Null n) => 0); // returns 3.
-    IForcing<String> f = force<Integer,Null,Integer|String|Null,Integer>(\"Three\", (Null n) => 0); // Throws an assertion error
+    IForcing<...> f = force<Integer,Null,Integer|String|Null,Integer>(\"Three\", (Null n) => 0); // Throws an assertion error
  </pre>
 
  Example: Null value handling
