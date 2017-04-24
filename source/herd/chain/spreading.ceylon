@@ -22,7 +22,7 @@ shared interface ISpreading<Return> satisfies
      Chain so far MUST be spreadable (i.o.w should satisfy ISpreadable interface).
      The new function MUST accept an spreadable type (i.o.w a Tuple)."
     see (`interface ISpreadable`, `function package.spread`, `function package.spreads`)
-    shared IChaining<NewReturn> to<NewReturn>(NewReturn(*Return) newFunc)
+    shared Chain<NewReturn> to<NewReturn>(NewReturn(*Return) newFunc)
             => SpreadChaining<NewReturn,Return>(this, newFunc);
 
     "Adds a new step to the chain, by spreading the result of the chain so far to a new function.
@@ -46,17 +46,17 @@ shared interface ISpreadable<Return>
 }
 
 class Spreading<NewReturn, Return>(IInvocable<Return> prev, NewReturn(Return) func)
-        extends InvocableChain<NewReturn,Return>(prev, func)
+        extends ChainStep<NewReturn,Return>(prev, func)
         satisfies ISpreading<NewReturn>
         given NewReturn satisfies Anything[] {}
 
 class SpreadChaining<NewReturn, Return>(IInvocable<Return> prev, NewReturn(*Return) func)
-        extends InvocableSpreading<NewReturn,Return>(prev, func)
-        satisfies IChaining<NewReturn>
+        extends SpreadingChainStep<NewReturn,Return>(prev, func)
+        satisfies Chain<NewReturn>
         given Return satisfies [Anything*] {}
 
 class SpreadSpreading<NewReturn, Return>(IInvocable<Return> prevSpreadable, NewReturn(*Return) func)
-        extends InvocableSpreading<NewReturn,Return>(prevSpreadable, func)
+        extends SpreadingChainStep<NewReturn,Return>(prevSpreadable, func)
         satisfies ISpreading<NewReturn>
         given Return satisfies [Anything*]
         given NewReturn satisfies [Anything*] {}
@@ -64,7 +64,7 @@ class SpreadSpreading<NewReturn, Return>(IInvocable<Return> prevSpreadable, NewR
 "Initial spreading step for a chain, that can spread its results to the following chain step's function. "
 shared ISpreading<Return> spread<Return, Arguments>(Arguments arguments, Return(Arguments) func)
         given Return satisfies Anything[]
-        => object extends InvocableStart<Return,Arguments>(func, arguments)
+        => object extends ChainStart<Return,Arguments>(func, arguments)
         satisfies ISpreading<Return> {};
 
 "Initial spreading step for a chain, that can spread its results to the following chain step's function.
@@ -72,5 +72,5 @@ shared ISpreading<Return> spread<Return, Arguments>(Arguments arguments, Return(
 shared ISpreading<Return> spreads<Return, Arguments>(Arguments arguments, Return(*Arguments) func)
         given Return satisfies Anything[]
         given Arguments satisfies Anything[]
-        => object extends InvocableStartSpreading<Return,Arguments>(func, arguments)
+        => object extends SpreadingChainStart<Return,Arguments>(func, arguments)
         satisfies ISpreading<Return> {};

@@ -1,5 +1,5 @@
 "Default traits for a chain step"
-shared interface DefaultChain<Return> satisfies
+shared interface Chain<Return> satisfies
           IInvocable<Return>
         & IIterable<Return>
         & IChainable<Return>

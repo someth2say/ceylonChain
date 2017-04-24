@@ -1,6 +1,6 @@
 "Chain step that provides capabilities to invoking based on incomming type.
- This is the type asserting relative for [[IProbing]].
- That is, both [[IProbing]] and [[IForcing]] chain steps are capable to accept incomming values that are not accepted by the used function.
+ This is the type asserting relative for [[IProbable]].
+ That is, both [[IProbable]] and [[IForzable]] chain steps are capable to accept incomming values that are not accepted by the used function.
 
  In both cases, if the incoming type is assignable to the arguments for this chain step's function, then this step will apply the function to the
  incomming value, and return the value returned by that function.
@@ -10,9 +10,9 @@
 
  The **Forced return type** can be provided by the developer, so forcing steps are actually allowing the developer to control the outgoing (return) type.
 
- Actually, there are three ways to use [[IForcing]], each one behaving differently:
+ Actually, there are three ways to use [[Chain]], each one behaving differently:
  - Without type parameters (letting type inference to provide them):
- [[IForcing]] then behaves like asserting the input parameter type to be either the function parameter type or the function return type.
+ [[Chain]] then behaves like asserting the input parameter type to be either the function parameter type or the function return type.
  <pre>
     IForcing<String> f = force(0, Integer.string); // returns \"0\"
     IForcing<String> f = force(\"unknown\", Integer.string); // returns \"unknown\"
@@ -20,14 +20,14 @@
  </pre>
 
  - With all type parameters set *but* the *forced return type*:
- [[IForcing]] then behaves like [[IProbing]], forwarding types that can not be handling, and never throwing. Return type is not controled.
+ [[Chain]] then behaves like [[IProbable]], forwarding types that can not be handling, and never throwing. Return type is not controled.
  <pre>
     IForcing<Integer|String|Null> f = force<Integer,Null,Integer|String|Null>(null, cNtoT); // returns 0
     IForcing<Integer|String|Null> f = force<Integer,Null,Integer|String|Null>(2, cNtoT); // returns 2
     IForcing<Integer|String|Null> f = force<Integer,Null,Integer|String|Null>(\"Three\", cNtoT); // returns \"Three\"
  </pre>
  - With all type parameters set:
- [[IForcing]] then behaves like [[IProbing]], but with type asserting.
+ [[Chain]] then behaves like [[IProbable]], but with type asserting.
  Following sample force the chain to _accept_ `Integer|String|Null`, and to return just `Integer` or fail.
  <pre>
     IForcing<String> f = force<Integer,Null,Integer|String|Null,Integer>(null, (Null n) => 0); // returns 0.
@@ -65,12 +65,7 @@
     // Exception passing (forward exception to next chain steps)
     assertEquals(chain(\"3\",Integer.parse).force<Integer,Integer,Integer|ParseException>(Integer.successor).do(),4); // No exception...
     assertTrue(chain(\"three\",Integer.parse).force<Integer,Integer,Integer|ParseException>(Integer.successor).do() is ParseException); // Exception is forwarded
- </pre>
-
-"
-shared interface IForcing<Return> satisfies DefaultChain<Return> {}
-
-"Aspect or trait interface that provide Handling capability."
+ </pre>"
 shared interface IForzable<Return>
         satisfies IInvocable<Return> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.
@@ -79,13 +74,13 @@ shared interface IForzable<Return>
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
     see (`function package.force`, `function package.forces`)
-    shared IForcing<ForcedReturn> force<FuncReturn, FuncArgs, ForcedReturn=Return|FuncReturn>(FuncReturn(FuncArgs) newFunc)
+    shared Chain<ForcedReturn> force<FuncReturn, FuncArgs, ForcedReturn=Return|FuncReturn>(FuncReturn(FuncArgs) newFunc)
             given FuncReturn satisfies ForcedReturn
             => Forcing<FuncReturn,Return,FuncArgs,ForcedReturn>(this, newFunc);
 }
 
 class Forcing<FuncReturn, Return, FuncArgs, ForcedReturn=Return|FuncReturn>(IInvocable<Return> prev, FuncReturn(FuncArgs) func)
-        satisfies IForcing<ForcedReturn>
+        satisfies Chain<ForcedReturn>
         given FuncReturn satisfies ForcedReturn
 {
     "If function accepts the result type for previous chain step, then this step will return the result
@@ -102,9 +97,9 @@ class Forcing<FuncReturn, Return, FuncArgs, ForcedReturn=Return|FuncReturn>(IInv
 
 "Initial Handling step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Use with caution."
-shared IForcing<ForcedReturn> force<FuncReturn, FuncArgs, Arguments, ForcedReturn=Arguments|FuncReturn>(Arguments arguments, FuncReturn(FuncArgs) func)
+shared Chain<ForcedReturn> force<FuncReturn, FuncArgs, Arguments, ForcedReturn=Arguments|FuncReturn>(Arguments arguments, FuncReturn(FuncArgs) func)
         given FuncReturn satisfies ForcedReturn
-        => object satisfies IForcing<ForcedReturn> {
+        => object satisfies Chain<ForcedReturn> {
     shared actual ForcedReturn do() {
         FuncReturn|Arguments result = if (is FuncArgs arguments) then func(arguments) else arguments;
         assert (is ForcedReturn result);
@@ -115,10 +110,10 @@ shared IForcing<ForcedReturn> force<FuncReturn, FuncArgs, Arguments, ForcedRetur
 "Initial Handling step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
  Difference with [[force]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
  Use with caution."
-shared IForcing<ForcedReturn> forces<FuncReturn, FuncArgs, Arguments, ForcedReturn=Arguments|FuncReturn>(Arguments arguments, FuncReturn(*FuncArgs) func)
+shared Chain<ForcedReturn> forces<FuncReturn, FuncArgs, Arguments, ForcedReturn=Arguments|FuncReturn>(Arguments arguments, FuncReturn(*FuncArgs) func)
         given FuncReturn satisfies ForcedReturn
         given FuncArgs satisfies Anything[]
-        => object satisfies IForcing<ForcedReturn> {
+        => object satisfies Chain<ForcedReturn> {
     shared actual ForcedReturn do() {
         FuncReturn|Arguments result = if (is FuncArgs arguments) then func(*arguments) else arguments;
         assert (is ForcedReturn result);

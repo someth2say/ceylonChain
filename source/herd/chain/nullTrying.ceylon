@@ -14,12 +14,8 @@
     assertEquals(chain(1,foo).probe(bar).do(),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
- As you can see, the behaviour is exactly the same to [[IProbing]] for methods returning optional types.
- [[INullTrying]] is just provided for simplicity on those cases.
- "
-shared interface INullTrying<Return> satisfies DefaultChain<Return> {}
-
-"Aspect or trait interface that provide null skipping capability."
+ As you can see, the behaviour is exactly the same to [[IProbable]] for methods returning optional types.
+ [[Chain]] is just provided for simplicity on those cases."
 shared interface INullTryable<Handled>
         satisfies IInvocable<Handled|Null> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.
@@ -29,22 +25,22 @@ shared interface INullTryable<Handled>
      "
     see (`function package.nullTry`, `function package.nullTrys`)
 
-    shared INullTrying<NewReturn|Null> nullTry<NewReturn>(NewReturn(Handled) newFunc)
+    shared Chain<NewReturn|Null> nullTry<NewReturn>(NewReturn(Handled) newFunc)
             => NullTrying<NewReturn,Handled>(this, newFunc);
 }
 
 class NullTrying<NewReturn, Handled>(IInvocable<Handled|Null> prev, NewReturn(Handled) func)
-        satisfies INullTrying<NewReturn|Null> {
+        satisfies Chain<NewReturn|Null> {
     shared actual NewReturn? do() => let (prevResult = prev.do()) if (is Handled prevResult) then func(prevResult) else null;
 }
 
-shared INullTrying<Return|Null> nullTry<Return, Handled>(Handled|Null arguments, Return(Handled) func)
-        => object satisfies INullTrying<Return|Null> {
+shared Chain<Return|Null> nullTry<Return, Handled>(Handled|Null arguments, Return(Handled) func)
+        => object satisfies Chain<Return|Null> {
     shared actual Return|Null do() => if (is Handled arguments) then func(arguments) else arguments;
 };
 
-shared INullTrying<Return|Null> nullTrys<Return, Handled>(Handled|Null arguments, Return(*Handled) func)
+shared Chain<Return|Null> nullTrys<Return, Handled>(Handled|Null arguments, Return(*Handled) func)
         given Handled satisfies Anything[]
-        => object satisfies INullTrying<Return|Null> {
+        => object satisfies Chain<Return|Null> {
     shared actual Return|Null do() => if (is Handled arguments) then func(*arguments) else arguments;
 };

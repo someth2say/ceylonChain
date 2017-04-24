@@ -1,13 +1,9 @@
 import ceylon.test {
     test,
-    assertEquals,
-    assertTrue
+    assertEquals
 }
 
 import herd.chain {
-    chain,
-    probe,
-    iterate,
     nullTry
 }
 
