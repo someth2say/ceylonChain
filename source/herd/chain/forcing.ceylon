@@ -1,14 +1,20 @@
-"Chain step that provides capabilities to invoking based on incomming type.
- This is the type asserting relative for [[IProbable]].
- That is, both [[IProbable]] and [[IForzable]] chain steps are capable to accept incomming values that are not accepted by the used function.
+"Chain step that only will invoke the associated function if incomming type is applicable. Else, the incoming type pass by.
+  <pre>
+    value val1 = method1(initialValue);
+    value val2 = if (is Method2ParameterType val1) then method2(val1) else val1;
+    assert(is ForcedType val2);
+    ...
+ </pre>
 
- In both cases, if the incoming type is assignable to the arguments for this chain step's function, then this step will apply the function to the
- incomming value, and return the value returned by that function.
-
- If the incomming type is *NOT* assignable, then, incomming type will be **asserted** to satisfy the **forced return type**.
+ If the incoming type is assignable to this chain step's function, then function is used, and its return value is forwarded.
+ If the incomming type is *NOT* assignable, then the incomming value is returned.
+ In both cases, before returning, return value is *asserted* to satisfy the **forced return type**.
+ 
  If so, the incomming value is returned, else [[AssertionError]] is thrown.
 
  The **Forced return type** can be provided by the developer, so forcing steps are actually allowing the developer to control the outgoing (return) type.
+
+ [[IForzable]] is the evolution for [[IProbable]], adding the capability to control (restrict) the output type.
 
  Actually, there are three ways to use [[Chain]], each one behaving differently:
  - Without type parameters (letting type inference to provide them):

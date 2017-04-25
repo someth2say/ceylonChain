@@ -1,10 +1,15 @@
-"Chain step that provides basic tee capabilities.
+"Chain step that allows you to invoke methods, but ignore its result.
+ <pre>
+    value val1 = method1(initialValue);
+    methodWithoutSignificantResult(val1);
+    value val2 = method2(val1);
+ </pre>
  That is, provide the ability to chain the results from a the previous steps to next chain steps, ignoring function results.
 
  Example:
  <pre>
-    Chain<Integer> ch = chain(1, Integer.successor);
-    Chain<Integer> ch2 = ch.tee((Integer i) { if (i.negative) {fail();}});
+    [[Chain]]<Integer> ch = [[chain]](1, Integer.successor);
+    [[Chain]]<Integer> ch2 = ch.[[tee]]((Integer i) { if (i.negative) {fail();}});
     assertEquals(ch2.do(), 2);
  </pre>
 

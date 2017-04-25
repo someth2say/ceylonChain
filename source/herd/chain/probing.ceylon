@@ -1,43 +1,41 @@
-"Chain step that provides probing capabilities.
+"Chain step that only will invoke the associated function if incomming type is applicable. Else, the incoming type pass by.
+ <pre>
+    value val1 = method1(initialValue);
+    value val2 = if (is Method2ParameterType val1) then method2(val1) else val1;
+    ...
+ </pre>
 
- This is the type non-aserting relative for [[force]].
- That is, both [[probe]] and [[force]] chain steps are capable to accept incomming values that are not accepted by the used function.
-
- In both cases, if the incoming type is assignable to the arguments for this chain step's function, then this step will apply the function to the
- incomming value, and return the value returned by that function.
-
+ If the incoming type is assignable to this chain step's function, then function is used, and its return value is forwarded.
  If the incomming type is *NOT* assignable, then the incomming value is returned.
- Being able to return the incomming type implies that the incoming type will be part for the outgoing (return) type.
 
- Example: Null value passing
+ [[IProbable]] is the evolution for [[INullTryable]], and type non-aserting relative for [[IForzable]].
+
+ Example 1: Emulating [[INullTryable]]
+ If both methods only differ on the `Null` type, [[probe]] behaves exactly like [[INullTryable]]
  <pre>
     Integer? foo(Integer i) => if (i.even) i else null;
     Integer bar(Integer i) => i.successor;
 
-    IChaining<Integer?,Integer> sp = chain(2,foo)
-    IProbing<Integer?,Integer> ch = sp.probe(bar); //Note that 'bar' just accepts Integer, not Integer?
-    assertEquals(sp.do(),3); // foo returns 2, then bar return 3
-    assertEquals(chain(1,foo).probe(bar).do(),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
+    assertEquals([[chain]](2,foo).[[probe]](bar).[[do]](),3); // foo returns 2, then bar return 3
+    assertEquals([[chain]](1,foo).[[probe]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
- Example: Exception passing
+ Example 2: Exception handling / Type reduction / Default values
+ If you can handle one of the incomming types and transform it to the other one, [[probe]] matches perfectly.
  <pre>
     Integer handleException(ParseException ex) { print(ex.description); return 0; }
     Integer handleInt(Integer i) => i.successor;
 
-    IChaining<Integer|ParseException,String> sp = chain(\"3\",Integer.parse)
-    IProbing<Integer|ParseException,Integer> he = sp.probe(handleException);
-    IProbing<Integer|ParseException,Integer> hi = he.probe(handleInt);
-
-    assertEquals(he.do(),4); // parse is succesfull, so handleException does not math, but handleInt does
-    assertEquals(chain(\"three\",Integer.parse).probe(handleException).probe(handleInt).do(),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
+    assertEquals([[chain]](\"3\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).do(),4); // parse is succesfull, so handleException does not math, but handleInt does
+    assertEquals([[chain]](\"three\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).do(),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
  </pre>
- Note that probing chain steps will not 'absorb' the actually matched type. This mean that the matched type will keep appearing forward in the chain type paramters (in sample, ParseException).
 
- Behaviour for [[Chain]] can be very tricky in complex cases (i.e. when return types are complex, or many different paths can be taken.
- Use with caution. "
-//shared interface Chain<Return> satisfies Chain<Return>{}
-//"Aspect or trait interface that provide probing capability."
+ This is the evolution for [[INullTryable]], and type non-aserting relative for [[IForzable]].
+
+ Note that [[probe]] chain steps will **not** 'absorb' the actually matched type.
+ This mean that the matched type will keep appearing forward in the chain type paramters (in latest sample, `ParseException`).
+ Because of that, [[probe]] chain steps can be very tricky in complex cases (i.e. when return types are complex, or many different paths can be taken.
+ Use with caution."
 shared interface IProbable<Return>
         satisfies IInvocable<Return> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.

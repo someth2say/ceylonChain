@@ -1,15 +1,18 @@
-"Chain step that provides basic chaining capabilities.
- That is, provide the ability to chain the results from a function to next chain steps.
- Basic chaining is mainly performed with the [[to]] method;
-
- Example:
+"Chain step that provides simplest method chaining pattern.
  <pre>
-    IChaining<Integer,String> bwch = chain(\"10\",Integer.parse)
-    IChaining<Boolean,String> ch = sp.to(Integer.even);
-    assertEquals(ch.do(),true);
+     value val1 = method1(initialValue);
+     value val2 = method2(val1);
+     value val3 = method3(val2);
+     ...
  </pre>
 
- Note that chaining different steps does not vary the type for chain arguments, as those are defined by the parameters for chain initial step."
+ Basic chaining is mainly performed with the [[to]] method;
+ Example:
+ <pre>
+    [[IChainable]]<Integer,String> bwch = [[chain]](\"10\",Integer.parse)
+    [[IChainable]]<Boolean,String> ch = sp.[[to]](Integer.even);
+    assertEquals(ch.[[do]](),true);
+ </pre>"
 shared interface IChainable<Return>
         satisfies IInvocable<Return> {
     "Adds a new step to the chain, by passing the result of the chain so far to a new function.

@@ -1,4 +1,10 @@
-"Chain step that provides capabilities to forward Nulls.
+"Chain step that provides capabilities to skip null values.
+ <pre>
+    value nullable = methodThatMayReturnNull(initialValue);
+    value nextNullable = if (exists nullable) then methodThatDoesNotAcceptNull(nullable) else null;
+    ...
+ </pre>
+
  This step receives a nullable type, and holds a function handling the same non-nullable type.
  If incomming value is accepted by the function, then the function is applied to the incomming value, and its return is
  forwarded to next chain step.
@@ -8,14 +14,15 @@
     Integer? foo(Integer i) => if (i.even) i else null;
     Integer bar(Integer i) => i.successor;
 
-    IChaining<Integer?,Integer> sp = chain(2,foo)
-    INullSkipping<Integer?,Integer> ch = sp.nullSkip(bar);
-    assertEquals(sp.do(),3); // foo returns 2, then bar return 3
-    assertEquals(chain(1,foo).probe(bar).do(),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
+    [[Chain]]<Integer?,Integer> sp = [[chain]](2,foo)
+    [[Chain]]<Integer?,Integer> ch = sp.[[nullTry]](bar);
+    assertEquals(sp.[[do]](),3); // foo returns 2, then bar return 3
+    assertEquals([[chain]](1,foo).[[nullTry]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
+ [[INullTryable]] is the precursor for [[IProbable]].
  As you can see, the behaviour is exactly the same to [[IProbable]] for methods returning optional types.
- [[Chain]] is just provided for simplicity on those cases."
+ [[INullTryable]] is just provided for simplicity on those cases."
 shared interface INullTryable<Handled>
         satisfies IInvocable<Handled|Null> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.

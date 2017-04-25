@@ -3,16 +3,23 @@ import herd.chain {
     lastParamToFirst
 }
 
-"Chain step that provides iterating capabilities.
- That is, provide the ability to perform same operations that user can perform onto an iterable.
+"Chain step that allows applying [[Iterable]] operation.
+ <pre>
+    value iterable = methodReturningAnIterable(initialValue);
+    value mappedIterable = iterable.map(mappingMethod);
+    value next = methodWorkingOnIterable(mappedIterable);
+    ...
+ </pre>
+ IOW, provide the ability to perform same operations that user can perform onto an iterable.
+
  Iterating chain steps require a function whose return type can be iterated (i.o.w, satisfies {Anything*}).
  Example:
  <pre>
     Range<Integer> foo(Integer i) => (1..i); // Note Range<...> satisfies Iterable
-    IBwIterating<Range<Integer>,Integer,Integer> bi = iterate(10,foo);
-    IBwIterating<{Integer*},Integer,Integer> fi = bi.filter(Integer.even).map(Integer.successor);
-    IBwIterating<{Integer*},Integer,Integer> pr = fi.each(print); // 'each' performs the function over each element, and returns the same
-    pr.do(); // Print all numbers in {3,5,7,9,11}, and returns this same sequence
+    [[IIterating]]<Range<Integer>,Integer,Integer> bi = [[iterate]](10,foo);
+    [[IIterating]]<{Integer*},Integer,Integer> fi = bi.filter(Integer.even).[[map]](Integer.successor);
+    [[IIterating]]<{Integer*},Integer,Integer> pr = fi.[[each]](print); // 'each' performs the function over each element, and returns the same
+    pr.[[do]](); // Print all numbers in {3,5,7,9,11}, and returns this same sequence
  </pre>
  "
 shared interface IIterating<Return, Element, Absent=Null> satisfies Chain<Return>
