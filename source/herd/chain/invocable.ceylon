@@ -11,25 +11,25 @@ shared interface IInvocable<out Return>
     shared formal Return do() ;
 }
 
-abstract class InvocableStart<out Return, Arguments>(Return(Arguments) func, Arguments arguments)
+abstract class ChainStart<out Return, Arguments>(Return(Arguments) func, Arguments arguments)
         satisfies IInvocable<Return>
 {
     shared actual Return do() => func(arguments);
 }
 
-abstract class InvocableStartSpreading<out Return, Arguments>(Return(*Arguments) func, Arguments arguments)
+abstract class SpreadingChainStart<out Return, Arguments>(Return(*Arguments) func, Arguments arguments)
         satisfies IInvocable<Return>
         given Arguments satisfies Anything[]
 {
     shared actual Return do() => func(*arguments);
 }
 
-abstract class InvocableChain<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(PrevReturn) func)
+abstract class ChainStep<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(PrevReturn) func)
         satisfies IInvocable<Return> {
     shared actual Return do() => let (prevResult = prev.do()) func(prevResult);
 }
 
-abstract class InvocableSpreading<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(*PrevReturn) func)
+abstract class SpreadingChainStep<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(*PrevReturn) func)
         satisfies IInvocable<Return>
         given PrevReturn satisfies Anything[] {
     shared actual Return do() => let (prevResult = prev.do()) func(*prevResult);

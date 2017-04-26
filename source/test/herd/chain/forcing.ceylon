@@ -8,43 +8,41 @@ import ceylon.test {
 import herd.chain {
     chain,
     force,
-    IForcing,
-    IChaining,
-    IProbing
+    Chain
 }
 
 shared test void testForce() {
 
     // Following behave like 'assert argument is FuncReturn' (maybe someday Arguments|FuncReturn)
     // That one should be "IForcing<Integer|String>, but currently type inference and default type parameters can not be used together
-    IForcing<String> forceUntypedMatching = force(0, Integer.string);
+    Chain<String> forceUntypedMatching = force(0, Integer.string);
     assertEquals("0", forceUntypedMatching.do(), "Forcing start with matching arguments");
 
-    // That one should be "IForcing<Integer|String>, but currently type inference and default type parameters can not be used together
-    IForcing<String> forceUntypedNotMatching = force("unknown", Integer.string);
+    // That one should be "Chain<Integer|String>, but currently type inference and default type parameters can not be used together
+    Chain<String> forceUntypedNotMatching = force("unknown", Integer.string);
     assertEquals("unknown", forceUntypedNotMatching.do(), "Forcing start with not-matching arguments");
 
     assertThatException(force(null, Integer.string).do).hasType(`AssertionError`); //Null is not a valid default return type for Integer.string
 
     // Following behave like "probing"
-    IForcing<Integer|String|Null> forceDefaultedMatching = force<Integer,Null,Integer|String|Null>(null, cNtoT);
+    Chain<Integer|String|Null> forceDefaultedMatching = force<Integer,Null,Integer|String|Null>(null, cNtoT);
     assertEquals(0, forceDefaultedMatching.do(), "Forcing start with matching arguments and default return type");
 
-    IForcing<Integer|String|Null> forceDefaultedNotMatching = force<Integer,Null,Integer|String|Null>(2, cNtoT);
+    Chain<Integer|String|Null> forceDefaultedNotMatching = force<Integer,Null,Integer|String|Null>(2, cNtoT);
     assertEquals(2, forceDefaultedNotMatching.do(), "Forcing start with non-matching arguments and default return type");
 
-    IForcing<Integer|String|Null> forceDefaultedFailing = force<Integer,Null,Integer|String|Null>("Three", cNtoT);
+    Chain<Integer|String|Null> forceDefaultedFailing = force<Integer,Null,Integer|String|Null>("Three", cNtoT);
     assertEquals("Three", forceDefaultedFailing.do(), "Forcing start with failing arguments and default return type: forwarding");
 
 
     // Following are the actual meaning for 'force': downcasting the return type.
-    IForcing<Integer> forceTypedMatching = force<Integer,Null,Integer|String|Null,Integer>(null, cNtoT);
+    Chain<Integer> forceTypedMatching = force<Integer,Null,Integer|String|Null,Integer>(null, cNtoT);
     assertEquals(0, forceTypedMatching.do(), "Forcing start with matching arguments and downcasting result");
 
-    IForcing<Integer> forceTypedNotMatching = force<Integer,Null,Integer|String|Null,Integer>(3, cNtoT);
+    Chain<Integer> forceTypedNotMatching = force<Integer,Null,Integer|String|Null,Integer>(3, cNtoT);
     assertEquals(3, forceTypedNotMatching.do(), "Forcing start with non-matching arguments and downcasting result");
 
-    IForcing<Integer> forceTypedFailing = force<Integer,Null,Integer|String|Null,Integer>("Three", cNtoT);
+    Chain<Integer> forceTypedFailing = force<Integer,Null,Integer|String|Null,Integer>("Three", cNtoT);
     assertThatException(forceTypedFailing.do).hasType(`AssertionError`); //"Three" is not a valid input for the function, nor satisfies the forced type `Integer`
 
 }
@@ -52,8 +50,8 @@ shared test void testForce() {
 shared test void sample1() {
     Integer? foo(Integer i) => if (i.even) then i else null;
     String baz(Integer i) => i.string; // Here the main reason for probing/forcing: `baz` can not accept `Null`
-    IForcing<String> forced = chain(2, foo).force(baz); // Force downcasts the incomming `Integer?` to just `String`
-    IProbing<String|Null|Integer> probed = chain(2, foo).probe(baz); // Probe keeps the incomming type, so returns `String|Integer?`
+    Chain<String> forced = chain(2, foo).force(baz); // Force downcasts the incomming `Integer?` to just `String`
+    Chain<String|Null|Integer> probed = chain(2, foo).probe(baz); // Probe keeps the incomming type, so returns `String|Integer?`
 
     assertEquals(forced.do(), "2");
     assertEquals(probed.do(), "2"); //Both return same result, despite their types are different.
@@ -61,10 +59,10 @@ shared test void sample1() {
     assertThatException(chain(3, foo).force(baz).do).hasType(`AssertionError`); // This will raise and AssertionException!
     assertEquals(chain(3, foo).probe(baz).do(), null); // This will just return 'null'
 
-    IForcing<String|Null> typedForced = chain(3, foo).force<String,Integer,String|Null>(baz); // But if you force the return type to include null...
+    Chain<String|Null> typedForced = chain(3, foo).force<String,Integer,String|Null>(baz); // But if you force the return type to include null...
     assertEquals(typedForced.do(), null);  //... it gets back to work,
 
-    IForcing<String|Null> typedForced2 = chain(2, foo).force<String,Integer,String|Null>(baz); // And you don't have to worry about the incomming type
+    Chain<String|Null> typedForced2 = chain(2, foo).force<String,Integer,String|Null>(baz); // And you don't have to worry about the incomming type
     assertEquals(typedForced2.do(), "2");
 }
 
@@ -88,12 +86,12 @@ shared test void sample2() {
 
 shared test void testChainForce() {
     // For callables accepting null types
-    IChaining<Integer?> iChaining = chain(0, cTtoTN);
-    IForcing<Integer> force = iChaining.force(cTNtoT);
+    Chain<Integer?> iChaining = chain(0, cTtoTN);
+    Chain<Integer> force = iChaining.force(cTNtoT);
     assertEquals(2, force.do(), "Forcing composition should be able to compose on full match (1)");
     assertEquals(0, chain(1, cTtoTN).force(cTNtoT).do(), "Forcing composition should be able to compose on full match (2)");
 
-    IForcing<Integer> force2 = chain(1, cTtoTN).force(cNtoT);
+    Chain<Integer> force2 = chain(1, cTtoTN).force(cNtoT);
     assertEquals(0, force2.do(), "Forcing composition should be able to compose on a positive match.");
     assertEquals(1, iChaining.force(cNtoT).do(), "Forcing composition should be able to compose on a negative match.");
 
@@ -117,10 +115,10 @@ shared test void testForceDemo() {
 
     Integer ch(Boolean b) => let (o = O(b))
     chain(o, loadM)                                     // IChaining<Null|M>,
-        .force<Integer,Null,M|Integer>(handleNullM)            // IForcing<M|Integer>
+        .force<Integer,Null,M|Integer>(handleNullM)            // Chain<M|Integer>
         .force<G|[I+],M,Integer|G|[I+]>(mToGorI)               // IChaining<G|[I+]|Integer>
-        .force<Integer,G,Integer|[I+]>(gToInt(o))      // IForcing<Integer|[I+]>
-        .force(iToInt)                                         // IForcing<Integer>
+        .force<Integer,G,Integer|[I+]>(gToInt(o))      // Chain<Integer|[I+]>
+        .force(iToInt)                                         // Chain<Integer>
         .do();
     assertEquals(ch(false), 1);
     assertEquals(ch(true), 2);

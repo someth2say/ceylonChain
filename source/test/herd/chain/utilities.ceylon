@@ -33,6 +33,7 @@ Integer(Integer|{Integer*}) cUItoT = (Integer|{Integer*} ios) => if (is {Integer
 
 Integer(Null) cNtoT = (Null n) => 0;
 
+suppressWarnings("expressionTypeNothing")
 Nothing(Integer) cTtoV = (Integer int) { return process.exit(1); };
 
 /* Utility methods */
