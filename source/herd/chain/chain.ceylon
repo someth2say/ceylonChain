@@ -2,10 +2,10 @@
 shared interface Chain<Return> satisfies
           IInvocable<Return>
         & IIterable<Return>
-        & IChainable<Return>
-        & IProbable<Return>
+        & ChainingChain<Return>
+        & ProbingChain<Return>
         & ISpreadable<Return>
-        & IForzable<Return>
-        & ITeeable<Return>
-        & INullTryable<Return>
+        & ForcingChain<Return>
+        & TeeingChain<Return>
+        & NullSafeChain<Return>
 {}

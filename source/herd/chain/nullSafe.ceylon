@@ -15,24 +15,24 @@
     Integer bar(Integer i) => i.successor;
 
     [[Chain]]<Integer?,Integer> sp = [[chain]](2,foo)
-    [[Chain]]<Integer?,Integer> ch = sp.[[nullTry]](bar);
+    [[Chain]]<Integer?,Integer> ch = sp.[[ifExists]](bar);
     assertEquals(sp.[[do]](),3); // foo returns 2, then bar return 3
-    assertEquals([[chain]](1,foo).[[nullTry]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
+    assertEquals([[chain]](1,foo).[[ifExists]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
- [[INullTryable]] is the precursor for [[IProbable]].
- As you can see, the behaviour is exactly the same to [[IProbable]] for methods returning optional types.
- [[INullTryable]] is just provided for simplicity on those cases."
-shared interface INullTryable<Handled>
+ [[NullSafeChain]] is the precursor for [[ProbingChain]].
+ As you can see, the behaviour is exactly the same to [[ProbingChain]] for methods returning optional types.
+ [[NullSafeChain]] is just provided for simplicity on those cases."
+shared interface NullSafeChain<Handled>
         satisfies IInvocable<Handled|Null> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.
-     The incomming type will be nullable (as required for [[INullTryable]], but function will not
+     The incomming type will be nullable (as required for [[NullSafeChain]], but function will not
      necessary accept nulls. If incomming value is not null, then function will be applied, and its result
      returned. If incomming value is null, then null will be returned (function will be skipped).
      "
-    see (`function package.nullTry`, `function package.nullTrys`)
+    see (`function package.ifExists`, `function package.ifExistss`)
 
-    shared Chain<NewReturn|Null> nullTry<NewReturn>(NewReturn(Handled) newFunc)
+    shared Chain<NewReturn|Null> ifExists<NewReturn>(NewReturn(Handled) newFunc)
             => NullTrying<NewReturn,Handled>(this, newFunc);
 }
 
@@ -41,12 +41,12 @@ class NullTrying<NewReturn, Handled>(IInvocable<Handled|Null> prev, NewReturn(Ha
     shared actual NewReturn? do() => let (prevResult = prev.do()) if (is Handled prevResult) then func(prevResult) else null;
 }
 
-shared Chain<Return|Null> nullTry<Return, Handled>(Handled|Null arguments, Return(Handled) func)
+shared Chain<Return|Null> ifExists<Return, Handled>(Handled|Null arguments, Return(Handled) func)
         => object satisfies Chain<Return|Null> {
     shared actual Return|Null do() => if (is Handled arguments) then func(arguments) else arguments;
 };
 
-shared Chain<Return|Null> nullTrys<Return, Handled>(Handled|Null arguments, Return(*Handled) func)
+shared Chain<Return|Null> ifExistss<Return, Handled>(Handled|Null arguments, Return(*Handled) func)
         given Handled satisfies Anything[]
         => object satisfies Chain<Return|Null> {
     shared actual Return|Null do() => if (is Handled arguments) then func(*arguments) else arguments;

@@ -4,15 +4,16 @@ import ceylon.test {
 }
 
 import herd.chain {
-    nullTry
+    ifExists,
+    ifExistss
 }
 
 shared test void testNullSkip() {
     Integer? notNull = 0;
     Integer? isNull = null;
-    assertEquals(1, nullTry(notNull, cTtoT).do(), "NullSkipping start passing a matching not-null parameter");
-    assertEquals(null, nullTry(isNull, cTtoT).do(), "NullSkipping start passing a non-matching null parameter");
-    assertEquals(null, nullTry(isNull, cTNtoT).do(), "NullSkipping start passing a matching null parameter");
+    assertEquals(1, ifExists(notNull, cTtoT).do(), "NullSkipping start passing a matching not-null parameter");
+    assertEquals(null, ifExists(isNull, cTtoT).do(), "NullSkipping start passing a non-matching null parameter");
+    assertEquals(null, ifExists(isNull, cTNtoT).do(), "NullSkipping start passing a matching null parameter");
 }
 //
 //shared test void testChainNullSkip() {

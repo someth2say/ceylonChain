@@ -1,4 +1,4 @@
-"Chain step that allows you to invoke methods, but ignore its result.
+"Chain step that allows you to chaing method invocations, but ignoring its result.
  <pre>
     value val1 = method1(initialValue);
     methodWithoutSignificantResult(val1);
@@ -10,11 +10,11 @@
  <pre>
     [[Chain]]<Integer> ch = [[chain]](1, Integer.successor);
     [[Chain]]<Integer> ch2 = ch.[[tee]]((Integer i) { if (i.negative) {fail();}});
-    assertEquals(ch2.do(), 2);
+    assertEquals(ch2.[[do]](), 2);
  </pre>
 
  Note that chaining different steps does not vary the type for chain arguments, as those are defined by the parameters for chain initial step."
-shared interface ITeeable<Return>
+shared interface TeeingChain<Return>
         satisfies IInvocable<Return> {
     "Adds a new step to the chain, by passing the result of the chain so far to a new function.
      The new function MUST accept the return type for the chain so far as its only parameter."
