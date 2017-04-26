@@ -24,7 +24,7 @@ This library offer emulating this operator, and many others
 
 Sources for can be found at https://github.com/someth2say/ceylonChain
 
-For learning more about **PicoPatterns**, please visit [this](PICOPATTERNS.md) section.
+For learning more about **PicoPatterns**, please visit [this](docs/PICOPATTERNS.md) section.
 
 ## Usage
 Simply use the `chain` top-level method to start a chained method call, providing initial value and a function reference.
@@ -43,9 +43,16 @@ return chain(request, parseParameters).to(validateParameters).to(doStuff).to(wri
 ```
 
 ## Different types of chaining
-As seen, chaining functions is really straightforward.
-But wise reader can see that this is only the simplest cases, where method parameters and results do match, and nothing else is done.
-In order to offer wider range of situations where this library can be useful, many other chaining flavors are provided:
+As seen, chaining functions is really straightforward. But wise reader can see that this is only the simplest case.
+This module offers support for other picopatterns:
+- Chaining: the one you already saw.
+ Consist about passing one function result to another function, where types match perfectly.
+- Teeing: When methods chain fluently, but the return type and value is irrelevant.
+- Spreading: When the further method returns a `Tuple`, that should be spread to the later method.
+- Iterating: When the results for the further are iterable, so you can take advantage of `Iterable` functional methods.
+- Optional: When parameters for the later function do not match exactly the results for the further function.
+
+
 
 ### Spreading chain
 The most common situation that does not fit in previous schema is when functions to be chained do need more than one parameters:
