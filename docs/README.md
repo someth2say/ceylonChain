@@ -10,13 +10,21 @@ value output = doStuff(validParams);
 value result = writeResponse(output);
 return result;
 ```
-
 This is pretty clear, but actually verbose.
 
-Some languages offer fishead (`|>`) operator, allowing chaining `methods`, in a fashion that the result for the first one is used as parameter for the second one.
-This library offer emulating this operator (as described in https://github.com/ceylon/ceylon/issues/6615, but using only standard Ceylon classes, and the strength of the typechecker.
+Some languages offer fish-head (`|>`) operator, allowing chaining methods`, 
+in a fashion that the result for the first one is used as parameter for the second one:
+```
+return request |> parseParameters |> validateParameters |> doStuff |> writeResponse;
+```
+Even other other operators are provided to handle more complicated cases (i.e. when nulls are involved).
 
-Sources for Chaining Callables can be found at https://github.com/someth2say/ceylonChain
+This library offer emulating this operator, and many others  
+(as described in [this page](https://github.com/ceylon/ceylon/issues/6615)), but using only standard Ceylon classes, and the strength of the typechecker.
+
+Sources for can be found at https://github.com/someth2say/ceylonChain
+
+For learning more about **PicoPatterns**, please visit [this](PICOPATTERNS.md) section.
 
 ## Usage
 Simply use the `chain` top-level method to start a chained method call, providing initial value and a function reference.
@@ -35,8 +43,8 @@ return chain(request, parseParameters).to(validateParameters).to(doStuff).to(wri
 ```
 
 ## Different types of chaining
-As seen, chaining functions is really straightforward by using this module.
-But wise reader can see that this seems only work for simplest cases, where method parameters and results do match, and nothing else is done.
+As seen, chaining functions is really straightforward.
+But wise reader can see that this is only the simplest cases, where method parameters and results do match, and nothing else is done.
 In order to offer wider range of situations where this library can be useful, many other chaining flavors are provided:
 
 ### Spreading chain
@@ -244,6 +252,9 @@ Sure... are you able to tell me (from the point of view of the library) the type
 But...
 
 You can not decide the type, but you can `force` it.
+
+
+
 
 
 
