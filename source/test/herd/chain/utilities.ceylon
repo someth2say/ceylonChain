@@ -31,6 +31,8 @@ Integer(Integer|{Integer*}) cUItoT = (Integer|{Integer*} ios) => if (is {Integer
 [Integer, Boolean](Integer|{Integer*}) cUItoS = (Integer|{Integer*} ios) => let (int = cUItoT(ios)) [int, int.even];
 {Integer*}(Integer|{Integer*}) cUItoI = (Integer|{Integer*} ios) => let (int = cUItoT(ios)) { int };
 
+Integer|Null cTBtoTN(Integer i, Boolean b) => if (b) then i.successor else null;
+
 Integer(Null) cNtoT = (Null n) => 0;
 
 suppressWarnings("expressionTypeNothing")

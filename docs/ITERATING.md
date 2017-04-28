@@ -41,27 +41,11 @@ Not a big deal. An `Iterable` is just another type, so you can pass it by using 
     chain(...).iterate(methodReturningAnIterable).map(mappingMethod).to(methodWorkingOnIterable)...
 ```    
 
-###### Iterables and Spreading
-Do you know any function transforming an `Iterable` to a `Tuple`?
-I do not... but this does not mean it can't exist.
-Let's guess you have something like the following:
-``` 
-    Iterable<...> iterable = methodReturningAnIterable(initialValue);
-    [Type1, Type2...] tuple = iterableToTupleMethod(iterable)
-    value val = methodWithManyParameters(*tuple);
-``` 
-Can it be accomplished with chains?
-Sure, it can. And you need no extra methods for doing so.
-Just need yo realize this pattern implies using the `Iterable` as a simple type! No `Iterable` feature is being used here!
-So you just need to use the `spread...to` pattern:
-```
-    chain(...).to(methodReturningAnIterable).spread(iterableToTupleMethod).to(methodWithManyParameters);
-```
-Being true, if you actually feel the need for using the `iterate` method, you can do so!
-```
-    chain(...).iterate(methodReturningAnIterable).spread(iterableToTupleMethod).to(methodWithManyParameters);
-```
-An `Iterable` chain is still a `Chaining` chain, so you can always chain the basic way. 
+## Warning: The `spread` method
+Note a clash of method names that may drive to confusion:
+`Iterable` actually have a `spread` method, but that one have nothing to do with the `spread` method on an `Spreading` chain!
+Please, remember that an `Iterable` chain can not spread its results to next step 
+(maybe someday this feature is added, but not now).
 
 ## Chain start
 And what about if the first method already returns an iterable? No problem, use the `iterate` top-level:
@@ -69,30 +53,29 @@ And what about if the first method already returns an iterable? No problem, use 
     iterate(initialValue,methodReturningAnIterable)....
 ```
 Or the `iterates` method, if your initial value need to be spread onto the initial function!
+Easy as 1,2,3...
 
 ## Iterating methods return types
+One detail to keep in mind about the `Iterables` is the return type for its method.
+Probably you know the difference between `intermediate` methods and `terminal` methods of streams.
+`intermediate` methods generate a new stream, with its contents altered.
+`terminal` methods do no generate a stream, but a single value.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Those different kind of methods are also reflected in `Iterable` chains, as different return types.
+`intermediate` methods (like `map`,`each` or `skip`) generate a new `Iterable` chain step, so you can continue applying `Iterable`methods as needed.
+I.e, you can do the following:
+```
+    ...iterate(methodReturningAnIterable).map(mappingMethod).fold(foldingMethod).skip(numberToSkip)...
+```
+On the other side, `terminal` methods (like `count`,`find` or `max`) generate a basic `Chain`, so you can apply any chain methods on it.
+So the following is good:
+```
+    ...iterate(methodReturningAnIterable).count(selectingMethod).to(logCountResultMethod)...
+```
+but next is forbidden: You can not `map` onto a `Integer`
+```
+    ...iterate(methodReturningAnIterable).count(selectingMethod).map(mappingMethod)...
+```
 
 ## END
 Being true, `Iterable` chain steps are not actually needed at all. 
@@ -106,6 +89,6 @@ I.e. the `map` function of an iterable chain looks like the following:
  to a function that accepts an `Iterable` to another function that accepts an "operation" and returns an `Iterable`.
  May seem tricky, but don't worry, `Iterable` chain steps already does it for you.
  
+In [Next chapter](OPTIONAL.md) we will talk what happens when return type does not **exactly** match the following function's parameters?
+Those are the `optional` patterns.
  
-[Next chapter](ITERATING.md) will show you how to merge chains with the trending 
-topic of `Streams` and `Iterables` (someone said functional programming? :)

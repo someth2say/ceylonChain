@@ -15,25 +15,6 @@ shared test void testIterate() {
 }
 
 shared test void testIteratingMethods() {
-    //to
-    assertEquals(6, iterate(5, cTtoI).to(cItoT).do(), "Iterate chained to a simple chainable");
-
-    //spread
-    assertEquals([2, true], iterate(1, cTtoI).spread(cItoS).do(), "Iterate chained to an spreadable");
-
-    //probe
-    assertEquals(3, iterate(2, cTtoI).probe(cItoT).do(), "Iterate chained to a matching probe");
-    Integer|{Integer*} do = iterate(2, cTtoI).probe(cTtoT).do();
-    assert (is {Integer*} do);
-    assertTrue(deepEquals({ 0, 1, 2 }, do), "Iterate chained to a non-matching probe: ``do``");
-
-    //iterating
-    value do2 = iterate(3, cTtoI).iterate(cItoI).do();
-    assertTrue(deepEquals({ true, false, true, false }, do2), "Iterate chained to an iterating ``do2``");
-}
-
-shared test void testStreamMethods() {
-
     assertEquals(iterate(3, cTtoI).any(2.equals).do(), true, "Iterable any");
     assertEquals(iterate(3, cTtoI).any(4.equals).do(), false, "Iterable any");
     assertTrue(deepEquals({ 0, 2, 4 }, iterate(5, cTtoI).by(2).do()), "Iterable by");
@@ -90,7 +71,7 @@ shared test void testStreamMethods() {
     assertTrue(deepEquals({ 3, 4, 5 }, iterate(5, cTtoI).skip(3).do()), "Iterable skip");
     assertTrue(deepEquals({ 3, 4, 5 }, iterate(5, cTtoI).skipWhile(3.largerThan).do()), "Iterable skipWhile");
     assertTrue(deepEquals({ 5, 4, 3, 2, 1, 0 }, iterate(5, cTtoI).sort((x, y) => y.compare(x)).do()), "Iterable sort");
-    assertTrue(deepEquals({ 3, 4, 5, 6, 7, 8 }, iterate(5, cTtoI).spreadIterable(Integer.plus).do()(3)), "Iterable spreadIterable");
+    assertTrue(deepEquals({ 3, 4, 5, 6, 7, 8 }, iterate(5, cTtoI).spread(Integer.plus).do()(3)), "Iterable spreadIterable");
     assertTrue(iterate(5, cTtoI).summarize(Integer.even, (Integer? x, Integer y) => if (exists x ) then x + y else y).do().containsEvery({ true->6, false->9 }), "Iterable summarize");
     value tabulate = iterate(5, cTtoI).tabulate(2.divides).do();
     assertTrue(tabulate.containsEvery({ 0->true, 1->false, 2->true, 3->false, 4->true, 5->false }), "Iterable tabulate: ``tabulate``");

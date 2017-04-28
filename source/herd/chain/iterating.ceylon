@@ -22,7 +22,7 @@ import herd.chain {
     [[IterableChain]]<{Integer*},Integer,Integer> pr = fi.[[each]](print); // 'each' performs the function over each element, and returns the same
     pr.[[do]](); // Print all numbers in {3,5,7,9,11}, and returns this same sequence
  </pre>"
-shared interface IterableChain<Return, Element, Absent=Null> satisfies Chain<Return>
+shared interface IterableChain<Return, Element, Absent=Null> satisfies IInvocable<Return>
         given Absent satisfies Null
         given Return satisfies Iterable<Element,Absent>
 {
@@ -72,9 +72,7 @@ shared interface IterableChain<Return, Element, Absent=Null> satisfies Chain<Ret
     shared IterableChain<{Element*},Element> skip(Integer skipping) => Iterating<{Element*},Return,Element>(this, shuffle(Return.skip)(skipping));
     shared IterableChain<{Element*},Element> skipWhile(Boolean skipping(Element element)) => Iterating<{Element*},Return,Element>(this, shuffle(Return.skipWhile)(skipping));
     shared IterableChain<Element[],Element> sort(Comparison comparing(Element x, Element y)) => Iterating<Element[],Return,Element>(this, shuffle(Return.sort)(comparing));
-    //TODO: We are unlucky here, 'spread' method clashes
-    //TODO: Consider creating a whole new IterableChain, whose arguments are *Args
-    shared Chain<Iterable<Result,Absent>(*Args)> spreadIterable<Result, Args>(Result(*Args) method(Element element))
+    shared Chain<Iterable<Result,Absent>(*Args)> spread<Result, Args>(Result(*Args) method(Element element))
             given Args satisfies Anything[]
             => Chaining<Iterable<Result,Absent>(*Args),Return>(this, shuffle(Return.spread<Result,Args>)(method));
     shared IterableChain<Map<Group,Result>,Group->Result> summarize<Group,Result>(Group? grouping(Element element),Result accumulating(Result? partial, Element element))
