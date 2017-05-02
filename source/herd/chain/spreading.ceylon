@@ -73,3 +73,5 @@ shared SpreadableChain<Return> spreads<Return, Arguments>(Arguments arguments, R
         given Arguments satisfies Anything[]
         => object extends SpreadingChainStart<Return,Arguments>(func, arguments)
         satisfies SpreadableChain<Return> {};
+
+

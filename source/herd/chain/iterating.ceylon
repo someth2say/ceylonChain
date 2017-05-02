@@ -75,7 +75,7 @@ shared interface IterableChain<Return, Element, Absent=Null> satisfies IInvocabl
     shared Chain<Iterable<Result,Absent>(*Args)> spread<Result, Args>(Result(*Args) method(Element element))
             given Args satisfies Anything[]
             => Chaining<Iterable<Result,Absent>(*Args),Return>(this, shuffle(Return.spread<Result,Args>)(method));
-    shared IterableChain<Map<Group,Result>,Group->Result> summarize<Group,Result>(Group? grouping(Element element),Result accumulating(Result? partial, Element element))
+    shared IterableChain<Map<Group,Result>,Group->Result> summarize<Group, Result>(Group? grouping(Element element), Result accumulating(Result? partial, Element element))
             given Group satisfies Object
             => Iterating<Map<Group,Result>,Return,Group->Result>(this, shuffle(Return.summarize<Group,Result>)(grouping, accumulating));
     shared IterableChain<Map<Element&Object,Result>,Element&Object->Result> tabulate<Result>(Result collecting(Element key))
@@ -89,7 +89,7 @@ shared interface IIterable<Return> satisfies IInvocable<Return> {
     "Adds a new step to the chain, by passing the result of the chain so far to a new function.
      The new function MUST accept the return type for the chain so far as its only parameter,
      and MUST return an Iterable type (i.o.w. return type for the new function should satisfy Iterable<Element,Absent>"
-    see( `function package.iterate`, `function package.iterates`)
+    see (`function package.iterate`, `function package.iterates`)
     shared IterableChain<NewReturn,Element,Absent> iterate<NewReturn, Element, Absent=Null>(NewReturn(Return) newFunc)
             given Absent satisfies Null
             given NewReturn satisfies Iterable<Element,Absent>
@@ -117,3 +117,11 @@ shared IterableChain<Return,Element,Absent> iterates<Return, Arguments, Element,
         given Arguments satisfies Anything[]
         => object extends SpreadingChainStart<Return,Arguments>(func, arguments)
         satisfies IterableChain<Return,Element,Absent> {};
+
+"Initial iterable step for a chain, whose results can be iterated."
+shared IterableChain<Arguments,Element,Absent> iterateArg<Arguments, Element, Absent=Null>(Arguments arguments)
+        given Absent satisfies Null
+        given Arguments satisfies Iterable<Element,Absent>
+        => object satisfies IterableChain<Arguments,Element,Absent> {
+    shared actual Arguments do() => arguments;
+};
