@@ -10,13 +10,13 @@
 
  [[ProbingChain]] is the evolution for [[NullSafeChain]].
 
- Example 1: Emulating [[NullSafeChain]]
- If both methods only differ on the `Null` type, [[probe]] behaves exactly like [[NullSafeChain]]
+ Example 1: Emulating [[NullSafeChain]] / Type accumulation
+ If both methods only differ on the `Null` type, [[probe]] behaves exactly like [[NullSafeChain]].
  <pre>
     Integer? foo(Integer i) => if (i.even) i else null;
-    Integer bar(Integer i) => i.successor;
+    String bar(Integer i) => i.string;
 
-    assertEquals([[chain]](2,foo).[[probe]](bar).[[do]](),3); // foo returns 2, then bar return 3
+    assertEquals([[chain]](2,foo).[[probe]](bar).[[do]](),\"3\"); // foo returns 2, then bar return \"3\"
     assertEquals([[chain]](1,foo).[[probe]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
@@ -70,6 +70,3 @@ shared Chain<Return|Arguments> probes<Return, FuncArgs, Arguments>(Arguments arg
         => object satisfies Chain<Return|Arguments> {
     shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(*arguments) else arguments;
 };
-
-
-

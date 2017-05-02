@@ -124,9 +124,9 @@ Is rewritten as
 ```
 There are many kind of optionals, but this module provide the following ones:
 - Null safe optionals (the one on the previous example)
-- Type safe optionals
-- Type asserting optionals
-You can find de details on (Optionals)[docs/OPTIONAL.md] page.
+- Type retaining optionals
+- Type stripping optionals
+You can find de details on [Optionals](docs/OPTIONAL.md) page.
 
 ## END
 This is the end of the basic documentation for this module.
