@@ -15,10 +15,10 @@ import herd.chain {
 
 shared test void testTee() {
     // Chain start and parameter setting
-    assertEquals(0, tee(0, cTtoT).do(), "Basic tee");
-    assertEquals(null, tee(null, cTNtoT).do(), "Basic tee, null params");
-    assertEquals([1, true], tee([1, true], cStoS).do(), "Basic tee, tuple params");
-    assertEquals([1, true], tees([1, true], cTTtoT).do(), "Spreading tee");
+    assertEquals(tee(0, cTtoT).do(), 0, "Basic tee");
+    assertEquals(tee(null, cTNtoT).do(), null, "Basic tee, null params");
+    assertEquals(tee([1, true], cStoS).do(), [1, true], "Basic tee, tuple params");
+    assertEquals(tees([1, true], cTTtoT).do(), [1, true], "Spreading tee");
 }
 
 shared test void testTeeSample() {
@@ -28,11 +28,11 @@ shared test void testTeeSample() {
 }
 
 shared test void testTeeTo() {
-    assertEquals(1, tee(0, cTtoT).to(cTtoT).do(), "Basic tee to basic chain");
-    assertEquals(0, tee(null, cTNtoT).to(cNtoT).do(), "Basic tee to basic chain, null params");
+    assertEquals(tee(0, cTtoT).to(cTtoT).do(), 1, "Basic tee to basic chain");
+    assertEquals(tee(null, cTNtoT).to(cNtoT).do(), 0, "Basic tee to basic chain, null params");
 }
 
 shared test void testChainToTee() {
-    assertEquals(1, chain(0, cTtoT).tee(cTtoT).do(), "Basic tee to basic chain");
-    assertEquals(0, chain(null, cTNtoT).tee(cTtoI).do(), "Basic tee to basic chain, null params");
+    assertEquals(chain(0, cTtoT).tee(cTtoT).do(), 1, "Basic tee to basic chain");
+    assertEquals(chain(null, cTNtoT).tee(cTtoI).do(), 0, "Basic tee to basic chain, null params");
 }

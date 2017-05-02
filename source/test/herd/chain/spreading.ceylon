@@ -10,31 +10,31 @@ import herd.chain {
 }
 
 shared test void testSpreadStart() {
-    assertEquals(2, spread(0, cTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals(1, spread(1, cTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals(1, spread(null, cTNtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(0, cTtoS).to(cTTtoT).do(), 2, "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(1, cTtoS).to(cTTtoT).do(), 1, "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(null, cTNtoS).to(cTTtoT).do(), 1, "Spreadable composition should be able to compose on callables accepting null");
 
-    assertEquals(2, spreads([0,true], cTTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spreads([0,true], cTTtoS).to(cTTtoT).do(), 2, "Spreadable composition should be able to compose on callables accepting null");
 
 }
 
 shared test void testChainToSpread() {
     //Continuing from a non-spreadable...
-    assertEquals(1, chain(0, cTtoT).spread(cTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals(4, chain(1, cTtoT).spread(cTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals(2, chain(null, cTNtoT).spread(cTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(chain(0, cTtoT).spread(cTtoS).to(cTTtoT).do(), 1, "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(chain(1, cTtoT).spread(cTtoS).to(cTTtoT).do(), 4, "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(chain(null, cTNtoT).spread(cTtoS).to(cTTtoT).do(), 2, "Spreadable composition should be able to compose on callables accepting null");
 }
 
 shared test void testSpreadTo() {
-    assertEquals(3, spread(0, cTtoS).spread(cTTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals(2, spread(1, cTtoS).spread(cTTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals(2, spread(null, cTNtoS).spread(cTTtoS).to(cTTtoT).do(), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(0, cTtoS).spread(cTTtoS).to(cTTtoT).do(), 3, "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(1, cTtoS).spread(cTTtoS).to(cTTtoT).do(), 2, "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(null, cTNtoS).spread(cTTtoS).to(cTTtoT).do(), 2, "Spreadable composition should be able to compose on callables accepting null");
 }
 
 shared test void testSpreadSpread(){
-    assertEquals([2, true], spread(0, cTtoS).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals([3, false], spread(1, cTtoS).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
-    assertEquals([1, true], spread(null, cTNtoS).spread(cTTtoS).do(), "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(0, cTtoS).spread(cTTtoS).do(), [2, true], "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(1, cTtoS).spread(cTTtoS).do(), [3, false], "Spreadable composition should be able to compose on callables accepting null");
+    assertEquals(spread(null, cTNtoS).spread(cTTtoS).do(), [1, true], "Spreadable composition should be able to compose on callables accepting null");
 }
 
 //TODO: Test spreads
