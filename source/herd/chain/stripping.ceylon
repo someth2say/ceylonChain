@@ -45,3 +45,19 @@ shared StrippedChain<Left,Right> strips<Left, Right, Arguments>(Arguments argume
         given Arguments satisfies Anything[]
         => object extends SpreadingChainStart<Left|Right,Arguments>(func, arguments) satisfies StrippedChain<Left,Right> {};
 
+
+
+
+
+"Initial optional step"
+shared StrippedChain<NewLeft,NewRight> strip2<Left, Right, NewLeft, NewRight>(Left|Right arguments, NewLeft(Left) lFunc, NewRight(Left) rFunc)
+        => object satisfies StrippedChain<NewLeft,NewRight> {
+            shared actual NewLeft|NewRight do() => nothing;
+
+        };
+
+"Initial optional spreading step"
+shared StrippedChain<Left,Right> strips<Left, Right, Arguments>(Left|Right arguments, <Left|Right>(*Arguments) func)
+        given Arguments satisfies Anything[]
+        => object extends SpreadingChainStart<Left|Right,Arguments>(func, arguments) satisfies StrippedChain<Left,Right> {};
+
