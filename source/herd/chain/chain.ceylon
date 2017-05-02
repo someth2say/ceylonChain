@@ -3,7 +3,8 @@ shared interface Chain<Return> satisfies
           IInvocable<Return>
         & IIterable<Return>
         & ChainingChain<Return>
-        & OptionalChain<Return>
+        & ProbingChain<Return>
+        & StrippingChain<Return>
         & SpreadingChain<Return>
         & TeeingChain<Return>
         & NullSafeChain<Return>
