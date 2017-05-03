@@ -5,11 +5,9 @@ import ceylon.test {
 }
 
 import herd.chain {
-    chain,
+    chainTo,
     tee,
-    tees,
     Chain
-
 }
 
 
@@ -18,11 +16,10 @@ shared test void testTee() {
     assertEquals(tee(0, cTtoT).do(), 0, "Basic tee");
     assertEquals(tee(null, cTNtoT).do(), null, "Basic tee, null params");
     assertEquals(tee([1, true], cStoS).do(), [1, true], "Basic tee, tuple params");
-    assertEquals(tees([1, true], cTTtoT).do(), [1, true], "Spreading tee");
 }
 
 shared test void testTeeSample() {
-    Chain<Integer> ch = chain(1, Integer.successor);
+    Chain<Integer> ch = chainTo(1, Integer.successor);
     Chain<Integer> ch2 = ch.tee((Integer i) { if (i.negative) {fail();}});
     assertEquals(ch2.do(), 2);
 }
@@ -33,6 +30,6 @@ shared test void testTeeTo() {
 }
 
 shared test void testChainToTee() {
-    assertEquals(chain(0, cTtoT).tee(cTtoT).do(), 1, "Basic tee to basic chain");
-    assertEquals(chain(null, cTNtoT).tee(cTtoI).do(), 0, "Basic tee to basic chain, null params");
+    assertEquals(chainTo(0, cTtoT).tee(cTtoT).do(), 1, "Basic tee to basic chain");
+    assertEquals(chainTo(null, cTNtoT).tee(cTtoI).do(), 0, "Basic tee to basic chain, null params");
 }

@@ -36,17 +36,11 @@ class LRStep<NewLeft, NewRight, Left, Right>(IInvocable<Left|Right> prev, NewLef
     else rFunc(prevResult);
 }
 
-"Initial optional step"
-shared StrippedChain<Left,Right> strip<Left, Right, Arguments>(Arguments arguments, <Left|Right>(Arguments) func)
-        => object extends ChainStart<Left|Right,Arguments>(func, arguments) satisfies StrippedChain<Left,Right> {};
+"Initial stripping step for a chain, that divides incomming argument's (union) type into ´Left´ and ´Right` types"
+shared StrippedChain<Left,Right> strip<Left, Right>(Left|Right arguments)
+        => object extends ChainStart<Left|Right>(arguments) satisfies StrippedChain<Left,Right> {};
 
-"Initial optional spreading step"
-shared StrippedChain<Left,Right> strips<Left, Right, Arguments>(Arguments arguments, <Left|Right>(*Arguments) func)
-        given Arguments satisfies Anything[]
-        => object extends SpreadingChainStart<Left|Right,Arguments>(func, arguments) satisfies StrippedChain<Left,Right> {};
-
-"Initial optional step"
-shared StrippedChain<Left,Right> stripArg<Left, Right>(Left|Right arguments)
-        => object satisfies StrippedChain<Left,Right> {
-    shared actual Left|Right do() => arguments;
-};
+"Initial stripping step, that chains the argument to the function, and strip its result type.
+ It is just a shortcut for `[[chain]](arguments).[[strip]](func)`"
+shared StrippedChain<Left,Right> chainStrip<Left, Right, Arguments>(Arguments arguments, <Left|Right>(Arguments) func)
+        => object extends ChainStartTo<Left|Right,Arguments>(arguments, func) satisfies StrippedChain<Left,Right> {};

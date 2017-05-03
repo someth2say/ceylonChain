@@ -17,7 +17,7 @@ import herd.chain {
  Example:
  <pre>
     Range<Integer> foo(Integer i) => (1..i); // Note Range<...> satisfies Iterable
-    [[IterableChain]]<Range<Integer>,Integer,Integer> bi = [[iterate]](10,foo);
+    [[IterableChain]]<Range<Integer>,Integer,Integer> bi = [[chainIterate]](10,foo);
     [[IterableChain]]<{Integer*},Integer,Integer> fi = bi.[[filter]](Integer.even).[[map]](Integer.successor);
     [[IterableChain]]<{Integer*},Integer,Integer> pr = fi.[[each]](print); // 'each' performs the function over each element, and returns the same
     pr.[[do]](); // Print all numbers in {3,5,7,9,11}, and returns this same sequence
@@ -89,7 +89,7 @@ shared interface IIterable<Return> satisfies IInvocable<Return> {
     "Adds a new step to the chain, by passing the result of the chain so far to a new function.
      The new function MUST accept the return type for the chain so far as its only parameter,
      and MUST return an Iterable type (i.o.w. return type for the new function should satisfy Iterable<Element,Absent>"
-    see (`function package.iterate`, `function package.iterates`)
+    see (`function package.chainIterate`, `function package.iterate`)
     shared IterableChain<NewReturn,Element,Absent> iterate<NewReturn, Element, Absent=Null>(NewReturn(Return) newFunc)
             given Absent satisfies Null
             given NewReturn satisfies Iterable<Element,Absent>
@@ -102,26 +102,17 @@ class Iterating<NewReturn, PrevReturn, Element, Absent=Null>(IInvocable<PrevRetu
         given Absent satisfies Null
         given NewReturn satisfies Iterable<Element,Absent> {}
 
-"Initial iterable step for a chain, whose results can be iterated."
-shared IterableChain<Return,Element,Absent> iterate<Return, Arguments, Element, Absent=Null>(Arguments arguments, Return(Arguments) func)
-        given Absent satisfies Null
-        given Return satisfies Iterable<Element,Absent>
-        => object extends ChainStart<Return,Arguments>(func, arguments)
-        satisfies IterableChain<Return,Element,Absent> {};
-
-"Initial iterable step for a backward chain, whose results can be iterated.
-  The only difference with [[iterate]] is that [[iterates]] will accept a tuple as chain arguments, that will be spread into this step's function."
-shared IterableChain<Return,Element,Absent> iterates<Return, Arguments, Element, Absent=Null>(Arguments arguments, Return(*Arguments) func)
-        given Absent satisfies Null
-        given Return satisfies Iterable<Element,Absent>
-        given Arguments satisfies Anything[]
-        => object extends SpreadingChainStart<Return,Arguments>(func, arguments)
-        satisfies IterableChain<Return,Element,Absent> {};
 
 "Initial iterable step for a chain, whose results can be iterated."
-shared IterableChain<Arguments,Element,Absent> iterateArg<Arguments, Element, Absent=Null>(Arguments arguments)
+shared IterableChain<Arguments,Element,Absent> iterate<Arguments, Element, Absent=Null>(Arguments arguments)
         given Absent satisfies Null
         given Arguments satisfies Iterable<Element,Absent>
-        => object satisfies IterableChain<Arguments,Element,Absent> {
-    shared actual Arguments do() => arguments;
-};
+        => object extends ChainStart<Arguments>(arguments) satisfies IterableChain<Arguments,Element,Absent> {};
+
+"Initial step for a chain, that chains arguments to an iterable function.
+ It is just a shortcut for `[[chain]](arguments).[[iterate]](func)`"
+shared IterableChain<Return,Element,Absent> chainIterate<Return, Arguments, Element, Absent=Null>(Arguments arguments, Return(Arguments) func)
+        given Absent satisfies Null
+        given Return satisfies Iterable<Element,Absent>
+        => object extends ChainStartTo<Return,Arguments>(arguments, func)
+        satisfies IterableChain<Return,Element,Absent> {};

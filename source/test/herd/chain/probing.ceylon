@@ -5,7 +5,7 @@ import ceylon.test {
 }
 
 import herd.chain {
-    chain,
+    chainTo,
     probe
 }
 
@@ -23,14 +23,14 @@ shared test void testProbe() {
 
 shared test void testChainProbe() {
     // For callables accepting null types
-    assertEquals(chain(0, cTtoTN).probe(cTNtoT).do(), 2, "Probing composition should be able to compose on callables accepting null");
-    assertEquals(chain(1, cTtoTN).probe(cTNtoT).do(), 0, "Probing composition should be able to compose on callables accepting null");
-    assertEquals(chain(null, cTNtoTN).probe(cTNtoT).do(), 0, "Probing composition should be able to compose on callables accepting null");
+    assertEquals(chainTo(0, cTtoTN).probe(cTNtoT).do(), 2, "Probing composition should be able to compose on callables accepting null");
+    assertEquals(chainTo(1, cTtoTN).probe(cTNtoT).do(), 0, "Probing composition should be able to compose on callables accepting null");
+    assertEquals(chainTo(null, cTNtoTN).probe(cTNtoT).do(), 0, "Probing composition should be able to compose on callables accepting null");
 
     // For callables NOT accepting null types
-    assertEquals(chain(0, cTtoTN).probe(cTtoT).do(), 2, "Probing composition should be able to compose on callables not accepting null.");
-    assertEquals(chain(1, cTtoTN).probe(cTtoT).do(), null, "Probing composition should be able to compose on callables not accepting null.");
-    assertEquals(chain(null, cTNtoTN).probe(cTtoT).do(), null, "Probing composition should be able to compose on callables not accepting null.");
+    assertEquals(chainTo(0, cTtoTN).probe(cTtoT).do(), 2, "Probing composition should be able to compose on callables not accepting null.");
+    assertEquals(chainTo(1, cTtoTN).probe(cTtoT).do(), null, "Probing composition should be able to compose on callables not accepting null.");
+    assertEquals(chainTo(null, cTNtoTN).probe(cTtoT).do(), null, "Probing composition should be able to compose on callables not accepting null.");
 }
 
 shared test void testProbingMethods() {

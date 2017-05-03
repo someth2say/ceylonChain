@@ -13,21 +13,20 @@
     assertEquals([[spread]](1,foo).[[to]](bar).[[do]](),0); // foo returns [1,false], hence bar returns 0;
     assertEquals([[spread]](2,foo).[[to]](bar).[[do]](),2); // foo returns [2,true], hence bar returns 2;
  </pre>"
-shared interface SpreadableChain<Return> satisfies
-          IInvocable<Return>
+shared interface SpreadableChain<Return> satisfies IInvocable<Return>
         given Return satisfies [Anything*] {
 
     "Adds a new step to the chain, by spreading the result of the chain so far to a new function.
      Chain so far MUST be spreadable (i.o.w should satisfy ISpreadable interface).
      The new function MUST accept an spreadable type (i.o.w a Tuple)."
-    see (`interface SpreadingChain`, `function package.spread`, `function package.spreads`)
+    see (`interface SpreadingChain`, `function package.chainSpread`, `function package.spread`)
     shared Chain<NewReturn> to<NewReturn>(NewReturn(*Return) newFunc)
             => SpreadChaining<NewReturn,Return>(this, newFunc);
 
     "Adds a new step to the chain, by spreading the result of the chain so far to a new function.
      Chain so far MUST be spreadable (i.o.w should satisfy ISpreadable interface), and so will be the new chain.
      The new function MUST BOTH accept return an spreadable type (i.o.w a Tuple)."
-    see (`interface SpreadingChain`, `function package.spread`, `function package.spreads`)
+    see (`interface SpreadingChain`, `function package.chainSpread`, `function package.spread`)
     shared SpreadableChain<NewReturn> spread<NewReturn>(NewReturn(*Return) newFunc)
             given NewReturn satisfies [Anything*]
             => SpreadSpreading<NewReturn,Return>(this, newFunc);
@@ -60,18 +59,29 @@ class SpreadSpreading<NewReturn, Return>(IInvocable<Return> prevSpreadable, NewR
         given Return satisfies [Anything*]
         given NewReturn satisfies [Anything*] {}
 
+abstract class SpreadingChainStep<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(*PrevReturn) func)
+        satisfies IInvocable<Return>
+        given PrevReturn satisfies Anything[] {
+    shared actual Return do() => let (prevResult = prev.do()) func(*prevResult);
+}
+
+
 "Initial spreading step for a chain, that can spread its results to the following chain step's function. "
-shared SpreadableChain<Return> spread<Return, Arguments>(Arguments arguments, Return(Arguments) func)
-        given Return satisfies Anything[]
-        => object extends ChainStart<Return,Arguments>(func, arguments)
-        satisfies SpreadableChain<Return> {};
-
-"Initial spreading step for a chain, that can spread its results to the following chain step's function.
- The only difference with [[spread]] is that [[spreads]] will accept a tuple as chain arguments, that will be spread into this step's function."
-shared SpreadableChain<Return> spreads<Return, Arguments>(Arguments arguments, Return(*Arguments) func)
-        given Return satisfies Anything[]
+shared SpreadableChain<Arguments> spread<Arguments>(Arguments arguments)
         given Arguments satisfies Anything[]
-        => object extends SpreadingChainStart<Return,Arguments>(func, arguments)
+        => object extends ChainStart<Arguments>(arguments) satisfies SpreadableChain<Arguments> {};
+
+"Initial step for a chain, that spreads the first function directly.
+ It is just a shortcut for `[[chain]](arguments).[[spread]](func)`"
+shared SpreadableChain<Return> chainSpread<Return, Arguments>(Arguments arguments, Return(Arguments) func)
+        given Return satisfies Anything[]
+        => object extends ChainStartTo<Return,Arguments>(arguments, func)
         satisfies SpreadableChain<Return> {};
 
-
+"Initial spreading step for a chain, that chains the first function directly.
+ It is just a shortcut for `[[spread]](arguments).[[to]](func)`"
+shared Chain<Return> spreadTo<Return, Arguments>(Arguments arguments, Return(*Arguments) func)
+        given Arguments satisfies Anything[]
+        => object satisfies Chain<Return> {
+    shared actual Return do() => func(*arguments);
+};

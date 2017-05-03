@@ -16,8 +16,8 @@
     Integer? foo(Integer i) => if (i.even) i else null;
     String bar(Integer i) => i.string;
 
-    assertEquals([[chain]](2,foo).[[probe]](bar).[[do]](),\"3\"); // foo returns 2, then bar return \"3\"
-    assertEquals([[chain]](1,foo).[[probe]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
+    assertEquals([[chainF]](2,foo).[[probe]](bar).[[do]](),\"3\"); // foo returns 2, then bar return \"3\"
+    assertEquals([[chainF]](1,foo).[[probe]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
  Example 2: Exception handling / Type reduction / Default values
@@ -26,8 +26,8 @@
     Integer handleException(ParseException ex) { print(ex.description); return 0; }
     Integer handleInt(Integer i) => i.successor;
 
-    assertEquals([[chain]](\"3\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),4); // parse is succesfull, so handleException does not math, but handleInt does
-    assertEquals([[chain]](\"three\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
+    assertEquals([[chainF]](\"3\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),4); // parse is succesfull, so handleException does not math, but handleInt does
+    assertEquals([[chainF]](\"three\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
  </pre>
 
  Note that [[probe]] chain steps will **not** 'absorb' the actually matched type.
@@ -41,7 +41,7 @@ shared interface ProbingChain<Return>
      of applying the function to the previous result.
      If function does not accept the retult type for previous chain step, then this same previous result
      is returned, with no further modification."
-    see (`function package.probe`, `function package.probes`)
+    see (`function package.probe`)
     shared Chain<NewReturn|Return> probe<NewReturn, FuncArgs>(NewReturn(FuncArgs) newFunc)
             => Probing<NewReturn,Return,FuncArgs>(this, newFunc);
 }
@@ -55,18 +55,9 @@ class Probing<NewReturn, Return, FuncArgs>(IInvocable<Return> prev, NewReturn(Fu
     shared actual NewReturn|Return do() => let (prevResult = prev.do()) if (is FuncArgs prevResult) then func(prevResult) else prevResult;
 }
 
-"Initial probing step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
- Use with caution."
+"Initial probing step for a chain. It will try to use chain arguments into provided function.
+ If succesfull, will return function result. Else, will return provided arguments."
 shared Chain<Return|Arguments> probe<Return, FuncArgs, Arguments>(Arguments arguments, Return(FuncArgs) func)
         => object satisfies Chain<Return|Arguments> {
     shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(arguments) else arguments;
-};
-
-"Initial probing step for a chain. It will try to use chain arguments into provided function. If succesfull, will return function result. Else, will return provided arguments.
- Difference with [[probe]] is that this chain requires arguments to be a tuple, that will try to be spread into current function.
- Use with caution."
-shared Chain<Return|Arguments> probes<Return, FuncArgs, Arguments>(Arguments arguments, Return(*FuncArgs) func)
-        given FuncArgs satisfies Anything[]
-        => object satisfies Chain<Return|Arguments> {
-    shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(*arguments) else arguments;
 };

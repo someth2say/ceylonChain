@@ -14,10 +14,10 @@
     Integer? foo(Integer i) => if (i.even) i else null;
     Integer bar(Integer i) => i.successor;
 
-    [[Chain]]<Integer?,Integer> sp = [[chain]](2,foo)
+    [[Chain]]<Integer?,Integer> sp = [[chainF]](2,foo)
     [[Chain]]<Integer?,Integer> ch = sp.[[ifExists]](bar);
     assertEquals(sp.[[do]](),3); // foo returns 2, then bar return 3
-    assertEquals([[chain]](1,foo).[[ifExists]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
+    assertEquals([[chainF]](1,foo).[[ifExists]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
  [[NullSafeChain]] is the precursor for [[ProbingChain]].
@@ -30,7 +30,7 @@ shared interface NullSafeChain<Handled>
      necessary accept nulls. If incomming value is not null, then function will be applied, and its result
      returned. If incomming value is null, then null will be returned (function will be skipped).
      "
-    see (`function package.ifExists`, `function package.ifExistss`)
+    see (`function package.ifExists`)
 
     shared Chain<NewReturn|Null> ifExists<NewReturn>(NewReturn(Handled) newFunc)
             => NullTrying<NewReturn,Handled>(this, newFunc);
@@ -41,13 +41,8 @@ class NullTrying<NewReturn, Handled>(IInvocable<Handled|Null> prev, NewReturn(Ha
     shared actual NewReturn? do() => let (prevResult = prev.do()) if (is Handled prevResult) then func(prevResult) else null;
 }
 
+"Initial null safe step for a chain, that tries to apply arguments to the function."
 shared Chain<Return|Null> ifExists<Return, Handled>(Handled|Null arguments, Return(Handled) func)
         => object satisfies Chain<Return|Null> {
     shared actual Return|Null do() => if (is Handled arguments) then func(arguments) else arguments;
-};
-
-shared Chain<Return|Null> ifExistss<Return, Handled>(Handled|Null arguments, Return(*Handled) func)
-        given Handled satisfies Anything[]
-        => object satisfies Chain<Return|Null> {
-    shared actual Return|Null do() => if (is Handled arguments) then func(*arguments) else arguments;
 };
