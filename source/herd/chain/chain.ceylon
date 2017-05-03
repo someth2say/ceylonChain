@@ -1,7 +1,7 @@
 "Default traits for a chain step"
 shared interface Chain<Return> satisfies
-          IInvocable<Return>
-        & IIterable<Return>
+          Invocable<Return>
+        & IterableChain<Return>
         & ChainingChain<Return>
         & ProbingChain<Return>
         & StrippingChain<Return>

@@ -8,14 +8,14 @@
 
  Example:
  <pre>
-    [[Chain]]<Integer> ch = [[chainF]](1, Integer.successor);
+    [[Chain]]<Integer> ch = [[chainIterate]](1, Integer.successor);
     [[Chain]]<Integer> ch2 = ch.[[tee]]((Integer i) { if (i.negative) {fail();}});
     assertEquals(ch2.[[do]](), 2);
  </pre>
 
  Note that chaining different steps does not vary the type for chain arguments, as those are defined by the parameters for chain initial step."
 shared interface TeeingChain<Return>
-        satisfies IInvocable<Return> {
+        satisfies Invocable<Return> {
     "Adds a new step to the chain, by passing the result of the chain so far to a new function.
      The new function MUST accept the return type for the chain so far as its only parameter."
     see (`function package.tee`)
@@ -23,7 +23,7 @@ shared interface TeeingChain<Return>
             => Teeing<Return>(this, newFunc);
 }
 
-class Teeing<PrevReturn>(IInvocable<PrevReturn> prev, Anything(PrevReturn) func)
+class Teeing<PrevReturn>(Invocable<PrevReturn> prev, Anything(PrevReturn) func)
         satisfies Chain<PrevReturn> {
     shared actual PrevReturn do() {
         value prevResult = prev.do();

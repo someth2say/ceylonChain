@@ -16,8 +16,8 @@
     Integer? foo(Integer i) => if (i.even) i else null;
     String bar(Integer i) => i.string;
 
-    assertEquals([[chainF]](2,foo).[[probe]](bar).[[do]](),\"3\"); // foo returns 2, then bar return \"3\"
-    assertEquals([[chainF]](1,foo).[[probe]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
+    assertEquals([[chainIterate]](2,foo).[[probe]](bar).[[do]](),\"3\"); // foo returns 2, then bar return \"3\"
+    assertEquals([[chainIterate]](1,foo).[[probe]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
  Example 2: Exception handling / Type reduction / Default values
@@ -26,8 +26,8 @@
     Integer handleException(ParseException ex) { print(ex.description); return 0; }
     Integer handleInt(Integer i) => i.successor;
 
-    assertEquals([[chainF]](\"3\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),4); // parse is succesfull, so handleException does not math, but handleInt does
-    assertEquals([[chainF]](\"three\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
+    assertEquals([[chainIterate]](\"3\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),4); // parse is succesfull, so handleException does not math, but handleInt does
+    assertEquals([[chainIterate]](\"three\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
  </pre>
 
  Note that [[probe]] chain steps will **not** 'absorb' the actually matched type.
@@ -35,7 +35,7 @@
  Because of that, [[probe]] chain steps can be very tricky in complex cases (i.e. when return types are complex, or many different paths can be taken.
  Use with caution."
 shared interface ProbingChain<Return>
-        satisfies IInvocable<Return> {
+        satisfies Invocable<Return> {
     "Adds a new step to the chain, by trying to apply result so far to the provided function.
      If function accepts the result type for previous chain step, then this step will return the result
      of applying the function to the previous result.
@@ -46,7 +46,7 @@ shared interface ProbingChain<Return>
             => Probing<NewReturn,Return,FuncArgs>(this, newFunc);
 }
 
-class Probing<NewReturn, Return, FuncArgs>(IInvocable<Return> prev, NewReturn(FuncArgs) func)
+class Probing<NewReturn, Return, FuncArgs>(Invocable<Return> prev, NewReturn(FuncArgs) func)
         satisfies Chain<NewReturn|Return> {
     "If function accepts the result type for previous chain step, then this step will return the result
      of applying the function to the previous result.
@@ -56,7 +56,8 @@ class Probing<NewReturn, Return, FuncArgs>(IInvocable<Return> prev, NewReturn(Fu
 }
 
 "Initial probing step for a chain. It will try to use chain arguments into provided function.
- If succesfull, will return function result. Else, will return provided arguments."
+ If succesfull, will return function result. Else, will return provided arguments.
+  It is just a shortcut for `[[chain]](arguments).[[probe]](func)`"
 shared Chain<Return|Arguments> probe<Return, FuncArgs, Arguments>(Arguments arguments, Return(FuncArgs) func)
         => object satisfies Chain<Return|Arguments> {
     shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(arguments) else arguments;

@@ -1,29 +1,29 @@
-"Invocable chain step that provides capability for providing chain arguments.
+"[[Invocable]] provides capability for providing chain arguments.
  As this is part of a backward chain, arguments are provided at the end of the chain, in the [[do]] method.
  Example:
  <pre>
-    IBwInvocable<String,Integer> bwch = ...;
-    String str = bwcw.do();
+    [[Invocable]]<String> ch = ...;
+    String str = ch.[[do]]();
  </pre>"
-shared interface IInvocable<out Return>
+shared interface Invocable<out Return>
 {
     "Actually invokes the chain, with the values set at first chain step"
     shared formal Return do() ;
 }
 
-abstract class ChainStart<Arguments>(Arguments arguments)
-        satisfies IInvocable<Arguments>
+abstract class IdentityInvocable<Arguments>(Arguments arguments)
+        satisfies Invocable<Arguments>
 {
     shared actual Arguments do() => arguments;
 }
 
-abstract class ChainStartTo<out Return, Arguments>(Arguments arguments, Return(Arguments) func)
-        satisfies IInvocable<Return>
+abstract class FunctionInvocable<out Return, Arguments>(Arguments arguments, Return(Arguments) func)
+        satisfies Invocable<Return>
 {
     shared actual Return do() => func(arguments);
 }
 
-abstract class ChainStep<out Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(PrevReturn) func)
-        satisfies IInvocable<Return> {
+abstract class ChainingInvocable<out Return, PrevReturn>(Invocable<PrevReturn> prev, Return(PrevReturn) func)
+        satisfies Invocable<Return> {
     shared actual Return do() => let (prevResult = prev.do()) func(prevResult);
 }
