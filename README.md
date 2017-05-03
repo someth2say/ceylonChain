@@ -28,24 +28,31 @@ For learning more about **PicoPatterns**, please visit [this](docs/PICOPATTERNS.
 
 ## TL;DR: Usage
 First, you need to create the chain (the first chain step). Simply use the `chain` top-level method to start the chain, 
-providing the initial value and the first function.
+providing the initial value.
 ```
-value ch = chain(request, parseParameters);
+value ch = chain(request);
 ```
 `chain` top-level creates a basic chain. See top-level methods on other step classes to find alternative chain starts.
  
 Once initial chain object created, more methods can be added to the chain. Basic way for chaining is using the `to` method:
 ```
-value ch = chain(request, parseParameters).to(validateParameters).to(doStuff).to(writeResponse);
+value ch = chain(request).to(parseParameters).to(validateParameters).to(doStuff).to(writeResponse);
 ```
 Again, `to` is just the basic chaining method. Other methods are available depending on the type of chain step.  
 
 After chaining as many steps as necessary, you may need to explicitly execute the chain, so it is evaluated.
 This is always done with the `do` method:
 ```
-return chain(request, parseParameters).to(validateParameters).to(doStuff).to(writeResponse).do();
+return chain(request).to(parseParameters).to(validateParameters).to(doStuff).to(writeResponse).do();
 ```
 And that's all!
+
+Utility methods are provided for simplify usage. 
+The top-level `chainTo` method merges the first `chain` and `to` methods into a single call:
+```
+return chainTo(request,parseParameters).to(validateParameters).to(doStuff).to(writeResponse).do();
+```
+Use whichever you feel more comfortable with. 
 
 ## Different types of chaining
 As seen, chaining functions is really straightforward. But wise reader can see that this is only the simplest case.
@@ -59,7 +66,7 @@ This module offers support for other patterns (each pattern links to detail page
 ```
 Is rewritten as
 ```
-    value val3 = chain(initialValue, method1).to(method2).to(method3).do();
+    value val3 = chainTo(initialValue, method1).to(method2).to(method3).do();
 ```
 More details 
 
@@ -72,7 +79,7 @@ When methods chain fluently, but the return type and value is irrelevant.
 ```
 Is rewritten as
 ```
-   value val2 = chain(initialValue, method1).tee(methodWithoutSignificantResult).to(method2).do();
+   value val2 = chainTo(initialValue, method1).tee(methodWithoutSignificantResult).to(method2).do();
 ```
 ###### [Spreading](docs/SPREADING.md) 
 When the further method returns a `Tuple`, that should be spread to the later method.
@@ -82,12 +89,12 @@ Given
 ```
 Pattern
 ```
-    [Type1, Type2] val1 = method1(initialValue);
+    [Type1, Type2] val1 = method1(...);
     value val2 = method2(*val1);
 ```
 Is rewritten as
 ```
-   value val2 = spread(initialValue, method1).to(method2).do();
+   value val2 = chain(...).spread(method1).to(method2).do();
 ```
 
 ###### [Iterating](docs/ITERATING.md) 
@@ -98,13 +105,13 @@ Given
 ```
 Pattern
 ```
-    value iterable = method1(initialValue);
+    value iterable = method1(...);
     value iterable2 = iterable.map(mappingMethod); // `map` Or any other method on Iterable
     value val3 = methodWorkingOnIterable(iterable2);
  ```
 Is rewritten as
  ```
-   value val3 = iterate(initialValue,method1).map(mappingMethod).to(methodWorkingOnIterable).do();
+   value val3 = chain(...).iterate(method1).map(mappingMethod).to(methodWorkingOnIterable).do();
  ```
 ###### [Optional](docs/OPTIONAL.md): 
 When parameters for the later function do not match exactly the results for the further function.
@@ -115,12 +122,12 @@ I.e. given
 ```
 Pattern
 ```
-    value val1 = method1(initialValue);
+    value val1 = method1( ... );
     value val2 = if (exists val1) then method2(val1) else null;
 ```
 Is rewritten as
 ```
-   value val2 = chain(initialValue, method1).ifExists(method2).do();
+   value val2 = chain(...)...to(method1).ifExists(method2).do();
 ```
 There are many kind of optionals, but this module provide the following ones:
 - Null safe optionals (the one on the previous example)

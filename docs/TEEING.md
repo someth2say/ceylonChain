@@ -16,16 +16,13 @@ This is pretty useful for side-effects only functions, like logging or `void` op
     chain(...).to(generateData).tee(logData).to(methodOnData)...
 ```
 
-###### Gotcha
-Currently, `tee` is pretty limited in relation to spreading. You can not spread a tuple to a `tee` nor to the step just before.
-
 ## Chain start
 Like for [chaining](CHAINING.md), teeing offer two top-level methods for starting a chain: `tee` and `tees`
 ```
     value ch = tee(initialValue, logMethod).to(method1);
-    value ch2 = tees(initialTuple, logMethodWithManyParams).to(method2);
 ```
+Note there is no `tee` variant accepting only the initial value.
 
 ## END
-If you already understood  [chaining](CHAINING.md), teeing is just a piece of cake.
+If you understood [chaining](CHAINING.md), teeing is just a piece of cake.
 [Next chapter](SPREADING.md) will introduce advanced spreading concepts.

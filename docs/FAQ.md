@@ -5,20 +5,20 @@ as method references! Why this feature has been removed?
 
 Yes, previously you were able to write chains like this:
 ```
-value ch = chain(...).to(...);
-...
-value = ch.with(initialValue);
+value ch = chain(...).to(...)...with(initialValue);
 ```
 On one side, this is less readable: initial value is at the end of the chain, instead of the beginning.
-But most important, this have been proven to be not type safe, specially with probing chains.
+
+But most important, this have been proven to be not type safe, specially with partial chains.
 Can you guess the type for the following:
 ```
 value ch = probe(Integer.successor);
 ```
 One may thing it is something like a chain that accepts an `Integer` and returns another `Integer`. But you are wrong.
-`probe` detaches the chain argument type from the initial function arguments type, in order to perform optional application.
-Hence, the type for the previous chain is `IForcing<Integer,Nothing>` meaning that the return type is known to be `Integer`, but compiler
-known nothing for the chain argument's type.
+`probe` detaches the argument type from the function arguments type, in order to perform optional application.
+Hence, the type for the previous chain is `Chain<Nothing>` meaning that the compiler known nothing for the chain argument's type.
+
+Not good.
 
 If you need to create method references for chains, you may simply wrap the chain into a function:
   ```
@@ -28,10 +28,9 @@ If you need to create method references for chains, you may simply wrap the chai
   ```
 
 ###### Also in previous versions, you can just use a function that do not accepts nulls when incomming type contains nulls, via the `thenOptionally` method. How can I do that now?
-`probing` chain steps is what you need.
-`probing` accept any incomming type, and remember `Null` is just another type (and `Type?` is just an alias for `Type|Null`).
-
-Getting back to documentation sample code:
+You have many alternatives.
+- First one, recommended, use the `ifExists` top-level for "Null Safe" patterns. It works the same way than old `thenOptionally`.
+- Second, use the `probe` pattern. Getting back to documentation sample code:
 ```
 Request request = ...;
 Params params = parseParameters(request);
@@ -42,17 +41,30 @@ return result;
 ```
 When using chains, it is translated to:
 ```
-return chain(request, parseParameters).to(validateParameters).probe(doStuff).probe(writeResponse).do()
+return chainTo(request, parseParameters).to(validateParameters).probe(doStuff).probe(writeResponse).do()
 ```
 For clarity, we can split chain into steps:
 ```
-IChaining<Params> ch1 = chain(request, parseParameters);
-IChaining<Params|Null> ch1.to(validateParameters); // Here appears the null type we want to 'flow'
-IProbing<Params|Null|Output> ch3 = ch2.probe(doStuff); // Note 'Null' keeps flowing...
-IProbing<Params|Null|Output|Response> ch4 = ch3.probe(writeResponse); // And not only 'Null', but every type parameter flows...
-return ch4.to(); // The actual return type is `Params|Null|Output|Response`
+Chain<Params> ch1 = chainTo(request, parseParameters);
+Chain<Params|Null> ch1.to(validateParameters); // Here appears the null type we want to 'flow'
+Chain<Params|Null|Output> ch3 = ch2.probe(doStuff); // Note 'Null' keeps flowing...
+Chain<Params|Null|Output|Response> ch4 = ch3.probe(writeResponse); // And not only 'Null', but every type parameter flows...
+return ch4.do(); // The actual return type is `Params|Null|Output|Response`
+```
+- Third one, use the `strip` pattern, to strip-out the `Null` from the rest, and just handle the rest.
+```
+return chainTo(request, parseParameters).strip<Params,Null>(validateParameters.lTo(doStuff).lTo(writeResponse).do(); 
+```
+Or, for clarifying types:
+```
+Chain<Params> ch1 = chainTo(request, parseParameters);
+StrippedChain<Params|Null> ch1.strip<Params,Null>(validateParameters); // Here appears the null type we want to 'flow'
+StrippedChain<Output|Null> ch3 = ch2.lTo(doStuff); // Note 'Null' keeps flowing, but Params not 
+StrippedChain<Response|Null> ch4 = ch3.lTo(writeResponse); 
+return ch4.do(); // The actual return type is `Response|Null`.. not bad, isn't it?
 ```
 
+You choose.
 
 ###### So good, so far. But can I see real life examples where this library can be used?
 Sure! Here are some:
@@ -128,15 +140,17 @@ shared void run() {
 Goes to
 ```
 shared void run() {
-    Options options = commandLineOptions(process.arguments);
-    compileModule(options);
-    chains([options.moduleName, options.moduleVersion],loadModule)      // IChaining<Null|Module>,
-        .to(handleNullModule(options))                                  // IChaining<Module|Integer>
-        .probe(readAnnotations)                                         // IProbing<Module|Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-            .probe(startGdb(options))                                   // IProbing<Module|Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-            .probe(reportInvalid)                                       // IProbing<Module|Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-        .probe(process.exit)                                            // IProbing<Module|Integer|GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-        .do();                                                          // If execution actually leaves the chain, something really gone wrong.
+    Options options = chain(process.arguments)
+        .to(commandLineOptions)
+        .tee(compileModule).do();
+    
+    Integer exitCode = spread([options.moduleName, options.moduleVersion],loadModule)
+        .tee(exitOnNullModule)
+        .strip<GoalDefinitionsBuilder,[InvalidGoalDeclaration+]>(readAnnotations)
+        .lrTo(startGdb(options),reportInvalid)
+        .do();
+        
+    process.exit(exitCode);
 }
 
 Integer startGdb(Options options)(GoalDefinitionsBuilder gdb) => start(gdb, consoleWriter, options.runtime, [*options.goals]);
@@ -146,44 +160,11 @@ Integer reportInvalid([InvalidGoalDeclaration+] gdb) {
    return 1;
 }
 
-Integer|Module handleNullModule(Options options)(Module? mod){
-    if (exists mod) {
-        return mod;
-    } else {
-        process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
-        return 1;
-    }
-}
-```
-An alternative approach may be eliminating all `Integer` return types, and directly invoke `process.exit`... but this way is more educational :)
-```
-shared void run() {
-    Options options = commandLineOptions(process.arguments);
-    compileModule(options);
-    chains([options.moduleName, options.moduleVersion],loadModule)      // IChaining<Null|Module>,
-        .to(handleNullModule(options))                                  // IChaining<Module>
-        .to(readAnnotations)                                            // IChaining<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-            .probe(startGdb(options))                                   // IProbing<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-            .probe(reportInvalid)                                       // IProbing<GoalDefinitionsBuilder|[InvalidGoalDeclaration+]>
-        .do();                                                          // If execution actually leaves the chain, something really gone wrong.
-}
-
-Module handleNullModule(Options options)(Module? mod){
+void exitOnNullModule(Options options)(Module? mod){
     if (!exists mod) {
         process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
-        return process.exit(1);
+        process.exit(1);
     }
-    return mod;
-}
-
-Nothing startGdb(Options options)(GoalDefinitionsBuilder gdb) => chain([gdb, consoleWriter, options.runtime, [*options.goals]],start).to(process.exit).do();
-
-Nothing reportInvalid([InvalidGoalDeclaration+] gdb) {
-   reportInvalidDeclarations(goals, consoleWriter);
-   return process.exit(1);
 }
 ```
-
-Even, if you feel adventurous, you can opt for the `force` chain step!
-
 Many more examples will come.

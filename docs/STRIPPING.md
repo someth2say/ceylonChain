@@ -58,22 +58,24 @@ Finally, `lrTo` allows to change both types at once:
 ```
 
 #### Chain start
-Indeed if your first function returns an Union Type, you can strip it from the beginning, with `strip` and `strips` methods.
+Indeed, if your initial value is an Union Type, you can strip it with the `strip` top-level:
+ ```
+    Type1|...|TypeN initialValue = ...
+    strip<Left,Right>(initialValue)...
+ ```
+
+If it is your first function that returns an Union Type, you can strip it with `chainStrip` method.
 You just need to provide all types (even the type for the initial argument):
 ```
     Value initialValue = ...
     Type1|...|TypeN method(Value val) => ...
     NewRight methodOnRight(Right right) => ...
-    Left|NewRight ch = strip<Left,Right,Value>(initialValue, method).rTo(methodOnRight).do();
+    Left|NewRight ch = chainStrip<Left,Right,Value>(initialValue, method).rTo(methodOnRight).do();
 ```
- 
- 
- 
- 
+Like always, `chainStrip` is a shortcut for the `chain(...).strip(...)` pattern, but less verbose.
+  
 ## END
-This is not the end for Optional patterns.
-[Next chapter](STRIPPING.md) introduces a new kind of optional steps: those stripping types apart, 
-and working each part separately.  
+We are done with all picopatterns supported by this library. Probably many more will come in future releases.
+If you still have doubts about this module. take a look at the [FAQ](FAQ.md), or learn a bit more about _picopatterns_ [here](PICOPATTERNS.md).
 
-
-
+Thanks for reading!

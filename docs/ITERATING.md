@@ -48,11 +48,16 @@ Please, remember that an `Iterable` chain can not spread its results to next ste
 (maybe someday this feature is added, but not now).
 
 ## Chain start
-And what about if the first method already returns an iterable? No problem, use the `iterate` top-level:
+And what about if the first value already is an iterable? No problem, use the `iterate` top-level:
 ```
-    iterate(initialValue,methodReturningAnIterable)....
+    iterate(initialValue).map(...)....
 ```
-Or the `iterates` method, if your initial value need to be spread onto the initial function!
+Like other kind of chains, utility methods are provided for most common cases.
+Here, the `chainIterate` top-level give you a shortcut for `chain(...).iterate(...)` pattern:
+```
+    chainIterate(initialValue,methodReturningAnIterable).map(...)...
+```
+
 Easy as 1,2,3...
 
 ## Iterating methods return types
@@ -61,7 +66,7 @@ Probably you know the difference between `intermediate` methods and `terminal` m
 `intermediate` methods generate a new stream, with its contents altered.
 `terminal` methods do no generate a stream, but a single value.
 
-Those different kind of methods are also reflected in `Iterable` chains, as different return types.
+Those different kind of methods are also shown in `Iterable` chains, as different return types.
 `intermediate` methods (like `map`,`each` or `skip`) generate a new `Iterable` chain step, so you can continue applying `Iterable`methods as needed.
 I.e, you can do the following:
 ```

@@ -1,13 +1,9 @@
 # Optionals:
 This is the last and more complex pattern being covered here.
-"Optional" patterns are those patterns where:
-- When the incomming type (the type produced by the previous chain step) satisfy this step's function parameter type, then
-function is applied, and it's result is sent forward the chain.
-- Else the incomming value is sent forward the chain, without any change.
+"Optional" patterns are those patterns where the incomming type (the type returned by previous chain steps) does not match **exactly** the parameter
+types for step's function parameters.
 
-Note that this definition says nothing about the outgoing type (the type for the value being forwarded)! 
-This gives us some degrees of freedom.
-Depending on how incomming type and how we relate it to the outgoing type, we can find several patterns.
+Currently, three kind of optional patterns are supported: "Null Safe", "Probing" and "Stripping"
  
 ## Null Safe
 The simplest optional picopattern is when the only difference between the incomming type and function parameter type is the `Null` type:
@@ -27,12 +23,12 @@ You can write it with the 'null safe' chain:
 ```
     ...to(methodThatMayReturnNull).ifExist(methodThatDoesNotAcceptNull)...
 ```
-The tricky detail here is the outgoing type. If you provide explicit types, the chain here is:
+The main detail here is the outgoing type. If you provide explicit types, the chain here is:
 ```
    Chain<Type1?> ch1 =  ...to(methodThatMayReturnNull)
    Chain<Type2?> ch2 =  ch1.to(methodThatMayReturnNull).ifExists(methodThatDoesNotAcceptNull);
 ```
-You see? the `Null` have been inserted into the second chain, even `methodThatDoesNotAcceptNull` does not return a nullable type.
+You see? the `Null` have been inserted into the second chain step, even `methodThatDoesNotAcceptNull` does not return a nullable type.
 
 #### Chain start
 One can also imagine the situation where the initial value is of a nullable type.
@@ -41,17 +37,7 @@ In this situations, the `ifExists` top-level works out:
     InitialType|Null initialValue = ...
     value val = ifExists(intialValue, methodThatDoesNotAcceptNull).to(...).do();
 ```
-
-Weirder, but possible, the situation where initial function accepts multiple parameters, but the whole set of parameters is optional:
-```
-   [Type1,Type2...]? initialParameterList = ...
-   function initialFunction(Type1 t1, Type2 t2, ....) =>
-```
-If this happens (really?), you should use the `ifExistss` top level:
-```
-    [Type1,Type2...]|Null initialValue = ...
-    value val = ifExistss(intialValue, initialFunction).to(...).do();
-```
+There is no version for `ifExists` accepting only the initial value (no function).
 
  
 ## Probing
@@ -70,18 +56,20 @@ the pattern is:
 ```
 
 #### Chain steps
-The way to apply the probing pattern is, indeed `probe`:
+The way to apply the probing pattern is, indeed, with the `probe` keyword:
 ```
-    value ch = chain(initialValue,method1).probe(method2);
+    value ch = chainTo(initialValue,method1).probe(method2);
 ```
-The devil here, like in Null Safe, is in the types.
+The devil here, like in "Null Safe", is in the types.
+
 When Ceylon's type checker evaluates the sample code in the Probing pattern, types are resolved like the following:
 ``` 
     Type1|Type2 val1 = method1(initialValue);
     Type3|Type2 val2 = if (is Type1 val1) method2(val1) else val1
 ```
-Types looks good!
-Let's review the second statement again, this time noting the types in every step:
+Looks good!
+
+Let's review the second statement again, this time notating the types in every step:
  ``` 
      Type3|Type2 val2 = if (is Type1 val1) 
                             /* here `val1` is asserted to have type 'Type1' */ 
@@ -92,9 +80,8 @@ Let's review the second statement again, this time noting the types in every ste
                             val1
  ```
 Unluckily, the type checker uses a trick not available to the compiler: complementary types.
-So Probing steps are unable to include the `~Type1` part into the equation.
-
-**The result: the incomming type is allways part for the outgoing part.**
+This makes Probing steps unable to include the `~Type1` part into the equation, and hence 
+**the incomming type is allways part for the outgoing part.**
 
 So, making types explicit in the chain, you will find the following:
 ```
@@ -105,21 +92,16 @@ This is not a big deal when the final type for the chain is not relevant, or the
  Even worse, note that the types will become more and more complex through the chain, making `probe` more likely to be used,
  and complicating the types more and more.
  
- So, if you actually need to be strict with types, probing steps are not for you.
+ So, if you actually need to be strict with types, probing steps are not for you, and you probably need to take a look to [stripping](STRIPPING.md) chains.
 
 #### Chain start
-Indeed, there are Probing initial steps: with the `probe` and `probes` top-level methods.
+Indeed, there are Probing initial steps with the `probe` top-level method.
 ```
     Type1|Type2 initialValue = ...
     value ch = probe(initialValue,method2)...;
 ```
-Use them as you need, but I never found a good reason to start a chain with something 
-I am not even sure about its type (apart from Null)... Be warned. 
  
 ## END
 This is not the end for Optional patterns.
 [Next chapter](STRIPPING.md) introduces a new kind of optional steps: those stripping types apart, 
 and working each part separately.  
-
-
-
