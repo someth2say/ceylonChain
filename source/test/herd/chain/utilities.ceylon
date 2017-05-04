@@ -38,8 +38,10 @@ Integer|Null cTBtoTN(Integer i, Boolean b) => if (b) then i.successor else null;
 
 Integer(Null) cNtoT = (Null n) => 0;
 
-suppressWarnings("expressionTypeNothing")
-Nothing(Integer) cTtoV = (Integer int) { return process.exit(1); };
+suppressWarnings ("expressionTypeNothing")
+Nothing(Integer) cTtoV = (Integer int) {
+    return process.exit(1);
+};
 
 /* Utility methods */
 Boolean optEquals(Anything first, Anything second) {
@@ -48,7 +50,18 @@ Boolean optEquals(Anything first, Anything second) {
 
 Boolean deepEquals({Anything*} it1, {Anything*} it2) {
     value sameSize = it1.size == it2.size;
-    return (it1.empty && it2.empty) || sameSize &&optEquals(it1.first, it2.first) &&deepEquals(it1.rest, it2.rest);
+    return (isEmpty(it1) && isEmpty(it2)) || sameSize &&optEquals(it1.first, it2.first) &&deepEquals(getRest(it1), getRest(it2));
+}
+
+//Keep the following here until https://github.com/ceylon/ceylon/pull/7002 get in with Ceylon 1.3.3
+//Else, NPE raises on test
+Boolean isEmpty({Anything*} it) {
+    return it.shorterThan(1);
+}
+//Keep the following here until https://github.com/ceylon/ceylon/pull/7002 get in with Ceylon 1.3.3
+//Else, test fail
+{Anything*} getRest({Anything*} it) {
+    return it.skip(1);
 }
 
 
@@ -60,8 +73,8 @@ shared void assertIs(
         "The class or interface to be satisfied."
         ClassOrInterface<> coi,
         "The message describing the problem."
-        String? message = null){
-    if (!coi.typeOf(val)){
+        String? message = null) {
+    if (!coi.typeOf(val)) {
         throw AssertionError("``message else "assertion failed:"`` expected type not satisfied. expected <``coi``>");
     }
 }
