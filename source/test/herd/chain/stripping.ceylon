@@ -11,9 +11,6 @@ import herd.chain {
     StrippedChain,
     chain
 }
-import ceylon.language.meta.model {
-    ClassOrInterface
-}
 
 shared test void testStrip() {
     assertEquals(chainStrip<Integer,Null,Integer>(0, cTtoTN).do(), 1, "Stripping Chaining start should invoke like a basic chain (1)");
@@ -33,20 +30,6 @@ shared test void testSample(){
     assertEquals(chain("1").strip<Integer,ParseException>(Integer.parse).lTo(Integer.successor).do(),2);
     Integer|ParseException do = chain("one").strip<Integer,ParseException>(Integer.parse).lTo(Integer.successor).do();
     assertIs(do, `ParseException`);
-}
-
-"Fails the test if the given value does not satisfy the provided ClassOrInterface"
-throws (`class AssertionError`, "When _actual_ == _unexpected_.")
-shared void assertIs(
-        "The actual value to be checked."
-        Anything val,
-        "The class or interface to be satisfied."
-        ClassOrInterface<> coi,
-        "The message describing the problem."
-        String? message = null){
-    if (!coi.typeOf(val)){
-        throw AssertionError("``message else "assertion failed:"`` expected type not satisfied. expected <``coi``>");
-    }
 }
 
 shared test void testChainStrip() {

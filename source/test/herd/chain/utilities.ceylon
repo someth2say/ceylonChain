@@ -1,3 +1,6 @@
+import ceylon.language.meta.model {
+    ClassOrInterface
+}
 /*
  Test callables should hancle three types:
  T -> Unbounded type (i.e. Integer)
@@ -48,3 +51,17 @@ Boolean deepEquals({Anything*} it1, {Anything*} it2) {
     return (it1.empty && it2.empty) || sameSize &&optEquals(it1.first, it2.first) &&deepEquals(it1.rest, it2.rest);
 }
 
+
+"Fails the test if the given value does not satisfy the provided ClassOrInterface"
+throws (`class AssertionError`, "When _actual_ == _unexpected_.")
+shared void assertIs(
+        "The actual value to be checked."
+        Anything val,
+        "The class or interface to be satisfied."
+        ClassOrInterface<> coi,
+        "The message describing the problem."
+        String? message = null){
+    if (!coi.typeOf(val)){
+        throw AssertionError("``message else "assertion failed:"`` expected type not satisfied. expected <``coi``>");
+    }
+}

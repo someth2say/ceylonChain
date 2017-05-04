@@ -145,7 +145,7 @@ shared void run() {
         .tee(compileModule).do();
     
     Integer exitCode = spread([options.moduleName, options.moduleVersion],loadModule)
-        .tee(exitOnNullModule)
+        .probe(exitOnNullModule(options))
         .strip<GoalDefinitionsBuilder,[InvalidGoalDeclaration+]>(readAnnotations)
         .lrTo(startGdb(options),reportInvalid)
         .do();
@@ -160,11 +160,9 @@ Integer reportInvalid([InvalidGoalDeclaration+] gdb) {
    return 1;
 }
 
-void exitOnNullModule(Options options)(Module? mod){
-    if (!exists mod) {
-        process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
-        process.exit(1);
-    }
+Nothing exitOnNullModule(Options options)(Null mod){
+    process.writeErrorLine("Module '``options.moduleName``/``options.moduleVersion``' not found");
+    return process.exit(1);
 }
 ```
 Many more examples will come.
