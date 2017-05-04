@@ -1,13 +1,18 @@
 import ceylon.test {
     test,
-    assertEquals
+    assertEquals,
+    assertTrue
 }
 
 import herd.chain {
     chainTo,
     Chain,
     chainStrip,
-    StrippedChain
+    StrippedChain,
+    chain
+}
+import ceylon.language.meta.model {
+    ClassOrInterface
 }
 
 shared test void testStrip() {
@@ -20,6 +25,28 @@ shared test void testStrip() {
     assertEquals(chainStrip<Integer,Null,Integer>(0, cTtoTN).lTo(Integer.string).do(), "1", "Stripping Chaining start on left type (1)");
     assertEquals(chainStrip<Integer,Null,Integer>(1, cTtoTN).lTo(Integer.string).do(), null, "Stripping Chaining start on left type (2)");
 
+    assertEquals(chainStrip<Integer,Null,Integer>(0, cTtoTN).lrTo(Integer.string, cNtoT).do(), "1", "Stripping Chaining start on both types (1)");
+    assertEquals(chainStrip<Integer,Null,Integer>(1, cTtoTN).lrTo(Integer.string, cNtoT).do(), 0, "Stripping Chaining start on both types (2)");
+}
+
+shared test void testSample(){
+    assertEquals(chain("1").strip<Integer,ParseException>(Integer.parse).lTo(Integer.successor).do(),2);
+    Integer|ParseException do = chain("one").strip<Integer,ParseException>(Integer.parse).lTo(Integer.successor).do();
+    assertIs(do, `ParseException`);
+}
+
+"Fails the test if the given value does not satisfy the provided ClassOrInterface"
+throws (`class AssertionError`, "When _actual_ == _unexpected_.")
+shared void assertIs(
+        "The actual value to be checked."
+        Anything val,
+        "The class or interface to be satisfied."
+        ClassOrInterface<> coi,
+        "The message describing the problem."
+        String? message = null){
+    if (!coi.typeOf(val)){
+        throw AssertionError("``message else "assertion failed:"`` expected type not satisfied. expected <``coi``>");
+    }
 }
 
 shared test void testChainStrip() {
