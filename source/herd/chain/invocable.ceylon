@@ -1,5 +1,7 @@
-"Invocable provides capability for providing chain arguments.
- As this is part of a backward chain, arguments are provided at the end of the chain, in the do method.
+"Invocable provides capability for be invoked, like a method.
+ Type parameter for an Invocable stands for the type returned on invocation.
+
+ Invocation is allways performed through the 'do' method.
  Example:
  <pre>
     Invocable<String> ch = ...;
@@ -7,7 +9,7 @@
  </pre>"
 shared interface Invocable<out Return>
 {
-    "Actually invokes the chain, with the values set at first chain step"
+    "Actually invokes the chain."
     shared formal Return do() ;
 }
 
