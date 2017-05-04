@@ -16,7 +16,7 @@
  But this is strongly unclear as A) it reverses the order of operations, and B) it add a lot of seamless parens.
  So, while fishead operators family is not available in Ceylon, it can be simulated with this module.
  <pre>
-    chain(init, step1).to(step2)...to(stepN).do().
+    chain(init).to(step1).to(step2)...to(stepN).do().
  </pre>
 
  "

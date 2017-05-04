@@ -8,9 +8,9 @@
 
  Example:
  <pre>
-    [[Chain]]<Integer> ch = [[chainIterate]](1, Integer.successor);
-    [[Chain]]<Integer> ch2 = ch.[[tee]]((Integer i) { if (i.negative) {fail();}});
-    assertEquals(ch2.[[do]](), 2);
+    Chain<Integer> ch = chainIterate(1, Integer.successor);
+    Chain<Integer> ch2 = ch.tee((Integer i) { if (i.negative) {fail();}});
+    assertEquals(ch2.do(), 2);
  </pre>
 
  Note that chaining different steps does not vary the type for chain arguments, as those are defined by the parameters for chain initial step."

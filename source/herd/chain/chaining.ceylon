@@ -6,12 +6,12 @@
      ...
  </pre>
 
- Basic chaining is mainly performed with the [[to]] method;
+ Basic chaining is mainly performed with the to method;
  Example:
  <pre>
-    [[Chain]]<Integer,String> bwch = [[chainTo]](\"10\",Integer.parse)
-    [[Chain]]<Boolean,String> ch = sp.[[to]](Integer.even);
-    assertEquals(ch.[[do]](),true);
+    Chain<Integer,String> bwch = chainTo(\"10\",Integer.parse)
+    Chain<Boolean,String> ch = sp.to(Integer.even);
+    assertEquals(ch.do(),true);
  </pre>"
 shared interface ChainingChain<Return>
         satisfies Invocable<Return> {
@@ -32,7 +32,7 @@ shared Chain<Arguments> chain<Arguments>(Arguments arguments)
         => object extends IdentityInvocable<Arguments>(arguments) satisfies Chain<Arguments> {};
 
 "Initial chaining step for a chain, that chains the first function directly.
- It is just a shortcut for `[[chain]](arguments).to(func)`"
+ It is just a shortcut for `chain(arguments).to(func)`"
 shared Chain<Return> chainTo<Return, Arguments>(Arguments arguments, Return(Arguments) func)
         => object extends FunctionInvocable<Return,Arguments>(arguments, func)
         satisfies Chain<Return> {};

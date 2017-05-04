@@ -1,9 +1,9 @@
-"[[Invocable]] provides capability for providing chain arguments.
- As this is part of a backward chain, arguments are provided at the end of the chain, in the [[do]] method.
+"Invocable provides capability for providing chain arguments.
+ As this is part of a backward chain, arguments are provided at the end of the chain, in the do method.
  Example:
  <pre>
-    [[Invocable]]<String> ch = ...;
-    String str = ch.[[do]]();
+    Invocable<String> ch = ...;
+    String str = ch.do();
  </pre>"
 shared interface Invocable<out Return>
 {

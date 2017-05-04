@@ -1,17 +1,17 @@
 "Chain step that provides spreading capabilities.
  That is, provide the ability to spread the returning tuple elements into the next chain step's function parameters.
- [[SpreadChain]] steps require a function whose return type can be spreaded (i.o.w, satisfies [Anything*])
+ SpreadChain steps require a function whose return type can be spreaded (i.o.w, satisfies [Anything*])
 
  This is a two-step chain. That means, spreading occurs not when chain step is build,
- but when chain step is chained to the following step (via [[to]] or [[spread]] methods).
+ but when chain step is chained to the following step (via to or spread methods).
 
  Example:
  <pre>
     [Integer,Boolean] foo(Integer i) => [i,i.even];
     Integer bar(Integer i, Boolean b) => if (b) then i else 0;
 
-    assertEquals([[spread]](1,foo).[[to]](bar).[[do]](),0); // foo returns [1,false], hence bar returns 0;
-    assertEquals([[spread]](2,foo).[[to]](bar).[[do]](),2); // foo returns [2,true], hence bar returns 2;
+    assertEquals(spread(1,foo).to(bar).do(),0); // foo returns [1,false], hence bar returns 0;
+    assertEquals(spread(2,foo).to(bar).do(),2); // foo returns [2,true], hence bar returns 2;
  </pre>"
 shared interface SpreadChain<Return> satisfies Invocable<Return>
         given Return satisfies [Anything*] {
@@ -72,14 +72,14 @@ shared SpreadChain<Arguments> spread<Arguments>(Arguments arguments)
         => object extends IdentityInvocable<Arguments>(arguments) satisfies SpreadChain<Arguments> {};
 
 "Initial step for a chain, that spreads the first function directly.
- It is just a shortcut for `[[chain]](arguments).[[spread]](func)`"
+ It is just a shortcut for `chain(arguments).spread(func)`"
 shared SpreadChain<Return> chainSpread<Return, Arguments>(Arguments arguments, Return(Arguments) func)
         given Return satisfies Anything[]
         => object extends FunctionInvocable<Return,Arguments>(arguments, func)
         satisfies SpreadChain<Return> {};
 
 "Initial spreading step for a chain, that chains the first function directly.
- It is just a shortcut for `[[spread]](arguments).to(func)`"
+ It is just a shortcut for `spread(arguments).to(func)`"
 shared Chain<Return> spreadTo<Return, Arguments>(Arguments arguments, Return(*Arguments) func)
         given Arguments satisfies Anything[]
         => object satisfies Chain<Return> {

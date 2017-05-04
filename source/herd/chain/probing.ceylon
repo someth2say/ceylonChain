@@ -8,31 +8,31 @@
  If the incoming type is assignable to this chain step's function, then function is used, and its return value is forwarded.
  If the incomming type is *NOT* assignable, then the incomming value is returned.
 
- [[ProbingChain]] is the evolution for [[NullSafeChain]].
+ ProbingChain is the evolution for NullSafeChain.
 
- Example 1: Emulating [[NullSafeChain]] / Type accumulation
- If both methods only differ on the `Null` type, [[probe]] behaves exactly like [[NullSafeChain]].
+ Example 1: Emulating NullSafeChain / Type accumulation
+ If both methods only differ on the `Null` type, probe behaves exactly like NullSafeChain.
  <pre>
     Integer? foo(Integer i) => if (i.even) i else null;
     String bar(Integer i) => i.string;
 
-    assertEquals([[chainIterate]](2,foo).[[probe]](bar).[[do]](),\"3\"); // foo returns 2, then bar return \"3\"
-    assertEquals([[chainIterate]](1,foo).[[probe]](bar).[[do]](),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
+    assertEquals(chainIterate(2,foo).probe(bar).do(),\"3\"); // foo returns 2, then bar return \"3\"
+    assertEquals(chainIterate(1,foo).probe(bar).do(),null); // foo returns 'null' that is not accepted by bar, so 'null' just is passed by.
  </pre>
 
  Example 2: Exception handling / Type reduction / Default values
- If you can handle one of the incomming types and transform it to the other one, [[probe]] matches perfectly.
+ If you can handle one of the incomming types and transform it to the other one, probe matches perfectly.
  <pre>
     Integer handleException(ParseException ex) { print(ex.description); return 0; }
     Integer handleInt(Integer i) => i.successor;
 
-    assertEquals([[chainIterate]](\"3\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),4); // parse is succesfull, so handleException does not math, but handleInt does
-    assertEquals([[chainIterate]](\"three\",Integer.parse).[[probe]](handleException).[[probe]](handleInt).[[do]](),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
+    assertEquals(chainIterate(\"3\",Integer.parse).probe(handleException).probe(handleInt).do(),4); // parse is succesfull, so handleException does not math, but handleInt does
+    assertEquals(chainIterate(\"three\",Integer.parse).probe(handleException).probe(handleInt).do(),1) // parse returns an exception, handled by handleException, that prints and returns 0, that is then matched by handleInt
  </pre>
 
- Note that [[probe]] chain steps will **not** 'absorb' the actually matched type.
+ Note that probe chain steps will **not** 'absorb' the actually matched type.
  This mean that the matched type will keep appearing forward in the chain type paramters (in latest sample, `ParseException`).
- Because of that, [[probe]] chain steps can be very tricky in complex cases (i.e. when return types are complex, or many different paths can be taken.
+ Because of that, probe chain steps can be very tricky in complex cases (i.e. when return types are complex, or many different paths can be taken.
  Use with caution."
 shared interface ProbingChain<Return>
         satisfies Invocable<Return> {
@@ -57,7 +57,7 @@ class Probing<NewReturn, Return, FuncArgs>(Invocable<Return> prev, NewReturn(Fun
 
 "Initial probing step for a chain. It will try to use chain arguments into provided function.
  If succesfull, will return function result. Else, will return provided arguments.
-  It is just a shortcut for `[[chain]](arguments).[[probe]](func)`"
+  It is just a shortcut for `chain(arguments).probe(func)`"
 shared Chain<Return|Arguments> probe<Return, FuncArgs, Arguments>(Arguments arguments, Return(FuncArgs) func)
         => object satisfies Chain<Return|Arguments> {
     shared actual Return|Arguments do() => if (is FuncArgs arguments) then func(arguments) else arguments;
