@@ -4,37 +4,42 @@ import ceylon.test {
 }
 
 import herd.chain {
-    chain,
-    chains
+    chainTo,
+    chain
 }
 
+
+shared test void testChainF() {
+    // Chain start and parameter setting
+    assertEquals(chainTo(0, cTtoT).do(), 1, "Basic chain");
+    assertEquals(chainTo(null, cTNtoT).do(), 0, "Basic chain, null params");
+    assertEquals(chainTo(1, cTtoTN).do(), null, "Basic chain, null params, null return");
+    assertEquals(chainTo([1, true], cStoS).do(), [2, true], "Basic chain, tuple params, tuple return");
+    assertEquals(chainTo(0, cTtoS).do(), [1, true], "Basic chain, tuple return ");
+    assertEquals(chainTo(null, cTNtoS).do(), [0, true], "Basic chain, null params, tuple return");
+    assertEquals(chainTo(4, Integer).do(), 4, "Basic chain onto a constructor");
+}
 
 shared test void testChain() {
     // Chain start and parameter setting
-    assertEquals(1, chain(0, cTtoT).do(), "Basic chain");
-    assertEquals(0, chain(null, cTNtoT).do(), "Basic chain, null params");
-    assertEquals(null, chain(1, cTtoTN).do(), "Basic chain, null params, null return");
-    assertEquals([2, true], chain([1, true], cStoS).do(), "Basic chain, tuple params, tuple return");
-    assertEquals([1, true], chain(0, cTtoS).do(), "Basic chain, tuple return ");
-    assertEquals([0, true], chain(null, cTNtoS).do(), "Basic chain, null params, tuple return");
-    assertEquals(4, chain(4, Integer).do(), "Basic chain onto a constructor");
-
-    assertEquals(3, chain({ 1, 2, 3 }, ({Integer*} ints) => ints.find(Integer.even)).force((Null n) => 0).to(Integer.successor).do(), "Chain on iterable 1");
-    assertEquals(1, chain({ 1, 3, 5 }, ({Integer*} ints) => ints.find(Integer.even)).force((Null n) => 0).to(Integer.successor).do(), "Chain on iterable 2");
+    assertEquals(chain(0).to(cTtoT).do(), 1, "Basic chain");
+    assertEquals(chain(null).to(cTNtoT).do(), 0, "Basic chain, null params");
+    assertEquals(chain(1).to(cTtoTN).do(), null, "Basic chain, null params, null return");
+    assertEquals(chain([1, true]).to(cStoS).do(), [2, true], "Basic chain, tuple params, tuple return");
+    assertEquals(chain(0).to(cTtoS).do(), [1, true], "Basic chain, tuple return ");
+    assertEquals(chain(null).to( cTNtoS).do(), [0, true], "Basic chain, null params, tuple return");
+    assertEquals(chain(4).to(Integer).do(), 4, "Basic chain onto a constructor");
 }
 
-shared test void testChainSpread() {
-    assertEquals(2, chains([1, true], cTTtoT).do(), "Basic chain, spreading params");
-}
 
 shared test void testChainTo() {
-    assertEquals(2, chain(0, cTtoT).to(cTtoT).do(), "Basic chain to basic chain");
-    assertEquals(1, chain(null, cTNtoT).to(cTtoT).do(), "Basic chain to basic chain, null params");
-    assertEquals(0, chain(null, cTNtoTN).to(cTNtoT).do(), "Basic chain to basic chain, null params, null return");
+    assertEquals(chainTo(0, cTtoT).to(cTtoT).do(), 2, "Basic chain to basic chain");
+    assertEquals(chainTo(null, cTNtoT).to(cTtoT).do(), 1, "Basic chain to basic chain, null params");
+    assertEquals(chainTo(null, cTNtoTN).to(cTNtoT).do(), 0, "Basic chain to basic chain, null params, null return");
 
-    assertEquals(null, chain(0, cTtoT).to(cTtoTN).do(), "Basic chain to basic chain, null params");
-    assertEquals(3, chain(1, cTtoT).to(cTtoTN).do(), "Chained callables should be equivalent to invonking those callables in the opposing order.");
+    assertEquals(chainTo(0, cTtoT).to(cTtoTN).do(), null, "Basic chain to basic chain, null params");
+    assertEquals(chainTo(1, cTtoT).to(cTtoTN).do(), 3, "Chained callables should be equivalent to invonking those callables in the opposing order.");
 
-    assertEquals([2, false], chain(0, cTtoT).to(cTtoS).do(), "Chained callables should be equivalent to invonking those callables in the opposing order.");
-    assertEquals([3, true], chain(1, cTtoT).to(cTtoS).do(), "Chained callables should be equivalent to invonking those callables in the opposing order.");
+    assertEquals(chainTo(0, cTtoT).to(cTtoS).do(), [2, false], "Chained callables should be equivalent to invonking those callables in the opposing order.");
+    assertEquals(chainTo(1, cTtoT).to(cTtoS).do(), [3, true], "Chained callables should be equivalent to invonking those callables in the opposing order.");
 }

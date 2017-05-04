@@ -6,34 +6,33 @@
      ...
  </pre>
 
- Basic chaining is mainly performed with the [[to]] method;
+ Basic chaining is mainly performed with the to method;
  Example:
  <pre>
-    [[Chain]]<Integer,String> bwch = [[chain]](\"10\",Integer.parse)
-    [[Chain]]<Boolean,String> ch = sp.[[to]](Integer.even);
-    assertEquals(ch.[[do]](),true);
+    Chain<Integer,String> bwch = chainTo(\"10\",Integer.parse)
+    Chain<Boolean,String> ch = sp.to(Integer.even);
+    assertEquals(ch.do(),true);
  </pre>"
 shared interface ChainingChain<Return>
-        satisfies IInvocable<Return> {
+        satisfies Invocable<Return> {
     "Adds a new step to the chain, by passing the result of the chain so far to a new function.
      The new function MUST accept the return type for the chain so far as its only parameter."
-    see( `function package.chain`, `function package.chains`)
+    see (`function package.chainTo`, `function package.chain`)
     shared Chain<NewReturn> to<NewReturn>(NewReturn(Return) newFunc)
             => Chaining<NewReturn,Return>(this, newFunc);
 }
 
-class Chaining<Return, PrevReturn>(IInvocable<PrevReturn> prev, Return(PrevReturn) func)
-        extends ChainStep<Return,PrevReturn>(prev, func)
+class Chaining<Return, PrevReturn>(Invocable<PrevReturn> prev, Return(PrevReturn) func)
+        extends ChainingInvocable<Return,PrevReturn>(prev, func)
         satisfies Chain<Return> {}
 
-"Initial chaining step for a chain, that just allow further chain steps to be added."
-shared Chain<Return> chain<Return, Arguments>(Arguments arguments, Return(Arguments) func)
-        => object extends ChainStart<Return,Arguments>(func, arguments)
-        satisfies Chain<Return> {};
 
-"Initial chaining step for a  chain, that just allow further chain steps to be added.
-  The only difference with [[chain]] is that [[chains]] will accept a tuple as chain arguments, that will be spread into this step's function."
-shared Chain<Return> chains<Return, Arguments>(Arguments arguments, Return(*Arguments) func)
-        given Arguments satisfies Anything[]
-        => object extends SpreadingChainStart<Return,Arguments>(func, arguments)
+"Initial chaining step for a chain, that just allow further chain steps to be added."
+shared Chain<Arguments> chain<Arguments>(Arguments arguments)
+        => object extends IdentityInvocable<Arguments>(arguments) satisfies Chain<Arguments> {};
+
+"Initial chaining step for a chain, that chains the first function directly.
+ It is just a shortcut for `chain(arguments).to(func)`"
+shared Chain<Return> chainTo<Return, Arguments>(Arguments arguments, Return(Arguments) func)
+        => object extends FunctionInvocable<Return,Arguments>(arguments, func)
         satisfies Chain<Return> {};
