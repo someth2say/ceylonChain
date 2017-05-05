@@ -33,13 +33,3 @@ after_success:
     echo "We are in $TRAVIS_BRANCH, build the docs!";
     ceylon doc herd.chain;
   fi
-
-deploy:
-  provider: releases
-  api_key: $GITHUB_OAUTH
-  file: modules/herd/chain/2.0/herd.chain-2.0.car
-  file: modules/herd/chain/2.0/herd.chain-2.0.src
-  skip_cleanup: true
-  overwrite: true
-  on:
-    tags: true
