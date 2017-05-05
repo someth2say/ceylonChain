@@ -27,9 +27,9 @@ script:
 
 after_success:
 - if [ "$TRAVIS_BRANCH" == "master" ]; then
-    echo "We are in `$TRAVIS_BRANCH`, so we may publish!"
+    echo "We are in $TRAVIS_BRANCH, so we may publish!";
   fi
 - if [ "$TRAVIS_BRANCH" == "develop" ]; then
-    echo "We are in `$TRAVIS_BRANCH`, build the docs!"
+    echo "We are in $TRAVIS_BRANCH, build the docs!";
     ceylon doc;
   fi
