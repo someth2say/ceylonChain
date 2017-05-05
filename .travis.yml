@@ -24,3 +24,12 @@ install: sudo apt-get install ceylon-1.3.2
 script:
 - ceylon compile
 - ceylon test test.herd.chain/2.0
+
+after_success:
+- if [ "$TRAVIS_BRANCH" == "master" ]; then
+    echo "We are in `$TRAVIS_BRANCH`, so we may publish!"
+  fi
+- if [ "$TRAVIS_BRANCH" == "develop" ]; then
+    echo "We are in `$TRAVIS_BRANCH`, build the docs!"
+    ceylon doc;
+  fi
