@@ -22,4 +22,4 @@
  "
 by ("Jordi Sola")
 license("[GPL v3](https://www.gnu.org/licenses/gpl-3.0.html)")
-module herd.chain "2.0-rc1" {}
+module herd.chain "2.0" {}
