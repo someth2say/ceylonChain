@@ -1,156 +1,144 @@
-# Chaining Callables for Ceylon [![Build Status](https://travis-ci.org/someth2say/ceylonChain.svg?branch=master)](https://travis-ci.org/someth2say/ceylonChain)
+# Chaining Callables for Ceylon
+[![Build Status](https://travis-ci.org/someth2say/ceylonChain.svg?branch=develop)](https://travis-ci.org/someth2say/ceylonChain)
 
 Many times I find myself writing code like the following:
 ```
 Request request = ...;
 value params = parseParameters(request);
-value paramsAgain = validateParameters(params);
-value output = doStuff(paramsAgain);
-writeResponse(output);
+value validParams = validateParameters(params);
+value output = doStuff(validParams);
+value result = writeResponse(output);
+return result;
+```
+This is pretty clear, but actually verbose.
+
+Some languages offer fish-head (`|>`) operator, allowing chaining methods`, 
+in a fashion that the result for the first one is used as parameter for the second one:
+```
+return request |> parseParameters |> validateParameters |> doStuff |> writeResponse;
+```
+Even other other operators are provided to handle more complicated cases (i.e. when nulls are involved).
+
+This library offer emulating this operator, and many others  
+(as described in [this page](https://github.com/ceylon/ceylon/issues/6615)), but using only standard Ceylon classes, and the strength of the typechecker.
+
+Sources for can be found at https://github.com/someth2say/ceylonChain
+
+For learning more about **PicoPatterns**, please visit [this](docs/PICOPATTERNS.md) section.
+
+## TL;DR: Usage
+First, you need to create the chain (the first chain step). Simply use the `chain` top-level method to start the chain, 
+providing the initial value.
+```
+value ch = chain(request);
+```
+`chain` top-level creates a basic chain. See top-level methods on other step classes to find alternative chain starts.
+ 
+Once initial chain object created, more methods can be added to the chain. Basic way for chaining is using the `to` method:
+```
+value ch = chain(request).to(parseParameters).to(validateParameters).to(doStuff).to(writeResponse);
+```
+Again, `to` is just the basic chaining method. Other methods are available depending on the type of chain step.  
+
+After chaining as many steps as necessary, you may need to explicitly execute the chain, so it is evaluated.
+This is always done with the `do` method:
+```
+return chain(request).to(parseParameters).to(validateParameters).to(doStuff).to(writeResponse).do();
+```
+And that's all!
+
+Utility methods are provided for simplify usage. 
+The top-level `chainTo` method merges the first `chain` and `to` methods into a single call:
+```
+return chainTo(request,parseParameters).to(validateParameters).to(doStuff).to(writeResponse).do();
+```
+Use whichever you feel more comfortable with. 
+
+## Different types of chaining
+As seen, chaining functions is really straightforward. But wise reader can see that this is only the simplest case.
+This module offers support for other patterns (each pattern links to detail page):
+###### [Chaining]([docs/CHAINING.md)
+ Passing one function result to another function, where types match perfectly.
+```
+     value val1 = method1(initialValue);
+     value val2 = method2(val1);
+     value val3 = method3(val2);
+```
+Is rewritten as
+```
+    value val3 = chainTo(initialValue, method1).to(method2).to(method3).do();
+```
+More details 
+
+###### [Teeing](docs/TEEING.md) 
+When methods chain fluently, but the return type and value is irrelevant.
+```
+    value val1 = method1(initialValue);
+    methodWithoutSignificantResult(val1);
+    value val2 = method2(val1);
+```
+Is rewritten as
+```
+   value val2 = chainTo(initialValue, method1).tee(methodWithoutSignificantResult).to(method2).do();
+```
+###### [Spreading](docs/SPREADING.md) 
+When the further method returns a `Tuple`, that should be spread to the later method.
+Given
+```
+    function method1(Type1 t1, Type2 t2) => ... ;
+```
+Pattern
+```
+    [Type1, Type2] val1 = method1(...);
+    value val2 = method2(*val1);
+```
+Is rewritten as
+```
+   value val2 = chain(...).spread(method1).to(method2).do();
 ```
 
-This is pretty clear, but much verbose.
-Some languages offer headfish (`|>`) operator, allowing chaining `methods`, in a fashion that the result for the first one is used as parameter for the second one.
-This library offer emulating this operator (as described in https://github.com/ceylon/ceylon/issues/6615, but using only standard Ceylon classes, and the strength of the typechecker.
+###### [Iterating](docs/ITERATING.md) 
+When the results for the further are iterable, so you can take advantage of `Iterable` functional methods.
+Given
+```
+    Iterable<...> method1(Type1 t1) => ... ;
+```
+Pattern
+```
+    value iterable = method1(...);
+    value iterable2 = iterable.map(mappingMethod); // `map` Or any other method on Iterable
+    value val3 = methodWorkingOnIterable(iterable2);
+ ```
+Is rewritten as
+ ```
+   value val3 = chain(...).iterate(method1).map(mappingMethod).to(methodWorkingOnIterable).do();
+ ```
+###### [Optional](docs/OPTIONAL.md): 
+When parameters for the later function do not match exactly the results for the further function.
+I.e. given
+```
+    Type2? method1(Type1 t1) => ... ;
+    Type3 method2(Type2 t2) => ...; // Note this method does not accept `Null` 
+```
+Pattern
+```
+    value val1 = method1( ... );
+    value val2 = if (exists val1) then method2(val1) else null;
+```
+Is rewritten as
+```
+   value val2 = chain(...)...to(method1).ifExists(method2).do();
+```
+There are many kind of optionals, but this module provide the following ones:
+- Null safe optionals (the one on the previous example)
+- Type retaining optionals
+- Type stripping optionals
+You can find de details on [Optionals](docs/OPTIONAL.md) page.
 
-Sources for Chaining Callables can be retrieved from https://github.com/someth2say/ceylonChain
-
-## Usage
-Simply use the `chain` top-level method to start a chained method call, and provide a function reference.
-```
-IChainable<Integer,String> stringSizeChain = chain(String.size);
-```
-
-This will create a `IChainable` object, that allows to chain other methods in different flavours. Chain more function references by using the provided methods:
-- `\ithen`: Headfish operator `|>`. Invokes the first function, and then passes its results to the second function.
-- `thenOptionally`: Crying-headfish operator `|?>`. Also forwards the value from the first method to the second, but only if this value is not `null`. If first function returned `null`, then second function is not evaluated, and `null` is returned.
-- `thenSpreadable`: Dead-headfish opeator `|*>`. It works with methods that accept several parameters, instead of a single one. Result from first method (should be an iterable) is spread, and sent to the second method as its arguments.
-- `with`: This method finalizes the chain, by providing its parameters, and evaluating functions in the right order. You can understand it as the invocation operation.
-
-## Basic chaining
-Having the initial chain step, you can go on providing the following steps, via `\ithen`, `thenOptionally` or `thenSpreadable`.
-Once all steps are declared, `IChainable` can be passed by to other methods, finally invoked.
-Invocation is done with the `with` method. This will accept the same arguments as the callable used in the creation for the first step.
-
-### Basic chaining sample
-```
-Request request = ...;
-value params = parseParameters(request);
-value paramsAgain = validateParameters(params);
-value output = doStuff(paramsAgain);
-writeResponse(output);
-```
-Can be rewritten as
-```
-Request request = ...;
-chain(parseParameters).\ithen(validateParameters).\ithen(doStuff).\ithen(writeResponse).with(request);
-```
-
-
-## Optional chaining
-When you are mixing callables returning optional types (types that can be null), with callables not accepting nulls, you need to explicitly check the existence.
-Chaining can help you, checking that partial results are null before being passed to callables.
-For doing so, just use the `thenOptionally` method for chaining. This will check the result for the first callable, downcast if not null, and chain to the second callable. If result for first callable is null, then second callable won't even be invoked, and `null` will be returned.
-
-### Optional chaining sample
-Following code:
-```
-value initial = ... ;
-value mayBeNull = canProduceNull(initial);
-value alsoMayBeNull = if (exists mayBeNull) doNotAcceptNulls(mayBeNull)
-```
-Can be rewritten as
-```
-chain(iCanProduceNull).thenOptionally(doNotAcceptNull).with(initial);
-```
-If `canProduceNull` results in `null`, `doNotAcceptNull` will be skipped.
-
-
-# Spreading chaining
-Basic chaining is good when all callables both accept and return a single result. But many many times callables accept many parameters.
-For this situations, Ceylon offer type-safe tuples and spreading.
-Ceylon allow a callable accepting several parameters
-```
-ReturnType func(Type1 param1, Type2 param2, ..., TypeN paramn)
-```
-to be invoked either by explicitly enumerating parameters
-```
-Type1 param1 = ...;
-Type2 param2 = ...;
-...
-TypeN paramn = ...;
-ReturnType result = func(param1, param2, ..., paramn);
-```
-Or by having a tuple, and spreading its values:
-```
-[Type1, Type2, ..., TypeN] tuple = [param1, param2, ..., paramn]
-ReturnType result = func(*tuple);
-```
-Now, realize that tuples can also be the return for a callable:
-```
-[Type1, Type2, ..., TypeN] tuple = tupleFunc(...);
-ReturnType result = func(*tuple);
-```
-So here we have the standard situation where Chanining Callables can save the day.
-By default, a `IChainable` result can not be spread: it requires that the method used to create the `IChainable` have a spreadable return type.
-By using the `thenSpreadable` with the right type of callable, the obtained step is not only a `IChainable`, but an `ISpreadable`.
-This interface adds `spreadTo` capabilities, that allow to spread the chain result to following chain steps.
-
-### Spreading chaining sample
-Following structure:
-```
-value initial = ...;
-value second = doSomething(initial)
-value tuple = iReturnATuple(second);
-value result = iAcceptManyParameters(*tuple);
-```
-can be simplified to:
-```
-chain(doSomething).thenSpreadable(iReturnATuple).spreadTo(iAcceptManyParameters).with(initial);
-```
-Note that you can not call `spreadTo` if you did not use `thenSpreadable` first!
-
-But... what if you wan to chain several callable that should spread its results?
-Keep on reading.
-
-### Repeated spreading
-
-No worries, that's why `spreadToSpreadable` method was created:
-
-```
-value initial = ...;
-value second = doSomething(initial)
-value tuple = iReturnATuple(second);
-value secondTuple = iAcceptAndReturnATuple(*second);
-value result = iAcceptManyParameters(*secondTuple);
-```
-is rewritten as
-```
-chain(doSomething).thenSpreadable(iReturnATuple).spreadToSpreadable(iAcceptAndReturnATuple).spreaTo(iAcceptManyParameters).with(initial);
-```
-
-
-## Extended Chain starts
-Wise reader will notice that, if you must use `thenSpreadable` before spreading you can not spread the first chain step!
-True! Even more general: `chain`s first step do not have either spreading nor null-checking capabilities.
-
-If you need this capabilities on the first chain step, then you need to use extended chain starts.
-
-- For being able to spread the first step, use the `chainSpreadable` top-level:
-```
-chainSpreadable(iReturnATuple).spreadTo(iAcceptManyParameters).with(initial);
-```
-- For null-safety on the first step, use `chainOptional` top-level:
-```
-chainOptional(iDoNotAcceptNulls).with(iCanBeNull);
-```
-
-## Caveats
-There are several points of improvement on this code:
-- There is a (minimal) memory footprint for using this construct, opposed to a native `|>` operator that is just syntax sugar.
-- You actually can not mix both Optional an Spreadable capabilities, so methods returning something like Null|*Type are not supported
-(in fact, this notation is not even supported in current Ceylon distribution).
+## END
+This is the end of the basic documentation for this module.
+You may want to start a detailed walkthrough. If so, you can start by the [chaining pattern](docs/CHAINING.md). 
 
 # Enjoy!
-Don't hesitate using and distributing this library, and getting back to me to any doubts or issues you may have.
+Don't hesitate using and distributing this library, or getting back to me to any doubts or issues you may have.
 
